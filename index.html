@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touring Japan - Language Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base styles */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f3e9;
+            /* FORCED BLACK TEXT */
+            color: #000000 !important;  
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+        body.dark-mode {
+            /* KEEP DARK BACKGROUND FOR DARK MODE */
+            background-color: #1a202c;
+        }
+        
+        /* Container and Card styles */
+        .container {
+            max-width: 800px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
+            transition: background-color 0.5s ease;
+        }
+        body.dark-mode .card {
+            background: #2d3748;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 5px 15px -5px rgba(0, 0, 0, 0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Button styles */
+        .option-button {
+            background-color: #e8f0f7;
+            color: #000000 !important; /* FORCED BLACK TEXT */
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            border: 2px solid #3498db;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        body.dark-mode .option-button {
+            background-color: #4a5568;
+            color: #000000 !important; /* FORCED BLACK TEXT */
+            border: 2px solid #63b3ed;
+        }
+        .option-button:hover:not(:disabled) {
+            background-color: #d1e2f3;
+            transform: scale(1.03);
+        }
+        body.dark-mode .option-button:hover:not(:disabled) {
+            background-color: #5a6b81;
+        }
+
+        /* State styles */
+        .option-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7; /* Dim disabled buttons */
+            transform: none !important; 
+        }
+        .correct {
+            background-color: #2ecc71 !important;
+            color: #000000 !important; /* Keep correct text black */
+            border-color: #27ae60 !important;
+            animation: pulse-correct 1s infinite;
+            opacity: 1 !important;
+        }
+        .incorrect {
+            background-color: #e74c3c !important;
+            color: #000000 !important; /* Keep incorrect text black */
+            border-color: #c0392b !important;
+            opacity: 1 !important;
+        }
+
+        /* Override specific Tailwind classes in HTML to force black text */
+        .dark\:text-gray-50, .dark\:text-gray-200, .dark\:text-gray-300, .dark\:text-gray-400 {
+            color: #000000 !important;
+        }
+        
+        @keyframes pulse-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+<audio id="background-music" src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3" autoplay loop muted></audio>
+
+<div id="game-container" class="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-8 md:p-12 space-y-8 flex flex-col items-center card">
+    <div id="start-screen" class="space-y-6 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Touring Japan 🏯</h1>
+        <img src="https://i.imgur.com/O7Fa5O7.jpeg" alt="Welcome to Japan" class="w-full max-w-sm mx-auto mb-4 rounded-lg shadow-md">
+        <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">Welcome to your adventure! Learn essential Japanese phrases. Hover over the phrases to hear the audio.</p>
+        <button id="start-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+            Start Your Journey
+        </button>
+    </div>
+
+    <div id="game-screen" class="w-full space-y-6 hidden">
+        <div class="flex justify-between items-center w-full">
+            <div id="score-display" class="text-lg font-bold text-gray-800 dark:text-gray-200">Score: 0/0</div>
+
+            <button id="music-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Music Off
+            </button>
+            <button id="theme-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Dark Mode
+            </button>
+        </div>
+        <img id="scenario-image" class="rounded-lg shadow-md mb-4 w-full h-auto object-cover max-h-80" alt="Scenario Image" style="display: none;">
+        <div id="scenario-text" class="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-50 leading-relaxed mb-6"></div>
+        
+        <div id="options-container" class="w-full grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        
+        <div id="feedback-area" class="mt-6 text-center" aria-live="polite">
+            <p id="feedback-text" class="text-lg font-bold"></p>
+            <p id="translation-text" class="text-sm mt-2 text-gray-700 italic dark:text-gray-400"></p>
+        </div>
+        <button id="next-button" class="mt-8 hidden bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow transition duration-300">
+            Continue Touring
+        </button>
+    </div>
+</div>
+
+<script>
+    // --- Game Data ---
+    const scenarios = [
+        {
+            text: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
+            imageUrl: "https://i.imgur.com/Qq6c0fj.jpeg",
+            options: [
+                { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", isCorrect: true, audioFile: "audio/nimotsu.mp3" }, 
+                { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", translation: "Where is the toilet?", isCorrect: false, audioFile: "audio/toire.mp3" },
+                { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", translation: "How much is this?", isCorrect: false, audioFile: "audio/ikura.mp3" }
+            ],
+        },
+        {
+            text: "You need to get to your hotel. How do you ask the taxi driver, 'Please take me to my hotel?'",
+            imageUrl: "https://i.imgur.com/WjxmkKu.jpeg",
+            options: [
+                { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", translation: "Please take me to my hotel.", isCorrect: true, audioFile: "audio/hoteru.mp3" },
+                { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", translation: "Where is the taxi stand?", isCorrect: false, audioFile: "audio/taxistand.mp3" },
+                { japanese: "元気ですか？", romaji: "Genki desu ka?", translation: "How are you?", isCorrect: false, audioFile: "audio/genki.mp3" }
+            ],
+        },
+        {
+            text: "You arrive at your hotel. How do you tell the front desk, 'I am here to check in'?",
+            imageUrl: "https://i.imgur.com/sAYoQkS.jpeg",
+            options: [
+                { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", translation: "I am here to check in.", isCorrect: true, audioFile: "audio/checkin.mp3" },
+                { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", translation: "Check, please.", isCorrect: false, audioFile: "audio/checkplease.mp3" },
+                { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", translation: "Where is the toilet?", isCorrect: false, audioFile: "audio/toire.mp3" }
+            ],
+        },
+        {
+            text: "You've arrived at your room, how do you say 'I am really hungry'?",
+            imageUrl: "https://i.imgur.com/EIidutG.png",
+            options: [
+                { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", translation: "I'm hungry.", isCorrect: true, audioFile: "audio/hungry.mp3" },
+                { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", translation: "I have a reservation.", isCorrect: false, audioFile: "audio/reservation.mp3" },
+                { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", translation: "I'd like to check in.", isCorrect: false, audioFile: "audio/checkin.mp3" }
+            ],
+        },
+        {
+            text: "You arrive at a local ramen shop, how do you say, 'I would like a bowl of ramen'?",
+            imageUrl: "https://i.imgur.com/8RAKAAT.jpeg",
+            options: [
+                { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", translation: "I would like a bowl of ramen.", isCorrect: true, audioFile: "audio/ramen.mp3" },
+                { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", translation: "Where is a delicious restaurant?", isCorrect: false, audioFile: "audio/restaurant.mp3" },
+                { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", translation: "Check, please.", isCorrect: false, audioFile: "audio/checkplease.mp3" }
+            ],
+        },
+    ];
+
+    let currentScenarioIndex = 0;
+    let score = 0; 
+    let hoverTimeout = null;
+    let currentAudio = null; 
+
+    // UI elements
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const startButton = document.getElementById('start-button');
+    const scenarioImage = document.getElementById('scenario-image');
+    const scenarioText = document.getElementById('scenario-text');
+    const optionsContainer = document.getElementById('options-container');
+    const feedbackText = document.getElementById('feedback-text');
+    const translationText = document.getElementById('translation-text');
+    const nextButton = document.getElementById('next-button');
+    const backgroundMusic = document.getElementById('background-music');
+    const musicToggleButton = document.getElementById('music-toggle-button');
+    const themeToggleButton = document.getElementById('theme-toggle-button');
+    const scoreDisplay = document.getElementById('score-display'); 
+
+    // Set initial music volume
+    backgroundMusic.volume = 0.2;
+
+    // --- Core Functions ---
+
+    /**
+     * Plays the custom MP3 audio file.
+     * @param {string} filePath - The path to the MP3 file (e.g., 'audio/nimotsu.mp3').
+     */
+    function playJapaneseAudio(filePath) {
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+
+        currentAudio = new Audio(filePath);
+        currentAudio.volume = 1.0; 
+        currentAudio.play().catch(e => console.error("Audio playback failed:", e));
+    }
+
+    /**
+     * Fisher-Yates shuffle algorithm
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    /**
+     * Updates the score display.
+     */
+    function updateScoreDisplay() {
+        scoreDisplay.textContent = `Score: ${score}/${scenarios.length}`;
+    }
+
+    /**
+     * Renders the current scenario.
+     */
+    function renderScenario() {
+        if (currentScenarioIndex >= scenarios.length) {
+            endGame();
+            return;
+        }
+
+        const scenario = scenarios[currentScenarioIndex];
+        scenarioText.textContent = scenario.text;
+        optionsContainer.innerHTML = '';
+        feedbackText.textContent = '';
+        nextButton.classList.add('hidden');
+        
+        updateScoreDisplay(); 
+        
+        // Handle image display
+        scenarioImage.src = scenario.imageUrl;
+        scenarioImage.style.display = scenario.imageUrl ? 'block' : 'none';
+
+        // Shuffle the options before rendering
+        const shuffledOptions = shuffleArray([...scenario.options]);
+
+        shuffledOptions.forEach(option => {
+            const wrapper = document.createElement('div');
+            wrapper.className = "flex flex-col items-center w-full";
+            
+            const button = document.createElement('button');
+            button.className = "option-button font-inter hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none transition-all duration-300 transform active:scale-95 text-xl p-4";
+            
+            const japaneseText = document.createElement('span');
+            japaneseText.textContent = option.japanese;
+            japaneseText.className = "text-2xl font-bold";
+
+            const romajiText = document.createElement('span');
+            romajiText.textContent = option.romaji;
+            romajiText.className = "text-base italic text-gray-500 dark:text-gray-300 mt-1";
+
+            button.appendChild(japaneseText);
+            button.appendChild(romajiText);
+
+            button.dataset.isCorrect = option.isCorrect;
+            button.dataset.translation = option.translation;
+            button.dataset.audio = option.audioFile; // Store audio file path
+
+            // --- HOVER AUDIO TRIGGER (MouseEnter and MouseLeave) ---
+            button.addEventListener('mouseenter', () => {
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+                
+                hoverTimeout = setTimeout(() => {
+                    playJapaneseAudio(option.audioFile);
+                }, 300); // 300ms delay for intentional hover
+            });
+
+            button.addEventListener('mouseleave', () => {
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                }
+                // Stop audio immediately when mouse leaves
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+            });
+
+            // Add click event listener for the game choice
+            button.addEventListener('click', handleChoice);
+
+            wrapper.appendChild(button);
+            optionsContainer.appendChild(wrapper);
+        });
+    }
+
+    function handleChoice(event) {
+        const chosenButton = event.currentTarget;
+        const isCorrect = chosenButton.dataset.isCorrect === 'true';
+
+        // Ensure hover audio stops if playing
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+
+
+        // Disable all buttons to prevent further clicks
+        optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        
+        if (isCorrect) {
+            score++; // Increment score
+            updateScoreDisplay(); // Update the display
+
+            feedbackText.textContent = "Correct! 💮 You chose the right phrase. Continue your journey!";
+            feedbackText.className = "text-green-600 dark:text-green-400 font-bold text-xl mt-4";
+            nextButton.classList.remove('hidden');
+            
+            // Highlight all options with their translations
+            optionsContainer.childNodes.forEach(btnWrapper => {
+                const button = btnWrapper.querySelector('button');
+                const translation = button.dataset.translation;
+                
+                // Add correct class to the right button
+                if (button.dataset.isCorrect === 'true') {
+                    button.classList.add('correct');
+                }
+
+                // Append the translation for review
+                let translationDisplay = btnWrapper.querySelector('.translation-display');
+                if (!translationDisplay) {
+                    translationDisplay = document.createElement('p');
+                    translationDisplay.className = "translation-display text-base mt-2 text-gray-700 dark:text-gray-200 font-semibold";
+                    btnWrapper.appendChild(translationDisplay);
+                }
+                translationDisplay.textContent = `[${translation}]`;
+            });
+            
+        } else {
+            feedbackText.textContent = "That's not quite right. Try again.";
+            feedbackText.className = "text-red-600 dark:text-red-400 font-bold text-xl mt-4";
+            
+            // Only disable the incorrect button, allowing re-attempt
+            chosenButton.disabled = true;
+            chosenButton.classList.add('incorrect');
+
+            // Re-enable other buttons, but only those that are not correct
+            optionsContainer.querySelectorAll('button').forEach(btn => {
+                if (btn !== chosenButton && !btn.classList.contains('correct')) {
+                    btn.disabled = false;
+                }
+            });
+        }
+    }
+
+    function nextScenario() {
+        currentScenarioIndex++;
+        renderScenario();
+    }
+
+    function endGame() {
+        // Clear game screen and display completion message
+        gameScreen.innerHTML = `
+            <div class="space-y-6 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Adventure Complete!</h1>
+                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
+                    Your Final Score: ${score} out of ${scenarios.length}!
+                </p>
+                <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">
+                    You've successfully completed your first journey through Japan and mastered essential phrases.
+                    Keep practicing to become a language master!
+                </p>
+                <button id="restart-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                    Start Over
+                </button>
+            </div>
+        `;
+        document.getElementById('restart-button').addEventListener('click', restartGame);
+    }
+
+    function restartGame() {
+        currentScenarioIndex = 0;
+        // Reload the page to reset the state cleanly
+        window.location.reload(); 
+    }
+
+    // --- Initialization and Event Listeners ---
+
+    function initGame() {
+        // Event Listeners for Start and Navigation
+        startButton.addEventListener('click', () => {
+            backgroundMusic.muted = false;
+            backgroundMusic.play().catch(e => console.error("Music playback failed:", e));
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            renderScenario();
+        });
+
+        nextButton.addEventListener('click', nextScenario);
+
+        // Music Toggle
+        musicToggleButton.addEventListener('click', () => {
+            if (backgroundMusic.paused || backgroundMusic.muted) {
+                backgroundMusic.muted = false;
+                backgroundMusic.play();
+                musicToggleButton.textContent = "Music Off";
+            } else {
+                backgroundMusic.pause();
+                backgroundMusic.muted = true;
+                musicToggleButton.textContent = "Music On";
+            }
+        });
+        
+        // Theme Toggle
+        themeToggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const gameContainer = document.getElementById('game-container');
+            // Toggle the card class for dark mode background
+            gameContainer.classList.toggle('card'); 
+
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggleButton.textContent = "Light Mode";
+            } else {
+                themeToggleButton.textContent = "Dark Mode";
+            }
+        });
+    }
+
+    // Run initialization when the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', initGame);
+
+    // Initial check to ensure the start screen is visible on page load
+    window.onload = () => {
+        gameScreen.classList.add('hidden');
+        startScreen.classList.remove('hidden');
+        updateScoreDisplay(); 
+    };
+</script>
+
+</body>
+</html>
