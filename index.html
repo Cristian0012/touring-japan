@@ -21,16 +21,6 @@
         }
         
         /* Container and Card styles */
-        .container {
-            max-width: 800px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            text-align: center;
-        }
         .card {
             background: #ffffff;
             border-radius: 1.5rem;
@@ -95,6 +85,54 @@
             opacity: 1 !important;
         }
 
+        /* Volume Slider Style */
+        #volume-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #d3d3d3;
+            border-radius: 4px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            cursor: pointer;
+        }
+        #volume-slider:hover {
+            opacity: 1;
+        }
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+        body.dark-mode #volume-slider {
+             background: #5a6b81;
+        }
+        body.dark-mode #volume-slider::-webkit-slider-thumb {
+             background: #63b3ed;
+        }
+
+        /* Full Screen Menu Overlay Style */
+        #menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85); /* Dark semi-transparent background */
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body.dark-mode #menu-overlay {
+            background: rgba(0, 0, 0, 0.95);
+        }
+
         /* Override specific Tailwind classes in HTML to force black text */
         .dark\:text-gray-50, .dark\:text-gray-200, .dark\:text-gray-300, .dark\:text-gray-400 {
             color: #000000 !important;
@@ -112,26 +150,65 @@
 <audio id="background-music" src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3" autoplay loop muted></audio>
 
 <div id="game-container" class="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-8 md:p-12 space-y-8 flex flex-col items-center card">
-    <div id="start-screen" class="space-y-6 text-center">
+    
+    <div id="title-menu" class="space-y-6 text-center">
         <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Touring Japan 🏯</h1>
         <img src="https://i.imgur.com/O7Fa5O7.jpeg" alt="Welcome to Japan" class="w-full max-w-sm mx-auto mb-4 rounded-lg shadow-md">
-        <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">Welcome to your adventure! Learn essential Japanese phrases. Hover over the phrases to hear the audio.</p>
-        <button id="start-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-            Start Your Journey
+        
+        <div class="space-y-3">
+            <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">Welcome! Please enter your name to begin your language journey.</p>
+            <input type="text" id="player-name-input" placeholder="Your Name" class="p-3 border-2 border-gray-300 rounded-lg text-center text-xl max-w-xs w-full focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div class="flex flex-col items-center space-y-4 pt-4">
+            <label class="text-sm font-semibold">Background Music Volume:</label>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.2" title="Adjust Background Music Volume" class="w-3/4">
+            <button id="theme-toggle-button-start" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Dark Mode
+            </button>
+        </div>
+        
+        <button id="start-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105" disabled>
+            View Instructions
+        </button>
+        <p id="name-warning" class="text-sm text-red-500 mt-2 hidden">Please enter your name to continue!</p>
+        <button id="continue-saved-button" class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-8 rounded-full shadow-lg transition duration-300 hidden">
+            Continue Saved Tour ($$0 / 5$$)
+        </button>
+    </div>
+
+    <div id="instructions-page" class="w-full space-y-6 hidden text-left">
+        <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-gray-50">How to Play</h2>
+        
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow">
+            <h3 class="text-xl font-semibold mb-2">The Rules:</h3>
+            <ul class="list-disc list-inside space-y-2 text-base">
+                <li>You will face $$5$$ real-world travel scenarios in Japan.</li>
+                <li>Your goal is to choose the correct Japanese phrase for the situation.</li>
+                <li>**Strict Scoring:** You only earn **$$1 \text{ point} / \text{scenario}$** if you choose the correct phrase on your **first try**.</li>
+                <li>**Practice:** You can hover over any phrase (correct or incorrect) to hear the audio.</li>
+            </ul>
+        </div>
+        
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow">
+            <h3 class="text-xl font-semibold mb-2">Checkpoint (Save State):</h3>
+            <p class="text-base">Your progress is automatically saved after every correct answer. You can use the **Menu** button during the game to pause or return to your last save point.</p>
+        </div>
+        
+        <button id="begin-tour-button" class="mt-8 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow transition duration-300">
+            Begin Your Journey!
         </button>
     </div>
 
     <div id="game-screen" class="w-full space-y-6 hidden">
         <div class="flex justify-between items-center w-full">
             <div id="score-display" class="text-lg font-bold text-gray-800 dark:text-gray-200">Score: 0/0</div>
-
-            <button id="music-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                Music Off
-            </button>
-            <button id="theme-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                Dark Mode
+            
+            <button id="menu-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                Menu
             </button>
         </div>
+
         <img id="scenario-image" class="rounded-lg shadow-md mb-4 w-full h-auto object-cover max-h-80" alt="Scenario Image" style="display: none;">
         <div id="scenario-text" class="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-50 leading-relaxed mb-6"></div>
         
@@ -146,6 +223,37 @@
         </button>
     </div>
 </div>
+
+<div id="menu-overlay" class="hidden">
+    <div class="card max-w-lg w-full p-8 md:p-10 space-y-6 text-center">
+        <h2 class="text-4xl font-bold">Game Menu</h2>
+        
+        <button id="resume-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow transition duration-300">
+            Continue Tour
+        </button>
+        
+        <button id="reset-tour-button" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full shadow transition duration-300">
+            Restart Game (Lose Progress)
+        </button>
+
+        <div class="pt-4 border-t border-gray-300 dark:border-gray-600 space-y-4">
+            <h3 class="text-xl font-semibold">Settings</h3>
+            <div class="flex justify-center items-center space-x-4">
+                 <button id="music-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    Mute Music
+                </button>
+                <button id="theme-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    Dark Mode
+                </button>
+            </div>
+            <div class="flex flex-col items-center space-y-2">
+                <label class="text-sm font-semibold">Volume Control:</label>
+                <input type="range" id="volume-slider-menu" min="0" max="1" step="0.05" value="0.2" class="w-3/4">
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script>
     // --- Game Data ---
@@ -199,48 +307,112 @@
 
     let currentScenarioIndex = 0;
     let score = 0; 
+    let playerName = ""; 
     let hoverTimeout = null;
     let currentAudio = null; 
+    let scenarioAttempts = 0; // NEW: Tracks attempts for strict scoring
 
-    // UI elements
-    const startScreen = document.getElementById('start-screen');
+    // UI elements - General
+    const gameContainer = document.getElementById('game-container');
+    const backgroundMusic = document.getElementById('background-music');
+    const menuOverlay = document.getElementById('menu-overlay');
+
+    // UI elements - Screens
+    const titleMenu = document.getElementById('title-menu');
+    const instructionsPage = document.getElementById('instructions-page');
     const gameScreen = document.getElementById('game-screen');
+
+    // UI elements - Menu/Start
+    const playerNameInput = document.getElementById('player-name-input');
+    const nameWarning = document.getElementById('name-warning');
     const startButton = document.getElementById('start-button');
+    const continueSavedButton = document.getElementById('continue-saved-button');
+
+    // UI elements - Game/Nav
+    const optionsContainer = document.getElementById('options-container');
     const scenarioImage = document.getElementById('scenario-image');
     const scenarioText = document.getElementById('scenario-text');
-    const optionsContainer = document.getElementById('options-container');
     const feedbackText = document.getElementById('feedback-text');
-    const translationText = document.getElementById('translation-text');
     const nextButton = document.getElementById('next-button');
-    const backgroundMusic = document.getElementById('background-music');
-    const musicToggleButton = document.getElementById('music-toggle-button');
-    const themeToggleButton = document.getElementById('theme-toggle-button');
     const scoreDisplay = document.getElementById('score-display'); 
+    const menuButton = document.getElementById('menu-button');
 
-    // Set initial music volume
+    // UI elements - Controls (mapped for both start/menu)
+    const musicToggleButton = document.getElementById('music-toggle-button');
+    const themeToggleButtons = [
+        document.getElementById('theme-toggle-button-start'), // Start screen button
+        document.getElementById('theme-toggle-button')        // Menu overlay button
+    ];
+    const volumeSliders = [
+        document.getElementById('volume-slider'),            // Start screen slider
+        document.getElementById('volume-slider-menu')       // Menu overlay slider
+    ];
+
+    // UI elements - Menu Overlay Buttons
+    const resumeButton = document.getElementById('resume-button');
+    const resetTourButton = document.getElementById('reset-tour-button');
+
+
+    // Set initial music volume and muted state
     backgroundMusic.volume = 0.2;
+    backgroundMusic.muted = true; 
 
     // --- Core Functions ---
 
+    function saveCheckpoint() {
+        // Only save checkpoint upon correct answer (before moving to next scenario)
+        const checkpoint = {
+            name: playerName,
+            score: score,
+            index: currentScenarioIndex + 1, // Save index for next scenario
+            completed: currentScenarioIndex + 1 >= scenarios.length ? true : false
+        };
+        localStorage.setItem('japanTourCheckpoint', JSON.stringify(checkpoint));
+    }
+    
+    function loadCheckpoint() {
+        const data = localStorage.getItem('japanTourCheckpoint');
+        if (data) {
+            const checkpoint = JSON.parse(data);
+            if (checkpoint.index < scenarios.length) {
+                playerName = checkpoint.name;
+                score = checkpoint.score;
+                currentScenarioIndex = checkpoint.index;
+                playerNameInput.value = playerName; // Update input field with loaded name
+                
+                // Update continue button text
+                continueSavedButton.textContent = `Continue Tour (${score}/${scenarios.length} completed)`;
+                continueSavedButton.classList.remove('hidden');
+                return true;
+            } else {
+                // Checkpoint exists but game is complete
+                localStorage.removeItem('japanTourCheckpoint'); 
+            }
+        }
+        return false;
+    }
+
+    function toggleScreen(showElement) {
+        // Hide all main content screens
+        titleMenu.classList.add('hidden');
+        instructionsPage.classList.add('hidden');
+        gameScreen.classList.add('hidden');
+        menuOverlay.classList.add('hidden');
+        
+        // Show the requested element
+        showElement.classList.remove('hidden');
+    }
+
     /**
      * Plays the custom MP3 audio file.
-     * @param {string} filePath - The path to the MP3 file (e.g., 'audio/nimotsu.mp3').
      */
     function playJapaneseAudio(filePath) {
-        // Stop any currently playing audio
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-        }
-
+        if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
         currentAudio = new Audio(filePath);
         currentAudio.volume = 1.0; 
         currentAudio.play().catch(e => console.error("Audio playback failed:", e));
     }
 
-    /**
-     * Fisher-Yates shuffle algorithm
-     */
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -249,21 +421,24 @@
         return array;
     }
 
-    /**
-     * Updates the score display.
-     */
     function updateScoreDisplay() {
-        scoreDisplay.textContent = `Score: ${score}/${scenarios.length}`;
+        scoreDisplay.textContent = `Score: ${score}/${currentScenarioIndex} (${scenarios.length} total)`;
+        
+        // Update menu continue button if it exists
+        if (localStorage.getItem('japanTourCheckpoint')) {
+            const checkpoint = JSON.parse(localStorage.getItem('japanTourCheckpoint'));
+            continueSavedButton.textContent = `Continue Saved Tour (${checkpoint.score}/${scenarios.length} total)`;
+        }
     }
 
-    /**
-     * Renders the current scenario.
-     */
     function renderScenario() {
         if (currentScenarioIndex >= scenarios.length) {
             endGame();
             return;
         }
+        
+        // Reset attempt count for the new scenario
+        scenarioAttempts = 0; 
 
         const scenario = scenarios[currentScenarioIndex];
         scenarioText.textContent = scenario.text;
@@ -273,11 +448,9 @@
         
         updateScoreDisplay(); 
         
-        // Handle image display
         scenarioImage.src = scenario.imageUrl;
         scenarioImage.style.display = scenario.imageUrl ? 'block' : 'none';
 
-        // Shuffle the options before rendering
         const shuffledOptions = shuffleArray([...scenario.options]);
 
         shuffledOptions.forEach(option => {
@@ -300,26 +473,21 @@
 
             button.dataset.isCorrect = option.isCorrect;
             button.dataset.translation = option.translation;
-            button.dataset.audio = option.audioFile; // Store audio file path
+            button.dataset.audio = option.audioFile; 
 
-            // --- HOVER AUDIO TRIGGER (MouseEnter and MouseLeave) ---
+            // HOVER AUDIO TRIGGER (MouseEnter and MouseLeave)
             button.addEventListener('mouseenter', () => {
                 if (hoverTimeout) clearTimeout(hoverTimeout);
-                
                 hoverTimeout = setTimeout(() => {
-                    playJapaneseAudio(option.audioFile);
-                }, 300); // 300ms delay for intentional hover
+                    if (!button.disabled) { // Only play audio if button hasn't been chosen yet
+                        playJapaneseAudio(option.audioFile);
+                    }
+                }, 300); 
             });
 
             button.addEventListener('mouseleave', () => {
-                if (hoverTimeout) {
-                    clearTimeout(hoverTimeout);
-                }
-                // Stop audio immediately when mouse leaves
-                if (currentAudio) {
-                    currentAudio.pause();
-                    currentAudio.currentTime = 0;
-                }
+                if (hoverTimeout) { clearTimeout(hoverTimeout); }
+                if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
             });
 
             // Add click event listener for the game choice
@@ -333,12 +501,11 @@
     function handleChoice(event) {
         const chosenButton = event.currentTarget;
         const isCorrect = chosenButton.dataset.isCorrect === 'true';
+        
+        scenarioAttempts++; // Increment attempt counter
 
-        // Ensure hover audio stops if playing
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-        }
+        // Stop hover audio
+        if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
         if (hoverTimeout) clearTimeout(hoverTimeout);
 
 
@@ -346,24 +513,29 @@
         optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
         
         if (isCorrect) {
-            score++; // Increment score
-            updateScoreDisplay(); // Update the display
+            const firstTry = scenarioAttempts === 1;
 
-            feedbackText.textContent = "Correct! 💮 You chose the right phrase. Continue your journey!";
-            feedbackText.className = "text-green-600 dark:text-green-400 font-bold text-xl mt-4";
+            if (firstTry) {
+                score++; // Strict scoring: only award point on first try
+                feedbackText.textContent = `Correct! 🎉 You earned 1 point on your first try, ${playerName}!`;
+                feedbackText.className = "text-green-600 dark:text-green-400 font-bold text-xl mt-4";
+                saveCheckpoint(); // Save the score/index only upon successful answer
+            } else {
+                feedbackText.textContent = `Correct! But this was attempt #${scenarioAttempts}. No point awarded.`;
+                feedbackText.className = "text-yellow-600 dark:text-yellow-400 font-bold text-xl mt-4";
+            }
+            
             nextButton.classList.remove('hidden');
             
-            // Highlight all options with their translations
+            // Highlight options and show translations
             optionsContainer.childNodes.forEach(btnWrapper => {
                 const button = btnWrapper.querySelector('button');
                 const translation = button.dataset.translation;
                 
-                // Add correct class to the right button
                 if (button.dataset.isCorrect === 'true') {
                     button.classList.add('correct');
                 }
 
-                // Append the translation for review
                 let translationDisplay = btnWrapper.querySelector('.translation-display');
                 if (!translationDisplay) {
                     translationDisplay = document.createElement('p');
@@ -374,16 +546,16 @@
             });
             
         } else {
-            feedbackText.textContent = "That's not quite right. Try again.";
+            feedbackText.textContent = `That's not quite right. Try again. (Attempt #${scenarioAttempts})`;
             feedbackText.className = "text-red-600 dark:text-red-400 font-bold text-xl mt-4";
             
             // Only disable the incorrect button, allowing re-attempt
             chosenButton.disabled = true;
             chosenButton.classList.add('incorrect');
 
-            // Re-enable other buttons, but only those that are not correct
+            // Re-enable other buttons, but only those that are not the correct answer
             optionsContainer.querySelectorAll('button').forEach(btn => {
-                if (btn !== chosenButton && !btn.classList.contains('correct')) {
+                if (btn !== chosenButton && btn.dataset.isCorrect !== 'true') {
                     btn.disabled = false;
                 }
             });
@@ -396,82 +568,152 @@
     }
 
     function endGame() {
-        // Clear game screen and display completion message
+        // Clear checkpoint on completion
+        localStorage.removeItem('japanTourCheckpoint'); 
+        
+        const finalMessage = playerName ? `Well done, ${playerName}! You mastered ${score} of ${scenarios.length} phrases.` : `You mastered ${score} of ${scenarios.length} phrases.`;
+
         gameScreen.innerHTML = `
             <div class="space-y-6 text-center">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Adventure Complete!</h1>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Tour Complete!</h1>
                 <p class="text-2xl font-bold text-green-600 dark:text-green-400">
                     Your Final Score: ${score} out of ${scenarios.length}!
                 </p>
                 <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">
-                    You've successfully completed your first journey through Japan and mastered essential phrases.
-                    Keep practicing to become a language master!
+                    ${finalMessage}
+                    Keep practicing your Japanese!
                 </p>
-                <button id="restart-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-                    Start Over
+                <button id="restart-button-end" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                    Start New Game
                 </button>
             </div>
         `;
-        document.getElementById('restart-button').addEventListener('click', restartGame);
+        document.getElementById('restart-button-end').addEventListener('click', () => {
+             // Reset all variables and reload to Title Screen
+            localStorage.removeItem('japanTourCheckpoint');
+            window.location.reload(); 
+        });
     }
 
-    function restartGame() {
-        currentScenarioIndex = 0;
-        // Reload the page to reset the state cleanly
-        window.location.reload(); 
+    function resetGame() {
+        localStorage.removeItem('japanTourCheckpoint');
+        window.location.reload();
+    }
+
+    // --- Control and Setup Functions ---
+    
+    function toggleMusicMute() {
+        backgroundMusic.muted = !backgroundMusic.muted;
+        const newText = backgroundMusic.muted ? "Unmute Music" : "Mute Music";
+        musicToggleButton.textContent = newText;
+    }
+
+    function syncVolume() {
+        const volume = volumeSliders[0].value; // Get volume from main slider
+        backgroundMusic.volume = volume;
+        volumeSliders[1].value = volume; // Sync menu slider
+        
+        // Update mute state based on slider position
+        const isMuted = volume == 0;
+        if (isMuted != backgroundMusic.muted) {
+            backgroundMusic.muted = isMuted;
+            musicToggleButton.textContent = isMuted ? "Unmute Music" : "Mute Music";
+        }
+    }
+    
+    function syncTheme(sourceButton) {
+        document.body.classList.toggle('dark-mode');
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        const newText = isDarkMode ? "Light Mode" : "Dark Mode";
+        
+        // Sync text across all toggle buttons
+        themeToggleButtons.forEach(btn => btn.textContent = newText);
+    }
+    
+    function handleStartScreenButton() {
+        playerName = playerNameInput.value.trim();
+        if (playerName.length === 0) {
+            nameWarning.classList.remove('hidden');
+            return;
+        }
+        
+        nameWarning.classList.add('hidden');
+        toggleScreen(instructionsPage);
+    }
+    
+    function handleBeginTour() {
+        // Unmute and start music on first user interaction
+        backgroundMusic.muted = false;
+        backgroundMusic.volume = volumeSliders[0].value;
+        backgroundMusic.play().catch(e => console.error("Music playback failed:", e));
+        
+        toggleScreen(gameScreen);
+        renderScenario();
+    }
+    
+    function initializeControls() {
+        // Sync volume handlers across all sliders
+        volumeSliders.forEach(slider => {
+            slider.addEventListener('input', syncVolume);
+        });
+        
+        // Sync theme handlers across all buttons
+        themeToggleButtons.forEach(btn => {
+            btn.addEventListener('click', () => syncTheme(btn));
+        });
+        
+        // Initial button/slider state setup
+        const initialVolume = volumeSliders[0].value;
+        backgroundMusic.volume = initialVolume;
+        musicToggleButton.textContent = initialVolume == 0 ? "Unmute Music" : "Mute Music";
+        volumeSliders[1].value = initialVolume; // Sync menu slider volume initially
+        
+        themeToggleButtons.forEach(btn => btn.textContent = document.body.classList.contains('dark-mode') ? "Light Mode" : "Dark Mode");
     }
 
     // --- Initialization and Event Listeners ---
 
     function initGame() {
-        // Event Listeners for Start and Navigation
-        startButton.addEventListener('click', () => {
-            backgroundMusic.muted = false;
-            backgroundMusic.play().catch(e => console.error("Music playback failed:", e));
-            startScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            renderScenario();
-        });
-
-        nextButton.addEventListener('click', nextScenario);
-
-        // Music Toggle
-        musicToggleButton.addEventListener('click', () => {
-            if (backgroundMusic.paused || backgroundMusic.muted) {
-                backgroundMusic.muted = false;
-                backgroundMusic.play();
-                musicToggleButton.textContent = "Music Off";
-            } else {
-                backgroundMusic.pause();
-                backgroundMusic.muted = true;
-                musicToggleButton.textContent = "Music On";
-            }
-        });
+        // Load any saved checkpoint immediately
+        const hasCheckpoint = loadCheckpoint();
         
-        // Theme Toggle
-        themeToggleButton.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const gameContainer = document.getElementById('game-container');
-            // Toggle the card class for dark mode background
-            gameContainer.classList.toggle('card'); 
-
-            if (document.body.classList.contains('dark-mode')) {
-                themeToggleButton.textContent = "Light Mode";
-            } else {
-                themeToggleButton.textContent = "Dark Mode";
-            }
+        initializeControls(); // Setup all shared control handlers (volume, theme)
+        
+        // --- Navigation Handlers ---
+        
+        // Title Menu Handlers
+        playerNameInput.addEventListener('input', () => {
+            const name = playerNameInput.value.trim();
+            startButton.disabled = name.length === 0;
+            if (name.length > 0) { nameWarning.classList.add('hidden'); }
         });
+        startButton.addEventListener('click', handleStartScreenButton);
+        continueSavedButton.addEventListener('click', handleBeginTour); // Starts tour from saved index
+        
+        // Instructions Page Handler
+        document.getElementById('begin-tour-button').addEventListener('click', handleBeginTour);
+        
+        // Game Screen Menu Handler
+        menuButton.addEventListener('click', () => toggleScreen(menuOverlay));
+        
+        // Menu Overlay Handlers
+        resumeButton.addEventListener('click', () => toggleScreen(gameScreen));
+        resetTourButton.addEventListener('click', resetGame); 
+        
+        // --- Initial Screen Load ---
+        
+        if (hasCheckpoint) {
+            // If a checkpoint was loaded, start by showing the Title Menu (where the Continue button is visible)
+            toggleScreen(titleMenu);
+        } else {
+            // If no checkpoint, ensure start button is disabled and show Title Menu
+            startButton.disabled = true;
+            toggleScreen(titleMenu);
+        }
     }
 
-    // Run initialization when the DOM is fully loaded
     document.addEventListener('DOMContentLoaded', initGame);
 
-    // Initial check to ensure the start screen is visible on page load
-    window.onload = () => {
-        gameScreen.classList.add('hidden');
-        startScreen.classList.remove('hidden');
-        updateScoreDisplay(); 
-    };
 </script>
 
 </body>
