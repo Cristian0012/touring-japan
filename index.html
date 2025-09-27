@@ -99,17 +99,17 @@
 </head>
 <body>
     <!-- Audio Elements -->
-    <!-- This URL is absolute and should work fine when deployed -->
+    <!-- BGM URL verified: absolute path, ready for deployment -->
     <audio id="bgm" loop src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3"></audio>
     <!-- SFX will use relative paths (audio/*.mp3) - ensure 'audio' folder is deployed! -->
-    <audio id="sfx" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio> 
+    <audio id="sfx" src=""></audio> 
 
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="container-content w-full">
             
             <header class="text-center mb-10">
                 <h1 class="text-5xl font-extrabold text-red-400 mb-2">GTA: Global Translation Adventures</h1>
-                <p class="text-gray-400 text-sm" id="user-info">Loading user data...</p>
+                <p class="text-gray-400 text-sm" id="user-info">Initializing...</p>
             </header>
 
             <!-- --------------------------------------- -->
@@ -338,15 +338,37 @@
 
     <!-- Firebase SDKs and Logic -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Attempt to import Firebase modules. If they fail (e.g., when deployed on GitHub Pages), 
+        // the app relies on the local persistence mode set up below.
+        let initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, onSnapshot, runTransaction, setLogLevel;
 
-        // Set log level for debugging
-        setLogLevel('Debug');
+        try {
+            const firebaseModules = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+            initializeApp = firebaseModules.initializeApp;
+
+            const authModules = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+            getAuth = authModules.getAuth;
+            signInAnonymously = authModules.signInAnonymously;
+            signInWithCustomToken = authModules.signInWithCustomToken;
+            onAuthStateChanged = authModules.onAuthStateChanged;
+
+            const firestoreModules = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+            getFirestore = firestoreModules.getFirestore;
+            doc = firestoreModules.doc;
+            setDoc = firestoreModules.setDoc;
+            onSnapshot = firestoreModules.onSnapshot;
+            runTransaction = firestoreModules.runTransaction;
+            setLogLevel = firestoreModules.setLogLevel;
+
+            // Only set log level if imports succeeded
+            setLogLevel('Debug');
+        } catch (e) {
+            console.warn("Firebase modules failed to load. Running in Local Persistence Mode.");
+        }
+
 
         // --- GLOBAL VARIABLES & FIREBASE SETUP ---
+        const LOCAL_STORAGE_KEY = 'gta_progress_v1';
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -395,8 +417,6 @@
         const ADVENTURE_NAMES = ["Discovery", "Exploration", "Challenge", "Expedition", "Summit"];
 
         // --- EXTRACTED JAPAN PHRASE CONTENT MAP (Used for all options) ---
-        // NOTE: These relative audio paths (e.g., audio/nimotsu.mp3) assume an 'audio' folder 
-        // exists at the root of your GitHub Pages deployment, next to this HTML file.
         const JAPAN_PHRASE_CONTENT = {
             "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3", translation: "Where is the baggage?" },
             "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3", translation: "Please take me to the hotel." },
@@ -490,7 +510,32 @@
         };
         // --- END ADVENTURE CONTENT ---
 
-        // --- UI UTILITY FUNCTIONS (UNCHANGED) ---
+        // --- LOCAL PERSISTENCE FUNCTIONS (NEW) ---
+
+        function saveLocalData() {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userData));
+            } catch (e) {
+                console.error("Error saving to local storage:", e);
+            }
+        }
+
+        function loadLocalData() {
+            try {
+                const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    // Merge loaded data with default structure to prevent missing keys
+                    userData.progress = parsedData.progress || {};
+                    userData.profile = parsedData.profile || { name: 'Traveler', email: '' };
+                    userData.settings = { ...DEFAULT_SETTINGS, ...parsedData.settings };
+                }
+            } catch (e) {
+                console.error("Error loading local storage data:", e);
+            }
+        }
+        
+        // --- UI UTILITY FUNCTIONS (MOVED TO TOP FOR SAFE ACCESS) ---
 
         function showMessage(text, isError = false) {
             const box = document.getElementById('message-box');
@@ -502,8 +547,11 @@
                 box.classList.add('opacity-0');
             }, 3000);
         }
+        // Expose globally for module-internal and HTML onclick access
+        window.showMessage = showMessage; 
 
-        window.showView = (viewId) => {
+
+        function showView(viewId) {
             const validViews = ['title', 'countries', 'adventures', 'tracker', 'profile', 'settings', 'game'];
             validViews.forEach(id => {
                 const el = document.getElementById(`view-${id}`);
@@ -527,38 +575,50 @@
             } else if (viewId === 'settings') {
                 renderSettingsView();
             }
-        };
-
+        }
+        // Expose globally for HTML onclick access
+        window.showView = showView;
+        
+        // Expose other commonly clicked functions early
         window.handleStartJourney = function() {
             // Attempt to start BGM immediately upon user interaction
             if (bgmAudio && userData.settings.isMusicPlaying) {
-                 bgmAudio.play().catch(e => console.log("BGM playback blocked (needs user interaction)."));
+                 bgmAudio.play().catch(e => console.log("BGM playback blocked (needs user interaction).", e));
             }
             showView('countries');
         }
 
 
-        // --- FIREBASE INITIALIZATION & AUTH ---
+        // --- FIREBASE INITIALIZATION & AUTH (MODIFIED FOR FALLBACK) ---
 
         async function initializeFirebase() {
             const userInfoEl = document.getElementById('user-info');
-
-            // --- 1. HANDLE EXTERNAL DEPLOYMENT (GitHub Pages) ---
-            if (!firebaseConfig) {
-                // If firebaseConfig is missing (which is expected outside the Canvas environment)
-                userInfoEl.textContent = 'Data Persistence: Disabled (Local Mode)';
-                // We set isAuthReady to true so the app runs without database access
+            
+            // --- 1. LOCAL PERSISTENCE MODE (GitHub Pages) ---
+            if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                userId = localStorage.getItem('localUserId') || 'local-' + Math.random().toString(36).substring(2, 9);
+                localStorage.setItem('localUserId', userId);
+                loadLocalData(); 
                 isAuthReady = true;
-                return;
+                userInfoEl.textContent = `Traveler: ${userData.profile.name} | Data Persistence: Local Mode`;
+                initializeAudio();
+                recalculateAndRender();
+                return; 
             }
-            // --- END EXTERNAL DEPLOYMENT HANDLING ---
+            // --- END LOCAL PERSISTENCE MODE ---
+
+            // --- 2. FIREBASE/CANVAS MODE ---
+            userInfoEl.textContent = 'Connecting to Firebase...';
             
-            // If running inside the Canvas, proceed with Auth
-            userInfoEl.textContent = 'Loading user data... (Connecting to Firebase)';
-            
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
+            if (initializeApp && getAuth) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            } else {
+                 userInfoEl.textContent = 'Firebase modules failed to initialize.';
+                 return;
+            }
+
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
@@ -566,7 +626,6 @@
                         if (initialAuthToken) {
                             await signInWithCustomToken(auth, initialAuthToken);
                         } else {
-                            // Only sign in anonymously if an auth token is not provided (outside Canvas environment)
                             await signInAnonymously(auth);
                         }
                         userId = auth.currentUser.uid;
@@ -580,21 +639,14 @@
                 }
                 
                 isAuthReady = true;
-                userInfoEl.textContent = `User ID: ${userId.substring(0, 4)}...`;
+                userInfoEl.textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}... (Firebase)`;
                 startRealtimeListener();
             });
         }
 
-        // --- REAL-TIME DATA LISTENER & HANDLER (MODIFIED FOR LOCAL MODE FALLBACK) ---
+        // --- REAL-TIME DATA LISTENER & HANDLER ---
 
         function startRealtimeListener() {
-            // If running in local mode (outside Canvas), skip real-time listener
-            if (!db) {
-                // Fallback to in-memory/localStorage logic if needed, but for now, just skip.
-                console.log("Firebase not initialized. Running in local data simulation mode.");
-                return;
-            }
-            
             if (!isAuthReady || !db || !userId) return;
 
             const docRef = doc(db, progressPath(userId));
@@ -602,20 +654,14 @@
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Load data
                     userData.progress = data.progress || {};
                     userData.profile = data.profile || { name: 'Traveler', email: '' };
-                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings }; // Merge with defaults
+                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings };
                     
-                    // Initialize audio settings
                     initializeAudio();
-
-                    // Update global info header with name
-                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}...`;
-
+                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}... (Firebase)`;
                     recalculateAndRender();
                 } else {
-                    // Initialize if no document exists
                     userData = { progress: {}, profile: { name: 'Traveler', email: '' }, settings: DEFAULT_SETTINGS };
                     setDoc(docRef, userData, { merge: true });
                     recalculateAndRender();
@@ -632,7 +678,6 @@
             let completedCount = 0;
             let currentCountryIndex = 0;
             
-            // Find the highest completed country
             for (let i = 0; i < PROGRESS_MAP.length; i++) {
                 const countryId = PROGRESS_MAP[i].id;
                 let countryBadgesCompleted = 0;
@@ -677,7 +722,6 @@
             };
         }
 
-        // Helper to check if a country is unlocked
         function isCountryUnlocked(countryId) {
             const { currentCountryIndex } = getProgressInfo();
             const countryIndex = PROGRESS_MAP.findIndex(c => c.id === countryId);
@@ -697,21 +741,9 @@
         }
 
 
-        // --- FIREBASE TRANSACTION: COMPLETE ADVENTURE (UPDATED RETURN FLOW) ---
+        // --- FIREBASE/LOCAL TRANSACTION: COMPLETE ADVENTURE ---
         
         window.completeAdventure = async function(countryId, adventureIndex) {
-            if (!db) {
-                showMessage('Progress not saved: Firebase is disabled in this environment.', true);
-                // Simulate local completion for UI feedback
-                const adventureKey = `${countryId}_Adventure${adventureIndex}`;
-                userData.progress[adventureKey] = true;
-                recalculateAndRender();
-                showView('adventures'); 
-                return;
-            }
-            
-            if (!isAuthReady || !db || !userId) return;
-
             const adventureKey = `${countryId}_Adventure${adventureIndex}`;
             if (userData.progress[adventureKey]) { 
                 showMessage(`Badge already earned for ${countryId} Adventure ${adventureIndex}!`, true);
@@ -719,27 +751,30 @@
                 return;
             }
 
-            const docRef = doc(db, progressPath(userId));
-
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const docSnap = await transaction.get(docRef);
-                    const data = docSnap.data() || { progress: {}, profile: {} };
-                    let progress = data.progress;
-                    
-                    progress[adventureKey] = true;
-                    
-                    transaction.update(docRef, { progress: progress });
-                });
-                
+            if (db) {
+                // --- FIREBASE SAVE ---
+                const docRef = doc(db, progressPath(userId));
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const docSnap = await transaction.get(docRef);
+                        let progress = (docSnap.data() || { progress: {} }).progress;
+                        progress[adventureKey] = true;
+                        transaction.update(docRef, { progress: progress });
+                    });
+                    showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
+                } catch (e) {
+                    console.error("Firebase Transaction failed: ", e);
+                    showMessage('Error completing adventure in Firebase.', true);
+                }
+            } else {
+                // --- LOCAL SAVE ---
+                userData.progress[adventureKey] = true;
+                saveLocalData();
                 showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
-                
-                showView('adventures'); 
-                
-            } catch (e) {
-                console.error("Transaction failed: ", e);
-                showMessage('Error completing adventure.', true);
+                recalculateAndRender();
             }
+
+            showView('adventures'); 
         }
 
         // --- PROFILE, SETTINGS, AUDIO LOGIC (MODIFIED FOR LOCAL/FIREBASE SAVE) ---
@@ -759,26 +794,28 @@
             userData.profile = { name: newName, email: newEmail };
             
             if (db) {
+                // --- FIREBASE SAVE ---
                 const docRef = doc(db, progressPath(userId));
                 try {
-                    await setDoc(docRef, { 
-                        profile: userData.profile
-                    }, { merge: true });
+                    await setDoc(docRef, { profile: userData.profile }, { merge: true });
                     showMessage('Profile saved successfully!');
                 } catch (e) {
-                    console.error("Error saving profile:", e);
+                    console.error("Error saving profile to Firebase:", e);
                     showMessage('Failed to save profile.', true);
                 }
             } else {
-                 showMessage('Profile updated locally (Firebase disabled).');
-                 document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: Disabled (Local Mode)`;
+                 // --- LOCAL SAVE ---
+                 saveLocalData();
+                 document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | Data Persistence: Local Mode`;
+                 showMessage('Profile updated locally.');
             }
         }
 
         function renderProfileView() {
             document.getElementById('profile-name-input').value = userData.profile.name || '';
             document.getElementById('profile-email-input').value = userData.profile.email || '';
-            document.getElementById('profile-user-id').textContent = userId || 'N/A (Local Mode)';
+            const persistenceMode = db ? `ID: ${userId.substring(0, 4)}... (Firebase)` : 'Local Mode (Browser Storage)';
+            document.getElementById('profile-user-id').textContent = persistenceMode;
         }
 
         async function saveSettings() {
@@ -787,9 +824,11 @@
                 try {
                      await setDoc(docRef, { settings: userData.settings }, { merge: true });
                 } catch (e) {
-                    console.error("Failed to save settings:", e);
+                    console.error("Failed to save settings to Firebase:", e);
                     showMessage('Failed to save settings.', true);
                 }
+            } else {
+                saveLocalData();
             }
         }
 
@@ -799,7 +838,7 @@
             
             if (bgmAudio) {
                 if (isPlaying) {
-                    // Start playback attempt here on user interaction
+                    // Attempt playback here to defeat autoplay block
                     bgmAudio.play().catch(e => console.error("BGM Play failed, user interaction needed.", e));
                 } else {
                     bgmAudio.pause();
@@ -826,10 +865,7 @@
         }
         
         function initializeAudio() {
-            if (bgmAudio) {
-                bgmAudio.volume = userData.settings.musicVolume;
-                // Do not auto-play here, wait for user interaction (handleStartJourney or toggleMusic)
-            }
+            if (bgmAudio) bgmAudio.volume = userData.settings.musicVolume;
             if (sfxAudio) sfxAudio.volume = userData.settings.sfxVolume;
         }
 
@@ -860,7 +896,7 @@
         }
         
         
-        // --- HOVER AUDIO LOGIC (MODIFIED FOR MISSING FILE CHECK) ---
+        // --- HOVER AUDIO LOGIC ---
         let hoverAudioTimeout = null;
 
         window.stopAudio = function() {
@@ -874,11 +910,11 @@
         window.playPronunciation = function(audioPath) {
             if (!audioPath) return;
 
-            // Simple check to ensure we are trying to load an actual file
+            // This is the critical line: we set the source and try to play.
             if (sfxAudio && audioPath.startsWith('audio/')) {
                 sfxAudio.src = audioPath; 
                 sfxAudio.currentTime = 0; 
-                sfxAudio.play().catch(e => console.log(`Pronunciation playback blocked or file not found for ${audioPath}.`, e));
+                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}. Please check file location.`, e));
             } else {
                 console.log(`Audio path invalid or missing: ${audioPath}`);
             }
@@ -911,17 +947,14 @@
                 sceneCount: details.scenes.length 
             };
             
-            // Set adventure metadata
             document.getElementById('game-title').textContent = details.title;
             document.getElementById('game-subtitle').textContent = `Country: ${countryId} | Adventure ${adventureIndex}`;
             
-            // Set image source
             document.getElementById('scenario-image').src = details.image;
             document.getElementById('scenario-image').onerror = () => {
                 document.getElementById('scenario-image').src = 'https://placehold.co/400x200/555/white?text=IMAGE+LOAD+ERROR';
             };
 
-            // Setup the adventure completion button
             const isAdventureCompleted = userData.progress[adventureKey];
             const completionBtn = document.getElementById('complete-adventure-btn');
             
@@ -931,7 +964,6 @@
                 completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
                 completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                // Will be enabled only after all scenes are complete
                 completionBtn.onclick = () => window.completeAdventure(countryId, adventureIndex);
                 completionBtn.disabled = true;
                 completionBtn.textContent = 'COMPLETE ADVENTURE AND EARN BADGE';
@@ -939,7 +971,6 @@
                 completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
             
-            // Start the first scene
             showView('game');
             renderQuizScene(0);
         }
@@ -960,31 +991,26 @@
             const scene = details.scenes[sceneIndex];
             activeAdventure.sceneIndex = sceneIndex;
             
-            // Reset UI elements
             document.getElementById('quiz-feedback').classList.add('hidden');
-            document.getElementById('next-scene-btn').classList.add('hidden'); // Hide Next button for a new scene
+            document.getElementById('next-scene-btn').classList.add('hidden');
             document.getElementById('quiz-question-text').textContent = scene.question;
             const optionsEl = document.getElementById('quiz-options');
             optionsEl.innerHTML = '';
 
-            // Combine correct and incorrect options
             let options = [];
             
             const allPhraseKeys = [scene.correct, ...scene.options];
             
             allPhraseKeys.forEach(key => {
-                // Determine if this is the correct answer
                 const isCorrect = key === scene.correct;
                 
                 if (activeAdventure.countryId === 'Japan' && JAPAN_PHRASE_CONTENT[key]) {
                     options.push({ key, correct: isCorrect });
                 } else if (activeAdventure.countryId !== 'Japan') {
-                    // Fallback for placeholder countries
                     options.push({ key, correct: isCorrect });
                 }
             });
             
-            // Shuffle the display order of options
             options = shuffleArray(options);
 
             options.forEach(option => {
@@ -1011,7 +1037,6 @@
                 optionsEl.appendChild(button);
             });
             
-            // Update next scene button text
             const nextBtn = document.getElementById('next-scene-btn');
             const currentSceneNum = sceneIndex + 1;
             
@@ -1036,7 +1061,6 @@
                 messageEl.textContent = "Correct! You successfully communicated the phrase. 🎉";
                 messageEl.classList.replace('text-red-400', 'text-green-400');
                 
-                // 1. Disable all buttons and reveal translations
                 document.querySelectorAll('#quiz-options button').forEach(btn => {
                     btn.disabled = true;
                     btn.classList.add('revealed');
@@ -1047,21 +1071,17 @@
                     }
                 });
                 
-                // 2. Enable next button
                 document.getElementById('next-scene-btn').classList.remove('hidden');
                 
             } else {
                 messageEl.textContent = "Incorrect. That phrase has a different meaning. Try again.";
                 messageEl.classList.replace('text-green-400', 'text-red-400');
                 
-                // 1. Mark selected button as incorrect and disable it
                 selectedButton.classList.add('incorrect');
                 selectedButton.disabled = true;
                 
-                // 2. Hide next button (if it was visible)
                 document.getElementById('next-scene-btn').classList.add('hidden');
                 
-                // 3. Ensure non-selected buttons that aren't already marked incorrect are still clickable
                 document.querySelectorAll('#quiz-options button').forEach(btn => {
                     if (btn !== selectedButton && !btn.classList.contains('incorrect') && !btn.classList.contains('correct')) {
                          btn.disabled = false; 
@@ -1074,16 +1094,13 @@
             const nextIndex = activeAdventure.sceneIndex + 1;
             
             if (nextIndex < activeAdventure.sceneCount) {
-                // Move to next scene
                 renderQuizScene(nextIndex);
             } else {
-                // All scenes complete, enable adventure completion button
                 const completionBtn = document.getElementById('complete-adventure-btn');
                 completionBtn.disabled = false;
                 completionBtn.classList.remove('bg-gray-700', 'opacity-50', 'cursor-not-allowed');
                 completionBtn.classList.add('bg-green-600', 'hover:bg-green-700');
                 
-                // Hide feedback and next scene button
                 document.getElementById('quiz-feedback').classList.add('hidden');
                 document.getElementById('quiz-options').innerHTML = `<p class="text-xl font-semibold text-green-400 text-center">All ${activeAdventure.sceneCount} communication steps mastered! Click the button below to earn your badge.</p>`;
                 document.getElementById('quiz-question-text').textContent = "Adventure Mastered!";
@@ -1134,7 +1151,6 @@
             const country = PROGRESS_MAP.find(c => c.id === currentSelectedCountryId);
             if (!country) return; 
             
-            const { currentCountryBadgesCompleted } = getProgressInfo();
             const adventureListEl = document.getElementById('adventure-list');
             
             document.getElementById('current-rank-header').innerHTML = 
@@ -1147,7 +1163,8 @@
                 const adventureKey = `${country.id}_Adventure${adventureNumber}`;
                 const isCompleted = userData.progress[adventureKey] || false; 
                 
-                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`] || false;
+                // An adventure is unlocked if it's the first adventure (i=0) OR the previous one is completed
+                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`]; 
                 
                 const isReadyToPlay = isUnlocked && !isCompleted;
                 
@@ -1230,11 +1247,15 @@
         }
 
 
-        // --- START APPLICATION (UNCHANGED) ---
-        window.onload = () => {
+        // --- START APPLICATION ---
+        function initApp() {
+            // This function is now the safe entry point, called after the module loads.
             showView('title'); 
             initializeFirebase();
-        };
+        }
+
+        // Call the initialization function after the module finishes loading
+        initApp();
 
     </script>
 </body>
