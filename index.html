@@ -55,61 +55,32 @@
             margin-bottom: 1rem;
         }
         
-        /* Interactive Phrase Boxes / Quiz Options */
-        .quiz-option-button {
+        /* Interactive Phrase Boxes */
+        .phrase-button {
             text-align: center;
             border-radius: 0.75rem;
             background-color: #1f2937; /* Gray 800 */
             border: 1px solid #374151; /* Gray 700 */
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
         }
-        .quiz-option-button:hover:not([disabled]) {
-            background-color: #2b394d; 
+        .phrase-button:hover:not([disabled]) {
             transform: scale(1.03);
             box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); /* Red 500 shadow */
         }
-        .quiz-option-button.correct {
-            background-color: #10b981 !important; /* Green 500 */
-            border-color: #059669 !important; /* Green 600 */
-        }
-        .quiz-option-button.incorrect {
-            background-color: #dc2626 !important; /* Red 600 */
-            border-color: #b91c1c !important; /* Red 700 */
-        }
-        .quiz-option-button:disabled {
-            cursor: not-allowed;
-        }
-        .quiz-option-button .translation {
-            display: none;
-            color: #ccc;
-        }
-        .quiz-option-button.revealed .translation {
-            display: block;
-        }
-        .phrase-box {
-            min-height: 120px; /* Ensure visual consistency */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
     </style>
 </head>
 <body>
     <!-- Audio Elements -->
-    <!-- BGM URL verified: absolute path, ready for deployment -->
-    <audio id="bgm" loop src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3"></audio>
-    <!-- SFX will use relative paths (audio/*.mp3) - ensure 'audio' folder is deployed! -->
-    <audio id="sfx" src=""></audio> 
+    <audio id="bgm" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+    <!-- SFX will be played on demand -->
+    <audio id="sfx" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio> 
 
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="container-content w-full">
             
             <header class="text-center mb-10">
                 <h1 class="text-5xl font-extrabold text-red-400 mb-2">GTA: Global Translation Adventures</h1>
-                <p class="text-gray-400 text-sm" id="user-info">Initializing...</p>
+                <p class="text-gray-400 text-sm" id="user-info">Loading user data...</p>
             </header>
 
             <!-- --------------------------------------- -->
@@ -119,7 +90,7 @@
                 <h2 class="text-3xl font-semibold text-white">Welcome, Traveler!</h2>
                 <p class="text-gray-400">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
                 
-                <button id="startButton" onclick="handleStartJourney()"
+                <button onclick="showView('countries')"
                     class="w-full md:w-auto px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
                     Start Your Journey
                 </button>
@@ -302,28 +273,18 @@
                 
                 <h2 class="text-3xl font-bold mb-4 text-yellow-400" id="game-title">Adventure Title</h2>
                 <p class="text-gray-400 mb-8" id="game-subtitle">Country: Japan | Adventure 1</p>
-                <p class="text-xl font-bold text-white mb-4" id="quiz-question-text">Question Text Goes Here</p>
 
                 <div class="rank-card p-6 rounded-xl space-y-4">
                     <!-- Image Placeholder -->
                     <img id="scenario-image" class="scenario-image" alt="Scenario Context Image" src="">
                     
-                    <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <!-- Quiz buttons injected here -->
-                    </div>
-                    
-                    <!-- Feedback and Next Scene button -->
-                    <div id="quiz-feedback" class="pt-4 border-t border-gray-700 hidden">
-                        <p id="feedback-message" class="text-xl font-bold mb-3"></p>
-                        <button id="next-scene-btn" onclick="nextScene()"
-                                class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition duration-200">
-                            Continue Touring (1/5 Scenes Complete)
-                        </button>
+                    <div id="game-scenario" class="space-y-3">
+                        <!-- Scenario steps dynamically loaded here -->
                     </div>
                 </div>
 
-                <button id="complete-adventure-btn" disabled
-                    class="w-full mt-8 px-10 py-4 bg-gray-700 text-white font-bold rounded-xl shadow-lg transition duration-200 opacity-50 cursor-not-allowed">
+                <button id="complete-scenario-btn"
+                    class="w-full mt-8 px-10 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
                     COMPLETE ADVENTURE AND EARN BADGE
                 </button>
             </div>
@@ -338,37 +299,15 @@
 
     <!-- Firebase SDKs and Logic -->
     <script type="module">
-        // Attempt to import Firebase modules. If they fail (e.g., when deployed on GitHub Pages), 
-        // the app relies on the local persistence mode set up below.
-        let initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, onSnapshot, runTransaction, setLogLevel;
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        try {
-            const firebaseModules = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-            initializeApp = firebaseModules.initializeApp;
-
-            const authModules = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-            getAuth = authModules.getAuth;
-            signInAnonymously = authModules.signInAnonymously;
-            signInWithCustomToken = authModules.signInWithCustomToken;
-            onAuthStateChanged = authModules.onAuthStateChanged;
-
-            const firestoreModules = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-            getFirestore = firestoreModules.getFirestore;
-            doc = firestoreModules.doc;
-            setDoc = firestoreModules.setDoc;
-            onSnapshot = firestoreModules.onSnapshot;
-            runTransaction = firestoreModules.runTransaction;
-            setLogLevel = firestoreModules.setLogLevel;
-
-            // Only set log level if imports succeeded
-            setLogLevel('Debug');
-        } catch (e) {
-            console.warn("Firebase modules failed to load. Running in Local Persistence Mode.");
-        }
-
+        // Set log level for debugging
+        setLogLevel('Debug');
 
         // --- GLOBAL VARIABLES & FIREBASE SETUP ---
-        const LOCAL_STORAGE_KEY = 'gta_progress_v1';
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -389,12 +328,7 @@
         }; 
         
         let currentSelectedCountryId = 'Japan'; 
-        let activeAdventure = { 
-            countryId: null, 
-            adventureIndex: null, 
-            sceneIndex: 0, 
-            sceneCount: 0 
-        };
+        let activeScenario = { countryId: null, adventureIndex: null };
 
         // Firestore path for user's game state
         const progressPath = (uid) => `artifacts/${appId}/users/${uid}/game_progress/travel_data`;
@@ -416,126 +350,215 @@
         
         const ADVENTURE_NAMES = ["Discovery", "Exploration", "Challenge", "Expedition", "Summit"];
 
-        // --- EXTRACTED JAPAN PHRASE CONTENT MAP (Used for all options) ---
+        // --- EXTRACTED JAPAN PHRASE CONTENT MAP ---
+        // NOTE: The audio paths are now RELATIVE to where this HTML file is hosted (e.g., your GitHub Pages root).
+        // If audio doesn't play, you must replace these with the full ABSOLUTE URL (e.g., https://yourusername.github.io/repo/audio/nimotsu.mp3)
         const JAPAN_PHRASE_CONTENT = {
-            "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3", translation: "Where is the baggage?" },
-            "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3", translation: "Please take me to the hotel." },
-            "Say 'I would like to check in' to the hotel clerk.": { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", audio: "audio/checkin.mp3", translation: "I would like to check in." },
-            "Say 'I am really hungry.'": { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", audio: "audio/hungry.mp3", translation: "I'm hungry." },
-            "Say 'I would like a bowl of ramen.'": { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", audio: "audio/ramen.mp3", translation: "I would like a bowl of ramen." },
-            "Say 'Check, please.'": { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", audio: "audio/checkplease.mp3", translation: "Check, please." },
-            "Where is the toilet?": { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", audio: "audio/toire.mp3", translation: "Where is the toilet?" },
-            "How much is this?": { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", audio: "audio/ikura.mp3", translation: "How much is this?" },
-            "Where is the taxi stand?": { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", audio: "audio/taxistand.mp3", translation: "Where is the taxi stand?" },
-            "How are you?": { japanese: "元気ですか？", romaji: "Genki desu ka?", audio: "audio/genki.mp3", translation: "How are you?" },
-            "Where is a delicious restaurant?": { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", audio: "audio/restaurant.mp3", translation: "Where is a delicious restaurant?" },
-            "I have a reservation.": { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", audio: "audio/reservation.mp3", translation: "I have a reservation." },
-            "Order Miso Ramen and a beer.": { japanese: "味噌ラーメンとビールをお願いします。", romaji: "Miso rāmen to biiru o onegai shimasu.", audio: "audio/miso_ramen.mp3", translation: "Miso ramen and beer, please." },
-            "Say 'Thank you for the meal' after eating.": { japanese: "ごちそうさまでした。", romaji: "Gochisōsama deshita.", audio: "audio/gochisosama.mp3", translation: "Thank you for the meal (I am finished)." },
-            "Ask for the nearest subway station.": { japanese: "一番近い駅はどこですか？", romaji: "Ichiban chikai eki wa doko desu ka?", audio: "audio/chikai_eki.mp3", translation: "Where is the nearest subway station?" },
+            "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3" },
+            "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3" },
+            "Say 'I would like to check in' to the hotel clerk.": { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", audio: "audio/checkin.mp3" },
+            "Say 'I am really hungry.'": { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", audio: "audio/hungry.mp3" },
+            "Say 'I would like a bowl of ramen.'": { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", audio: "audio/ramen.mp3" },
+            "Say 'Check, please.'": { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", audio: "audio/checkplease.mp3" },
+            "Where is the toilet?": { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", audio: "audio/toire.mp3" },
+            "How much is this?": { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", audio: "audio/ikura.mp3" },
+            "Where is the taxi stand?": { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", audio: "audio/taxistand.mp3" },
+            "How are you?": { japanese: "元気ですか？", romaji: "Genki desu ka?", audio: "audio/genki.mp3" },
+            "Where is a delicious restaurant?": { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", audio: "audio/restaurant.mp3" },
+            "I have a reservation.": { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", audio: "audio/reservation.mp3" },
+            "Order Miso Ramen and a beer.": { japanese: "味噌ラーメンとビールをお願いします。", romaji: "Miso rāmen to biiru o onegai shimasu.", audio: "audio/miso_ramen.mp3" },
+            "Say 'Thank you for the meal' after eating.": { japanese: "ごちそうさまでした。", romaji: "Gochisōsama deshita.", audio: "audio/gochisosama.mp3" },
+            "Ask for the nearest subway station.": { japanese: "一番近い駅はどこですか？", romaji: "Ichiban chikai eki wa doko desu ka?", audio: "audio/chikai_eki.mp3" },
         };
 
 
         // --- ADVENTURE CONTENT: DEFINE YOUR SCENARIO DETAILS HERE ---
         const ADVENTURE_DETAILS = {
-            // ========================= JAPAN ADVENTURES (5 SCENES) =========================
+            // ========================= JAPAN ADVENTURES (5) =========================
             'Japan_Adventure1': {
-                title: "Tokyo Arrival: Check-In & Transport",
-                image: "https://i.imgur.com/Qq6c0fj.jpeg", // Airport Image
-                scenes: [
-                    {
-                        question: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
-                        correct: "Ask for the baggage claim.",
-                        options: ["Where is the toilet?", "How much is this?"],
-                    },
-                    {
-                        question: "You find the baggage and need to take a taxi. How do you ask the driver to take you to the hotel?",
-                        correct: "Tell the taxi driver your hotel address.",
-                        options: ["Where is the taxi stand?", "Say 'I would like to check in' to the hotel clerk."],
-                    },
-                    {
-                        question: "You've arrived at the hotel and are talking to the front desk. What is the correct phrase to begin the check-in process?",
-                        correct: "Say 'I would like to check in' to the hotel clerk.",
-                        options: ["Say 'Check, please.'", "I have a reservation."],
-                    },
-                    {
-                        question: "After settling in, you realize you're starving. How do you tell the hotel staff or a friend 'I am really hungry'?",
-                        correct: "Say 'I am really hungry.'",
-                        options: ["How are you?", "Where is a delicious restaurant?"],
-                    },
-                    {
-                        question: "You find a local ramen shop and approach the counter. How do you ask for the dish you want?",
-                        correct: "Say 'I would like a bowl of ramen.'",
-                        options: ["Say 'Check, please.'", "Say 'Thank you for the meal' after eating."],
-                    },
-                ]
+                title: "Tokyo Arrival: Getting to the Hotel",
+                image: "https://i.imgur.com/Qq6c0fj.jpeg", // Original Airport Image
+                tasks: [
+                    "Ask for the baggage claim.",
+                    "Tell the taxi driver your hotel address.",
+                    "Say 'I would like to check in' to the hotel clerk."
+                ],
             },
-            
-            // --- Remaining Japan Adventures (Placeholder Scenes) ---
-            'Japan_Adventure2': { title: "Ramen & Hunger: Ordering Your First Meal", image: "https://i.imgur.com/8RAKAAT.jpeg", scenes: [{ question: "Placeholder Q1", correct: "Say 'I am really hungry.'", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Say 'I would like a bowl of ramen.'", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "Say 'Check, please.'", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
-            'Japan_Adventure3': { title: "Shibuya Crossing Navigation", image: "https://i.imgur.com/WjxmkKu.jpeg", scenes: [{ question: "Placeholder Q1", correct: "Ask for the nearest subway station.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Where is the taxi stand?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "How much is this?", options: ["Where is the toilet?", "Ask for the baggage claim."] }, { question: "Placeholder Q4", correct: "Say 'I would like to check in' to the hotel clerk.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Where is a delicious restaurant?", options: ["Where is the toilet?", "How much is this?"] }] },
-            'Japan_Adventure4': { title: "Hotel Etiquette: Checking in and Asking for Help", image: "https://i.imgur.com/sAYoQkS.jpeg", scenes: [{ question: "Placeholder Q1", correct: "I have a reservation.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Where is the toilet?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "How are you?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
-            'Japan_Adventure5': { title: "Local Dining Recommendations", image: "https://i.imgur.com/EIidutG.png", scenes: [{ question: "Placeholder Q1", correct: "Where is a delicious restaurant?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Order Miso Ramen and a beer.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "Say 'Thank you for the meal' after eating.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
+            'Japan_Adventure2': {
+                title: "Ramen & Hunger: Ordering Your First Meal",
+                image: "https://i.imgur.com/8RAKAAT.jpeg", // Original Ramen Shop Image
+                tasks: [
+                    "Say 'I am really hungry.'",
+                    "Say 'I would like a bowl of ramen.'",
+                    "Say 'Check, please.'"
+                ],
+            },
+            'Japan_Adventure3': {
+                title: "Shibuya Crossing Navigation",
+                image: "https://i.imgur.com/WjxmkKu.jpeg", // Original Taxi Image repurposed for street scene
+                tasks: [
+                    "Where is the taxi stand?",
+                    "Ask for the nearest subway station.", 
+                    "How much is this?"
+                ], 
+            },
+            'Japan_Adventure4': {
+                title: "Hotel Etiquette: Checking in and Asking for Help",
+                image: "https://i.imgur.com/sAYoQkS.jpeg", // Original Hotel Image
+                tasks: [
+                    "Say 'I have a reservation.'",
+                    "Ask 'Where is the toilet?'",
+                    "Ask 'How are you?' (to the staff)."
+                ], 
+            },
+            'Japan_Adventure5': {
+                title: "Local Dining Recommendations",
+                image: "https://i.imgur.com/EIidutG.png", // Original Room Image repurposed
+                tasks: [
+                    "Where is a delicious restaurant?",
+                    "Order Miso Ramen and a beer.",
+                    "Say 'Thank you for the meal' after eating."
+                ], 
+            },
 
-            // --- Remaining Countries (Simplified Placeholder Scenes) ---
-            'France_Adventure1': { title: "Paris Cafe: Perfecting the Order", image: "https://placehold.co/400x200/A0A0A0/white?text=FRENCH+CAFE+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Ask for the bill.", options: ["Order 'un café, s'il vous plaît'.", "Say 'Have a good day'."] }, { question: "Placeholder Q2", correct: "Order 'un café, s'il vous plaît'.", options: ["Ask for the bill.", "Say 'Have a good day'."] }, { question: "Placeholder Q3", correct: "Say 'Have a good day'.", options: ["Ask for the bill.", "Order 'un café, s'il vous plaît'."] }, { question: "Placeholder Q4", correct: "Ask for the bill.", options: ["Order 'un café, s'il vous plaît'.", "Say 'Have a good day'."] }, { question: "Placeholder Q5", correct: "Order 'un café, s'il vous plaît'.", options: ["Ask for the bill.", "Say 'Have a good day'."] }] },
-            'France_Adventure2': { title: "Metro Ticket Troubles", image: "https://placehold.co/400x200/607d8b/white?text=PARIS+METRO+STATION", scenes: [{ question: "Placeholder Q1", correct: "Ask for a book of ten tickets.", options: ["Apologize for bumping into someone.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q2", correct: "Ask if this line goes to the Louvre.", options: ["Ask for a book of ten tickets.", "Apologize for bumping into someone."] }, { question: "Placeholder Q3", correct: "Apologize for bumping into someone.", options: ["Ask for a book of ten tickets.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q4", correct: "Ask for a book of ten tickets.", options: ["Apologize for bumping into someone.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q5", correct: "Ask if this line goes to the Louvre.", options: ["Ask for a book of ten tickets.", "Apologize for bumping into someone."] }] },
-            'France_Adventure3': { title: "Art Museum Inquiry", image: "https://placehold.co/400x200/3F51B5/white?text=LOUVRE+MUSEUM+LOBBY", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Do you have audio guides?'", options: ["Thank the attendant for their assistance.", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the Mona Lisa?'", options: ["Ask 'Do you have audio guides?'", "Thank the attendant for their assistance."] }, { question: "Placeholder Q3", correct: "Thank the attendant for their assistance.", options: ["Ask 'Do you have audio guides?'", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q4", correct: "Ask 'Do you have audio guides?'", options: ["Thank the attendant for their assistance.", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the Mona Lisa?'", options: ["Ask 'Do you have audio guides?'", "Thank the attendant for their assistance."] }] },
-            'France_Adventure4': { title: "Market Day Bargaining", image: "https://placehold.co/400x200/8BC34A/white?text=STREET+MARKET+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How much is this?'", options: ["Agree to the final price.", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q2", correct: "Say 'It's too expensive!' (politely).", options: ["Ask 'How much is this?'", "Agree to the final price."] }, { question: "Placeholder Q3", correct: "Agree to the final price.", options: ["Ask 'How much is this?'", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q4", correct: "Ask 'How much is this?'", options: ["Agree to the final price.", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q5", correct: "Say 'It's too expensive!' (politely).", options: ["Ask 'How much is this?'", "Agree to the final price."] }] },
-            'France_Adventure5': { title: "Evening Dining Reservations", image: "https://placehold.co/400x200/795548/white?text=FINE+DINING+RESTAURANT", scenes: [{ question: "Placeholder Q1", correct: "State 'I have a reservation for two.'", options: ["Say 'The food was excellent'.", "Ask for a table near the window."] }, { question: "Placeholder Q2", correct: "Ask for a table near the window.", options: ["State 'I have a reservation for two.'", "Say 'The food was excellent'."] }, { question: "Placeholder Q3", correct: "Say 'The food was excellent'.", options: ["State 'I have a reservation for two.'", "Ask for a table near the window."] }, { question: "Placeholder Q4", correct: "State 'I have a reservation for two.'", options: ["Say 'The food was excellent'.", "Ask for a table near the window."] }, { question: "Placeholder Q5", correct: "Ask for a table near the window.", options: ["State 'I have a reservation for two.'", "Say 'The food was excellent'."] }] },
+            // ========================= FRANCE ADVENTURES (5) (PLACEHOLDERS) =========================
+            'France_Adventure1': {
+                title: "Paris Cafe: Perfecting the Order",
+                image: "https://placehold.co/400x200/A0A0A0/white?text=FRENCH+CAFE+SCENE",
+                tasks: ["Order 'un café, s'il vous plaît'.", "Ask for the bill.", "Say 'Have a good day'." ], audioUrls: {} 
+            },
+            'France_Adventure2': {
+                title: "Metro Ticket Troubles",
+                image: "https://placehold.co/400x200/607d8b/white?text=PARIS+METRO+STATION",
+                tasks: ["Ask for a book of ten tickets.", "Ask if this line goes to the Louvre.", "Apologize for bumping into someone."], audioUrls: {} 
+            },
+            'France_Adventure3': {
+                title: "Art Museum Inquiry",
+                image: "https://placehold.co/400x200/3F51B5/white?text=LOUVRE+MUSEUM+LOBBY",
+                tasks: ["Ask 'Do you have audio guides?'", "Ask 'Where is the Mona Lisa?'", "Thank the attendant for their assistance."], audioUrls: {} 
+            },
+            'France_Adventure4': {
+                title: "Market Day Bargaining",
+                image: "https://placehold.co/400x200/8BC34A/white?text=STREET+MARKET+SCENE",
+                tasks: ["Ask 'How much is this?'", "Say 'It's too expensive!' (politely).", "Agree to the final price."], audioUrls: {} 
+            },
+            'France_Adventure5': {
+                title: "Evening Dining Reservations",
+                image: "https://placehold.co/400x200/795548/white?text=FINE+DINING+RESTAURANT",
+                tasks: ["State 'I have a reservation for two.'", "Ask for a table near the window.", "Say 'The food was excellent'." ], audioUrls: {} 
+            },
 
-            'Korea_Adventure1': { title: "Seoul Subway System", image: "https://placehold.co/400x200/FF9800/white?text=SEOUL+SUBWAY+RIDE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How do I get to Gangnam?'", options: ["Apologize for bumping into someone.", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this the transfer line?'", options: ["Ask 'How do I get to Gangnam?'", "Apologize for bumping into someone."] }, { question: "Placeholder Q3", correct: "Apologize for bumping into someone.", options: ["Ask 'How do I get to Gangnam?'", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q4", correct: "Ask 'How do I get to Gangnam?'", options: ["Apologize for bumping into someone.", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this the transfer line?'", options: ["Ask 'How do I get to Gangnam?'", "Apologize for bumping into someone."] }] },
-            'Korea_Adventure2': { title: "Korean BBQ Feast", image: "https://placehold.co/400x200/E91E63/white?text=KBBQ+RESTAURANT", scenes: [{ question: "Placeholder Q1", correct: "Ask for more Kimchi.", options: ["Say 'Cheers!' before drinking.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q2", correct: "Ask for a bottle of Soju.", options: ["Ask for more Kimchi.", "Say 'Cheers!' before drinking."] }, { question: "Placeholder Q3", correct: "Say 'Cheers!' before drinking.", options: ["Ask for more Kimchi.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q4", correct: "Ask for more Kimchi.", options: ["Say 'Cheers!' before drinking.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q5", correct: "Ask for a bottle of Soju.", options: ["Ask for more Kimchi.", "Say 'Cheers!' before drinking."] }] },
-            'Korea_Adventure3': { title: "Hailing a Taxi in Myeongdong", image: "https://placehold.co/400x200/9E9E9E/white?text=MYEONGDONG+TAXI+STAND", scenes: [{ question: "Placeholder Q1", correct: "Politely stop a taxi.", options: ["Ask 'How much is the fare?'", "Tell the driver your destination."] }, { question: "Placeholder Q2", correct: "Tell the driver your destination.", options: ["Politely stop a taxi.", "Ask 'How much is the fare?'"] }, { question: "Placeholder Q3", correct: "Ask 'How much is the fare?'", options: ["Politely stop a taxi.", "Tell the driver your destination."] }, { question: "Placeholder Q4", correct: "Politely stop a taxi.", options: ["Ask 'How much is the fare?'", "Tell the driver your destination."] }, { question: "Placeholder Q5", correct: "Tell the driver your destination.", options: ["Politely stop a taxi.", "Ask 'How much is the fare?'"] }] },
-            'Korea_Adventure4': { title: "Late-Night Convenience Store", image: "https://placehold.co/400x200/4CAF50/white?text=KOREAN+CONVENIENCE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Do you have bottled water?'", options: ["Say 'Thank you' in a casual way.", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the instant ramen?'", options: ["Ask 'Do you have bottled water?'", "Say 'Thank you' in a casual way."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' in a casual way.", options: ["Ask 'Do you have bottled water?'", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q4", correct: "Ask 'Do you have bottled water?'", options: ["Say 'Thank you' in a casual way.", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the instant ramen?'", options: ["Ask 'Do you have bottled water?'", "Say 'Thank you' in a casual way."] }] },
-            'Korea_Adventure5': { title: "Temple Stay Etiquette", image: "https://placehold.co/400x200/00BCD4/white?text=KOREAN+TEMPLE+GREETING", scenes: [{ question: "Placeholder Q1", correct: "Use a formal greeting to a monk.", options: ["Say 'Goodbye' respectfully.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q2", correct: "Ask 'Can I take a picture?'", options: ["Use a formal greeting to a monk.", "Say 'Goodbye' respectfully."] }, { question: "Placeholder Q3", correct: "Say 'Goodbye' respectfully.", options: ["Use a formal greeting to a monk.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q4", correct: "Use a formal greeting to a monk.", options: ["Say 'Goodbye' respectfully.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q5", correct: "Ask 'Can I take a picture?'", options: ["Use a formal greeting to a monk.", "Say 'Goodbye' respectfully."] }] },
-            // ... (Remaining countries follow the placeholder pattern)
-            'Spain_Adventure1': { title: "Madrid Airport Check-in", image: "https://placehold.co/400x200/F44336/white?text=MADRID+CHECKIN+DESK", scenes: [{ question: "Placeholder Q1", correct: "State 'I'd like to check in for the flight to Barcelona.'", options: ["Ask for a window seat.", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is the flight on time?'", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask for a window seat."] }, { question: "Placeholder Q3", correct: "Ask for a window seat.", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q4", correct: "State 'I'd like to check in for the flight to Barcelona.'", options: ["Ask for a window seat.", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is the flight on time?'", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask for a window seat."] }] },
-            'Spain_Adventure2': { title: "Ordering Tapas and Drinks", image: "https://placehold.co/400x200/FFEB3B/black?text=TAPAS+BAR+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Order a specific tapa (e.g., patatas bravas).", options: ["Ask for the bill.", "Ask for a glass of red wine."] }, { question: "Placeholder Q2", correct: "Ask for a glass of red wine.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for the bill."] }, { question: "Placeholder Q3", correct: "Ask for the bill.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for a glass of red wine."] }, { question: "Placeholder Q4", correct: "Order a specific tapa (e.g., patatas bravas).", options: ["Ask for the bill.", "Ask for a glass of red wine."] }, { question: "Placeholder Q5", correct: "Ask for a glass of red wine.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for the bill."] }] },
-            'Spain_Adventure3': { title: "Hotel Problem Solving", image: "https://placehold.co/400x200/03A9F4/white?text=SPANISH+HOTEL+LOBBY", scenes: [{ question: "Placeholder Q1", correct: "State 'The air conditioning isn't working.'", options: ["Thank them for their help.", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q2", correct: "Ask 'Can someone fix it now?'", options: ["State 'The air conditioning isn't working.'", "Thank them for their help."] }, { question: "Placeholder Q3", correct: "Thank them for their help.", options: ["State 'The air conditioning isn't working.'", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q4", correct: "State 'The air conditioning isn't working.'", options: ["Thank them for their help.", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q5", correct: "Ask 'Can someone fix it now?'", options: ["State 'The air conditioning isn't working.'", "Thank them for their help."] }] },
-            'Spain_Adventure4': { title: "Siesta Shopping Schedule", image: "https://placehold.co/400x200/CDDC39/black?text=SIESTA+SHOP+DOOR", scenes: [{ question: "Placeholder Q1", correct: "Ask 'What time do you open?'", options: ["Ask for a bag for your purchase.", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q2", correct: "Ask 'When does the siesta end?'", options: ["Ask 'What time do you open?'", "Ask for a bag for your purchase."] }, { question: "Placeholder Q3", correct: "Ask for a bag for your purchase.", options: ["Ask 'What time do you open?'", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q4", correct: "Ask 'What time do you open?'", options: ["Ask for a bag for your purchase.", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q5", correct: "Ask 'When does the siesta end?'", options: ["Ask 'What time do you open?'", "Ask for a bag for your purchase."] }] },
-            'Spain_Adventure5': { title: "Local Greetings and Farewell", image: "https://placehold.co/400x200/E91E63/white?text=LOCAL+FIESTA+GREETING", scenes: [{ question: "Placeholder Q1", correct: "Greet a new friend casually.", options: ["Say 'See you later!'", "Ask 'How are you?'"] }, { question: "Placeholder Q2", correct: "Ask 'How are you?'", options: ["Greet a new friend casually.", "Say 'See you later!'"] }, { question: "Placeholder Q3", correct: "Say 'See you later!'", options: ["Greet a new friend casually.", "Ask 'How are you?'"] }, { question: "Placeholder Q4", correct: "Greet a new friend casually.", options: ["Say 'See you later!'", "Ask 'How are you?'"] }, { question: "Placeholder Q5", correct: "Ask 'How are you?'", options: ["Greet a new friend casually.", "Say 'See you later!'"] }] },
+            // ========================= KOREA ADVENTURES (5) (PLACEHOLDERS) =========================
+            'Korea_Adventure1': {
+                title: "Seoul Subway System",
+                image: "https://placehold.co/400x200/FF9800/white?text=SEOUL+SUBWAY+RIDE",
+                tasks: ["Ask 'How do I get to Gangnam?'", "Ask 'Is this the transfer line?'", "Apologize for bumping into someone."], audioUrls: {} 
+            },
+            'Korea_Adventure2': {
+                title: "Korean BBQ Feast",
+                image: "https://placehold.co/400x200/E91E63/white?text=KBBQ+RESTAURANT",
+                tasks: ["Ask for more Kimchi.", "Ask for a bottle of Soju.", "Say 'Cheers!' before drinking."], audioUrls: {} 
+            },
+            'Korea_Adventure3': {
+                title: "Hailing a Taxi in Myeongdong",
+                image: "https://placehold.co/400x200/9E9E9E/white?text=MYEONGDONG+TAXI+STAND",
+                tasks: ["Politely stop a taxi.", "Tell the driver your destination.", "Ask 'How much is the fare?'" ], audioUrls: {} 
+            },
+            'Korea_Adventure4': {
+                title: "Late-Night Convenience Store",
+                image: "https://placehold.co/400x200/4CAF50/white?text=KOREAN+CONVENIENCE",
+                tasks: ["Ask 'Do you have bottled water?'", "Ask 'Where is the instant ramen?'", "Say 'Thank you' in a casual way."], audioUrls: {} 
+            },
+            'Korea_Adventure5': {
+                title: "Temple Stay Etiquette",
+                image: "https://placehold.co/400x200/00BCD4/white?text=KOREAN+TEMPLE+GREETING",
+                tasks: ["Use a formal greeting to a monk.", "Ask 'Can I take a picture?'", "Say 'Goodbye' respectfully."], audioUrls: {} 
+            },
 
-            'Germany_Adventure1': { title: "Buying a Train Ticket", image: "https://placehold.co/400x200/607D8B/white?text=GERMAN+TRAIN+STATION", scenes: [{ question: "Placeholder Q1", correct: "Ask for a ticket to Berlin.", options: ["Say 'Thank you' formally.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this the correct platform?'", options: ["Ask for a ticket to Berlin.", "Say 'Thank you' formally."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' formally.", options: ["Ask for a ticket to Berlin.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q4", correct: "Ask for a ticket to Berlin.", options: ["Say 'Thank you' formally.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this the correct platform?'", options: ["Ask for a ticket to Berlin.", "Say 'Thank you' formally."] }] },
-            'Germany_Adventure2': { title: "Biergarten Order", image: "https://placehold.co/400x200/FF9800/white?text=BIERGARTEN+TABLE", scenes: [{ question: "Placeholder Q1", correct: "Order two large beers.", options: ["Say 'Prost!' (Cheers).", "Ask for the menu."] }, { question: "Placeholder Q2", correct: "Ask for the menu.", options: ["Order two large beers.", "Say 'Prost!' (Cheers)."] }, { question: "Placeholder Q3", correct: "Say 'Prost!' (Cheers).", options: ["Order two large beers.", "Ask for the menu."] }, { question: "Placeholder Q4", correct: "Order two large beers.", options: ["Say 'Prost!' (Cheers).", "Ask for the menu."] }, { question: "Placeholder Q5", correct: "Ask for the menu.", options: ["Order two large beers.", "Say 'Prost!' (Cheers)."] }] },
-            'Germany_Adventure3': { title: "Currency Exchange at a Bank", image: "https://placehold.co/400x200/4CAF50/white?text=GERMAN+BANK+COUNTER", scenes: [{ question: "Placeholder Q1", correct: "Ask 'I would like to exchange money.'", options: ["Ask 'Is there a commission?'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q2", correct: "Ask 'What is the exchange rate?'", options: ["Ask 'I would like to exchange money.'", "Ask 'Is there a commission?'"] }, { question: "Placeholder Q3", correct: "Ask 'Is there a commission?'", options: ["Ask 'I would like to exchange money.'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q4", correct: "Ask 'I would like to exchange money.'", options: ["Ask 'Is there a commission?'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q5", correct: "Ask 'What is the exchange rate?'", options: ["Ask 'I would like to exchange money.'", "Ask 'Is there a commission?'"] }] },
-            'Germany_Adventure4': { title: "Formal Street Address", image: "https://placehold.co/400x200/03A9F4/white?text=CITY+STREET", scenes: [{ question: "Placeholder Q1", correct: "Use a formal greeting to a stranger.", options: ["Ask 'Excuse me, may I pass?'", "Ask for the time."] }, { question: "Placeholder Q2", correct: "Ask for the time.", options: ["Use a formal greeting to a stranger.", "Ask 'Excuse me, may I pass?'"] }, { question: "Placeholder Q3", correct: "Ask 'Excuse me, may I pass?'", options: ["Use a formal greeting to a stranger.", "Ask for the time."] }, { question: "Placeholder Q4", correct: "Use a formal greeting to a stranger.", options: ["Ask 'Excuse me, may I pass?'", "Ask for the time."] }, { question: "Placeholder Q5", correct: "Ask for the time.", options: ["Use a formal greeting to a stranger.", "Ask 'Excuse me, may I pass?'"] }] },
-            'Germany_Adventure5': { title: "Castle Tour & History", image: "https://placehold.co/400x200/795548/white?text=CASTLE+ENTRY", scenes: [{ question: "Placeholder Q1", correct: "Ask 'When was this castle built?'", options: ["Express admiration for the castle.", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the exit?'", options: ["Ask 'When was this castle built?'", "Express admiration for the castle."] }, { question: "Placeholder Q3", correct: "Express admiration for the castle.", options: ["Ask 'When was this castle built?'", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q4", correct: "Ask 'When was this castle built?'", options: ["Express admiration for the castle.", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the exit?'", options: ["Ask 'When was this castle built?'", "Express admiration for the castle."] }] },
+            // ========================= SPAIN ADVENTURES (5) (PLACEHOLDERS) =========================
+            'Spain_Adventure1': {
+                title: "Madrid Airport Check-in",
+                image: "https://placehold.co/400x200/F44336/white?text=MADRID+CHECKIN+DESK",
+                tasks: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask 'Is the flight on time?'", "Ask for a window seat."], audioUrls: {} 
+            },
+            'Spain_Adventure2': {
+                title: "Ordering Tapas and Drinks",
+                image: "https://placehold.co/400x200/FFEB3B/black?text=TAPAS+BAR+SCENE",
+                tasks: ["Order a specific tapa (e.g., patatas bravas).", "Ask for a glass of red wine.", "Ask for the bill."], audioUrls: {} 
+            },
+            'Spain_Adventure3': {
+                title: "Hotel Problem Solving",
+                image: "https://placehold.co/400x200/03A9F4/white?text=SPANISH+HOTEL+LOBBY",
+                tasks: ["State 'The air conditioning isn't working.'", "Ask 'Can someone fix it now?'", "Thank them for their help."], audioUrls: {} 
+            },
+            'Spain_Adventure4': {
+                title: "Siesta Shopping Schedule",
+                image: "https://placehold.co/400x200/CDDC39/black?text=SIESTA+SHOP+DOOR",
+                tasks: ["Ask 'What time do you open?'", "Ask 'When does the siesta end?'", "Ask for a bag for your purchase."], audioUrls: {} 
+            },
+            'Spain_Adventure5': {
+                title: "Local Greetings and Farewell",
+                image: "https://placehold.co/400x200/E91E63/white?text=LOCAL+FIESTA+GREETING",
+                tasks: ["Greet a new friend casually.", "Ask 'How are you?'", "Say 'See you later!'"], audioUrls: {} 
+            },
 
-            'China_Adventure1': { title: "Customs and Arrival", image: "https://placehold.co/400x200/F44336/white?text=BEIJING+AIRPORT", scenes: [{ question: "Placeholder Q1", correct: "Respond to the Customs officer's greeting.", options: ["Ask 'Where is the taxi stand?'", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q2", correct: "State your purpose of visit (tourism).", options: ["Respond to the Customs officer's greeting.", "Ask 'Where is the taxi stand?'"] }, { question: "Placeholder Q3", correct: "Ask 'Where is the taxi stand?'", options: ["Respond to the Customs officer's greeting.", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q4", correct: "Respond to the Customs officer's greeting.", options: ["Ask 'Where is the taxi stand?'", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q5", correct: "State your purpose of visit (tourism).", options: ["Respond to the Customs officer's greeting.", "Ask 'Where is the taxi stand?'"] }] },
-            'China_Adventure2': { title: "Tea House Etiquette", image: "https://placehold.co/400x200/9C27B0/white?text=TEA+HOUSE", scenes: [{ question: "Placeholder Q1", correct: "Ask for a cup of green tea.", options: ["Say 'Thank you' with a small bow.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this tea hot?'", options: ["Ask for a cup of green tea.", "Say 'Thank you' with a small bow."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' with a small bow.", options: ["Ask for a cup of green tea.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q4", correct: "Ask for a cup of green tea.", options: ["Say 'Thank you' with a small bow.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this tea hot?'", options: ["Ask for a cup of green tea.", "Say 'Thank you' with a small bow."] }] },
-            'China_Adventure3': { title: "Hutong Navigation", image: "https://placehold.co/400x200/FFC107/black?text=HUTONG+ALLEY", scenes: [{ question: "Placeholder Q1", correct: "Ask for directions to the nearest landmark.", options: ["Ask 'How long does it take?'", "Ask 'Is it far?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is it far?'", options: ["Ask for directions to the nearest landmark.", "Ask 'How long does it take?'"] }, { question: "Placeholder Q3", correct: "Ask 'How long does it take?'", options: ["Ask for directions to the nearest landmark.", "Ask 'Is it far?'"] }, { question: "Placeholder Q4", correct: "Ask for directions to the nearest landmark.", options: ["Ask 'How long does it take?'", "Ask 'Is it far?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is it far?'", options: ["Ask for directions to the nearest landmark.", "Ask 'How long does it take?'"] }] },
-            'China_Adventure4': { title: "Group Meal Etiquette", image: "https://placehold.co/400x200/00BCD4/white?text=DINNER+TABLE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Could you pass the rice?'", options: ["Say 'I'm full, thank thank you!'", "Ask for a clean plate."] }, { question: "Placeholder Q2", correct: "Ask for a clean plate.", options: ["Ask 'Could you pass the rice?'", "Say 'I'm full, thank thank you!'"] }, { question: "Placeholder Q3", correct: "Say 'I'm full, thank thank you!'", options: ["Ask 'Could you pass the rice?'", "Ask for a clean plate."] }, { question: "Placeholder Q4", correct: "Ask 'Could you pass the rice?'", options: ["Say 'I'm full, thank thank you!'", "Ask for a clean plate."] }, { question: "Placeholder Q5", correct: "Ask for a clean plate.", options: ["Ask 'Could you pass the rice?'", "Say 'I'm full, thank thank you!'"] }] },
-            'China_Adventure5': { title: "Bargaining in the Market", image: "https://placehold.co/400x200/FF9800/white?text=ELECTRONICS+MARKET", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How much does this cost?'", options: ["Say 'That's fine, I'll take it!'", "Try to negotiate the price down."] }, { question: "Placeholder Q2", correct: "Try to negotiate the price down.", options: ["Ask 'How much does this cost?'", "Say 'That's fine, I'll take it!'"] }, { question: "Placeholder Q3", correct: "Say 'That's fine, I'll take it!'", options: ["Ask 'How much does this cost?'", "Try to negotiate the price down."] }, { question: "Placeholder Q4", correct: "Ask 'How much does this cost?'", options: ["Say 'That's fine, I'll take it!'", "Try to negotiate the price down."] }, { question: "Placeholder Q5", correct: "Try to negotiate the price down.", options: ["Ask 'How much does this cost?'", "Say 'That's fine, I'll take it!'"] }] },
+            // ========================= GERMANY ADVENTURES (5) (PLACEHOLDERS) =========================
+            'Germany_Adventure1': {
+                title: "Buying a Train Ticket",
+                image: "https://placehold.co/400x200/607D8B/white?text=GERMAN+TRAIN+STATION",
+                tasks: ["Ask for a ticket to Berlin.", "Ask 'Is this the correct platform?'", "Say 'Thank you' formally."], audioUrls: {} 
+            },
+            'Germany_Adventure2': {
+                title: "Biergarten Order",
+                image: "https://placehold.co/400x200/FF9800/white?text=BIERGARTEN+TABLE",
+                tasks: ["Order two large beers.", "Ask for the menu.", "Say 'Prost!' (Cheers)."], audioUrls: {} 
+            },
+            'Germany_Adventure3': {
+                title: "Currency Exchange at a Bank",
+                image: "https://placehold.co/400x200/4CAF50/white?text=GERMAN+BANK+COUNTER",
+                tasks: ["Ask 'I would like to exchange money.'", "Ask 'What is the exchange rate?'", "Ask 'Is there a commission?'"], audioUrls: {} 
+            },
+            'Germany_Adventure4': {
+                title: "Formal Street Address",
+                image: "https://placehold.co/400x200/03A9F4/white?text=CITY+STREET",
+                tasks: ["Use a formal greeting to a stranger.", "Ask for the time.", "Ask 'Excuse me, may I pass?'"], audioUrls: {} 
+            },
+            'Germany_Adventure5': {
+                title: "Castle Tour & History",
+                image: "https://placehold.co/400x200/795548/white?text=CASTLE+ENTRY",
+                tasks: ["Ask 'When was this castle built?'", "Ask 'Where is the exit?'", "Express admiration for the castle."], audioUrls: {} 
+            },
+
+            // ========================= CHINA ADVENTURES (5) (PLACEHOLDERS) =========================
+            'China_Adventure1': {
+                title: "Customs and Arrival",
+                image: "https://placehold.co/400x200/F44336/white?text=BEIJING+AIRPORT",
+                tasks: ["Respond to the Customs officer's greeting.", "State your purpose of visit (tourism).", "Ask 'Where is the taxi stand?'"], audioUrls: {} 
+            },
+            'China_Adventure2': {
+                title: "Tea House Etiquette",
+                image: "https://placehold.co/400x200/9C27B0/white?text=TEA+HOUSE",
+                tasks: ["Ask for a cup of green tea.", "Ask 'Is this tea hot?'", "Say 'Thank you' with a small bow."], audioUrls: {} 
+            },
+            'China_Adventure3': {
+                title: "Hutong Navigation",
+                image: "https://placehold.co/400x200/FFC107/black?text=HUTONG+ALLEY",
+                tasks: ["Ask for directions to the nearest landmark.", "Ask 'Is it far?'", "Ask 'How long does it take?'"], audioUrls: {} 
+            },
+            'China_Adventure4': {
+                title: "Group Meal Etiquette",
+                image: "https://placehold.co/400x200/00BCD4/white?text=DINNER+TABLE",
+                tasks: ["Ask 'Could you pass the rice?'", "Ask for a clean plate.", "Say 'I'm full, thank thank you!'"], audioUrls: {} 
+            },
+            'China_Adventure5': {
+                title: "Bargaining in the Market",
+                image: "https://placehold.co/400x200/FF9800/white?text=ELECTRONICS+MARKET",
+                tasks: ["Ask 'How much does this cost?'", "Try to negotiate the price down.", "Say 'That's fine, I'll take it!'"], audioUrls: {} 
+            },
         };
         // --- END ADVENTURE CONTENT ---
 
-        // --- LOCAL PERSISTENCE FUNCTIONS (NEW) ---
-
-        function saveLocalData() {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userData));
-            } catch (e) {
-                console.error("Error saving to local storage:", e);
-            }
-        }
-
-        function loadLocalData() {
-            try {
-                const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (storedData) {
-                    const parsedData = JSON.parse(storedData);
-                    // Merge loaded data with default structure to prevent missing keys
-                    userData.progress = parsedData.progress || {};
-                    userData.profile = parsedData.profile || { name: 'Traveler', email: '' };
-                    userData.settings = { ...DEFAULT_SETTINGS, ...parsedData.settings };
-                }
-            } catch (e) {
-                console.error("Error loading local storage data:", e);
-            }
-        }
-        
-        // --- UI UTILITY FUNCTIONS (MOVED TO TOP FOR SAFE ACCESS) ---
+        // --- UI UTILITY FUNCTIONS ---
 
         function showMessage(text, isError = false) {
             const box = document.getElementById('message-box');
@@ -547,11 +570,8 @@
                 box.classList.add('opacity-0');
             }, 3000);
         }
-        // Expose globally for module-internal and HTML onclick access
-        window.showMessage = showMessage; 
 
-
-        function showView(viewId) {
+        window.showView = (viewId) => {
             const validViews = ['title', 'countries', 'adventures', 'tracker', 'profile', 'settings', 'game'];
             validViews.forEach(id => {
                 const el = document.getElementById(`view-${id}`);
@@ -575,50 +595,20 @@
             } else if (viewId === 'settings') {
                 renderSettingsView();
             }
-        }
-        // Expose globally for HTML onclick access
-        window.showView = showView;
-        
-        // Expose other commonly clicked functions early
-        window.handleStartJourney = function() {
-            // Attempt to start BGM immediately upon user interaction
-            if (bgmAudio && userData.settings.isMusicPlaying) {
-                 bgmAudio.play().catch(e => console.log("BGM playback blocked (needs user interaction).", e));
-            }
-            showView('countries');
-        }
+        };
 
 
-        // --- FIREBASE INITIALIZATION & AUTH (MODIFIED FOR FALLBACK) ---
+        // --- FIREBASE INITIALIZATION & AUTH ---
 
         async function initializeFirebase() {
-            const userInfoEl = document.getElementById('user-info');
-            
-            // --- 1. LOCAL PERSISTENCE MODE (GitHub Pages) ---
-            if (typeof __firebase_config === 'undefined' || !__firebase_config) {
-                userId = localStorage.getItem('localUserId') || 'local-' + Math.random().toString(36).substring(2, 9);
-                localStorage.setItem('localUserId', userId);
-                loadLocalData(); 
-                isAuthReady = true;
-                userInfoEl.textContent = `Traveler: ${userData.profile.name} | Data Persistence: Local Mode`;
-                initializeAudio();
-                recalculateAndRender();
-                return; 
+            if (!firebaseConfig) {
+                document.getElementById('user-info').textContent = 'Error: Firebase configuration missing.';
+                return;
             }
-            // --- END LOCAL PERSISTENCE MODE ---
-
-            // --- 2. FIREBASE/CANVAS MODE ---
-            userInfoEl.textContent = 'Connecting to Firebase...';
             
-            if (initializeApp && getAuth) {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-            } else {
-                 userInfoEl.textContent = 'Firebase modules failed to initialize.';
-                 return;
-            }
-
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
 
             onAuthStateChanged(auth, async (user) => {
                 if (!user) {
@@ -631,7 +621,7 @@
                         userId = auth.currentUser.uid;
                     } catch (error) {
                         console.error("Authentication failed:", error);
-                        userInfoEl.textContent = 'Error: Authentication failed.';
+                        document.getElementById('user-info').textContent = 'Error: Authentication failed.';
                         return;
                     }
                 } else {
@@ -639,7 +629,7 @@
                 }
                 
                 isAuthReady = true;
-                userInfoEl.textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}... (Firebase)`;
+                document.getElementById('user-info').textContent = `User ID: ${userId.substring(0, 4)}...`;
                 startRealtimeListener();
             });
         }
@@ -654,14 +644,20 @@
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                    // Load data
                     userData.progress = data.progress || {};
                     userData.profile = data.profile || { name: 'Traveler', email: '' };
-                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings };
+                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings }; // Merge with defaults
                     
+                    // Initialize audio settings
                     initializeAudio();
-                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}... (Firebase)`;
+
+                    // Update global info header with name
+                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}...`;
+
                     recalculateAndRender();
                 } else {
+                    // Initialize if no document exists
                     userData = { progress: {}, profile: { name: 'Traveler', email: '' }, settings: DEFAULT_SETTINGS };
                     setDoc(docRef, userData, { merge: true });
                     recalculateAndRender();
@@ -678,6 +674,7 @@
             let completedCount = 0;
             let currentCountryIndex = 0;
             
+            // Find the highest completed country
             for (let i = 0; i < PROGRESS_MAP.length; i++) {
                 const countryId = PROGRESS_MAP[i].id;
                 let countryBadgesCompleted = 0;
@@ -722,6 +719,7 @@
             };
         }
 
+        // Helper to check if a country is unlocked
         function isCountryUnlocked(countryId) {
             const { currentCountryIndex } = getProgressInfo();
             const countryIndex = PROGRESS_MAP.findIndex(c => c.id === countryId);
@@ -741,45 +739,46 @@
         }
 
 
-        // --- FIREBASE/LOCAL TRANSACTION: COMPLETE ADVENTURE ---
+        // --- FIREBASE TRANSACTION: COMPLETE ADVENTURE (UNCHANGED) ---
         
         window.completeAdventure = async function(countryId, adventureIndex) {
+            if (!isAuthReady || !db || !userId) return;
+
             const adventureKey = `${countryId}_Adventure${adventureIndex}`;
             if (userData.progress[adventureKey]) { 
                 showMessage(`Badge already earned for ${countryId} Adventure ${adventureIndex}!`, true);
-                showView('adventures'); 
                 return;
             }
 
-            if (db) {
-                // --- FIREBASE SAVE ---
-                const docRef = doc(db, progressPath(userId));
-                try {
-                    await runTransaction(db, async (transaction) => {
-                        const docSnap = await transaction.get(docRef);
-                        let progress = (docSnap.data() || { progress: {} }).progress;
-                        progress[adventureKey] = true;
-                        transaction.update(docRef, { progress: progress });
-                    });
-                    showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
-                } catch (e) {
-                    console.error("Firebase Transaction failed: ", e);
-                    showMessage('Error completing adventure in Firebase.', true);
-                }
-            } else {
-                // --- LOCAL SAVE ---
-                userData.progress[adventureKey] = true;
-                saveLocalData();
-                showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
-                recalculateAndRender();
-            }
+            const docRef = doc(db, progressPath(userId));
 
-            showView('adventures'); 
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const docSnap = await transaction.get(docRef);
+                    const data = docSnap.data() || { progress: {}, profile: {} };
+                    let progress = data.progress;
+                    
+                    progress[adventureKey] = true;
+                    
+                    transaction.update(docRef, { progress: progress });
+                });
+                
+                showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
+                
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+                showMessage('Error completing adventure.', true);
+            }
         }
 
-        // --- PROFILE, SETTINGS, AUDIO LOGIC (MODIFIED FOR LOCAL/FIREBASE SAVE) ---
+        // --- PROFILE LOGIC (UNCHANGED) ---
 
         window.saveProfile = async function() {
+            if (!isAuthReady || !db || !userId) {
+                showMessage('Authentication not ready. Please wait.', true);
+                return;
+            }
+
             const nameInput = document.getElementById('profile-name-input');
             const emailInput = document.getElementById('profile-email-input');
             
@@ -791,44 +790,39 @@
                 return;
             }
 
-            userData.profile = { name: newName, email: newEmail };
-            
-            if (db) {
-                // --- FIREBASE SAVE ---
-                const docRef = doc(db, progressPath(userId));
-                try {
-                    await setDoc(docRef, { profile: userData.profile }, { merge: true });
-                    showMessage('Profile saved successfully!');
-                } catch (e) {
-                    console.error("Error saving profile to Firebase:", e);
-                    showMessage('Failed to save profile.', true);
-                }
-            } else {
-                 // --- LOCAL SAVE ---
-                 saveLocalData();
-                 document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | Data Persistence: Local Mode`;
-                 showMessage('Profile updated locally.');
+            const docRef = doc(db, progressPath(userId));
+
+            try {
+                await setDoc(docRef, { 
+                    profile: { 
+                        name: newName, 
+                        email: newEmail 
+                    } 
+                }, { merge: true });
+
+                showMessage('Profile saved successfully!');
+            } catch (e) {
+                console.error("Error saving profile:", e);
+                showMessage('Failed to save profile.', true);
             }
         }
 
         function renderProfileView() {
             document.getElementById('profile-name-input').value = userData.profile.name || '';
             document.getElementById('profile-email-input').value = userData.profile.email || '';
-            const persistenceMode = db ? `ID: ${userId.substring(0, 4)}... (Firebase)` : 'Local Mode (Browser Storage)';
-            document.getElementById('profile-user-id').textContent = persistenceMode;
+            document.getElementById('profile-user-id').textContent = userId || 'N/A';
         }
 
+        // --- SETTINGS LOGIC (UNCHANGED) ---
+        
         async function saveSettings() {
-             if (db) {
-                const docRef = doc(db, progressPath(userId));
-                try {
-                     await setDoc(docRef, { settings: userData.settings }, { merge: true });
-                } catch (e) {
-                    console.error("Failed to save settings to Firebase:", e);
-                    showMessage('Failed to save settings.', true);
-                }
-            } else {
-                saveLocalData();
+            if (!isAuthReady || !db || !userId) return;
+            const docRef = doc(db, progressPath(userId));
+            try {
+                 await setDoc(docRef, { settings: userData.settings }, { merge: true });
+            } catch (e) {
+                console.error("Failed to save settings:", e);
+                showMessage('Failed to save settings.', true);
             }
         }
 
@@ -838,13 +832,12 @@
             
             if (bgmAudio) {
                 if (isPlaying) {
-                    // Attempt playback here to defeat autoplay block
-                    bgmAudio.play().catch(e => console.error("BGM Play failed, user interaction needed.", e));
+                    bgmAudio.play().catch(e => console.error("BGM Play failed, requiring user interaction.", e));
                 } else {
                     bgmAudio.pause();
                 }
             }
-            renderSettingsView(); 
+            renderSettingsView(); // Update button text immediately
             saveSettings();
         }
 
@@ -865,13 +858,21 @@
         }
         
         function initializeAudio() {
-            if (bgmAudio) bgmAudio.volume = userData.settings.musicVolume;
+            if (bgmAudio) {
+                bgmAudio.volume = userData.settings.musicVolume;
+                if (userData.settings.isMusicPlaying) {
+                    bgmAudio.play().catch(e => console.log("BGM Autoplay prevented. User must click to start."));
+                } else {
+                    bgmAudio.pause();
+                }
+            }
             if (sfxAudio) sfxAudio.volume = userData.settings.sfxVolume;
         }
 
         function renderSettingsView() {
             const settings = userData.settings;
             
+            // 1. Music Toggle Button
             const musicBtn = document.getElementById('musicToggleBtn');
             if (musicBtn) {
                 if (settings.isMusicPlaying) {
@@ -885,6 +886,7 @@
                 }
             }
 
+            // 2. Volume Sliders
             const musicSlider = document.getElementById('musicVolumeSlider');
             const sfxSlider = document.getElementById('sfxVolumeSlider');
             
@@ -908,28 +910,24 @@
         };
 
         window.playPronunciation = function(audioPath) {
-            if (!audioPath) return;
-
-            // This is the critical line: we set the source and try to play.
-            if (sfxAudio && audioPath.startsWith('audio/')) {
-                sfxAudio.src = audioPath; 
+            if (sfxAudio && audioPath) {
+                sfxAudio.src = audioPath; // Load the specific audio file
                 sfxAudio.currentTime = 0; 
-                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}. Please check file location.`, e));
-            } else {
-                console.log(`Audio path invalid or missing: ${audioPath}`);
+                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}:`, e));
             }
         }
 
         window.handlePhraseHover = function(audioPath) {
-            window.stopAudio(); 
+            window.stopAudio(); // Stop any previous audio immediately
 
+            // Set a small delay before playing to require intentional hover
             hoverAudioTimeout = setTimeout(() => {
                 window.playPronunciation(audioPath);
-            }, 400); 
+            }, 400); // 400ms delay
         };
 
 
-        // --- QUIZ & GAME SCENARIO LOGIC (UNCHANGED) ---
+        // --- GAME SCENARIO LOGIC (UPDATED) ---
         
         window.loadGameScenario = function(countryId, adventureIndex) {
             const adventureKey = `${countryId}_Adventure${adventureIndex}`;
@@ -940,172 +938,83 @@
                  return;
             }
 
-            activeAdventure = { 
-                countryId, 
-                adventureIndex, 
-                sceneIndex: 0, 
-                sceneCount: details.scenes.length 
-            };
-            
+            activeScenario = { countryId, adventureIndex };
+
             document.getElementById('game-title').textContent = details.title;
             document.getElementById('game-subtitle').textContent = `Country: ${countryId} | Adventure ${adventureIndex}`;
             
+            // Update image source, adding a fallback for error
             document.getElementById('scenario-image').src = details.image;
             document.getElementById('scenario-image').onerror = () => {
                 document.getElementById('scenario-image').src = 'https://placehold.co/400x200/555/white?text=IMAGE+LOAD+ERROR';
             };
 
-            const isAdventureCompleted = userData.progress[adventureKey];
-            const completionBtn = document.getElementById('complete-adventure-btn');
+            const scenarioEl = document.getElementById('game-scenario');
             
-            if (isAdventureCompleted) {
-                completionBtn.disabled = true;
-                completionBtn.textContent = 'BADGE ALREADY EARNED';
-                completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
-                completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                completionBtn.onclick = () => window.completeAdventure(countryId, adventureIndex);
-                completionBtn.disabled = true;
-                completionBtn.textContent = 'COMPLETE ADVENTURE AND EARN BADGE';
-                completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
-                completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
+            let tasksHtml = `
+                <p class="text-gray-300 mb-4 font-bold text-center">Select the communication step you are ready to practice.
+                <span class="text-yellow-400 block sm:inline-block">Hover over a phrase to hear the pronunciation.</span></p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            `;
             
-            showView('game');
-            renderQuizScene(0);
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        window.renderQuizScene = function(sceneIndex) {
-            window.stopAudio(); 
-
-            const adventureKey = `${activeAdventure.countryId}_Adventure${activeAdventure.adventureIndex}`;
-            const details = ADVENTURE_DETAILS[adventureKey];
-            const scene = details.scenes[sceneIndex];
-            activeAdventure.sceneIndex = sceneIndex;
-            
-            document.getElementById('quiz-feedback').classList.add('hidden');
-            document.getElementById('next-scene-btn').classList.add('hidden');
-            document.getElementById('quiz-question-text').textContent = scene.question;
-            const optionsEl = document.getElementById('quiz-options');
-            optionsEl.innerHTML = '';
-
-            let options = [];
-            
-            const allPhraseKeys = [scene.correct, ...scene.options];
-            
-            allPhraseKeys.forEach(key => {
-                const isCorrect = key === scene.correct;
+            details.tasks.forEach((task) => {
+                let phraseData = { japanese: "N/A", romaji: "N/A", audio: null };
                 
-                if (activeAdventure.countryId === 'Japan' && JAPAN_PHRASE_CONTENT[key]) {
-                    options.push({ key, correct: isCorrect });
-                } else if (activeAdventure.countryId !== 'Japan') {
-                    options.push({ key, correct: isCorrect });
+                // Only look up phrases for Japan, since other countries are still placeholders
+                if (countryId === 'Japan' && JAPAN_PHRASE_CONTENT[task]) {
+                    phraseData = JAPAN_PHRASE_CONTENT[task];
                 }
-            });
-            
-            options = shuffleArray(options);
-
-            options.forEach(option => {
-                const key = option.key;
-                const phraseData = JAPAN_PHRASE_CONTENT[key] || { japanese: key, romaji: 'N/A', audio: null, translation: key };
 
                 const hoverEvents = phraseData.audio 
                     ? `onmouseenter="handlePhraseHover('${phraseData.audio}')" onmouseleave="stopAudio()"` 
                     : '';
 
-                const button = document.createElement('button');
-                button.className = `quiz-option-button w-full p-4 block ${hoverEvents}`;
-                button.setAttribute('data-key', key);
-                button.setAttribute('data-correct', option.correct);
-                button.onclick = (e) => handlePhraseChoice(e.currentTarget, scene.correct);
-
-                button.innerHTML = `
-                    <div class="phrase-box">
-                        <p class="text-xl font-bold text-white">${phraseData.japanese}</p>
-                        <p class="text-xs text-red-300">${phraseData.romaji}</p>
-                        <p class="text-sm font-semibold translation mt-2">${phraseData.translation}</p>
-                    </div>
+                const buttonClasses = phraseData.audio
+                    ? 'hover:bg-red-700 transition duration-150 cursor-pointer'
+                    : 'opacity-60 cursor-default';
+                
+                tasksHtml += `
+                    <button ${hoverEvents} 
+                        class="phrase-button p-4 bg-gray-800 shadow-md border-b-4 border-red-900 ${buttonClasses}">
+                        
+                        <!-- English Task (No numbering) -->
+                        <p class="text-sm text-gray-300 mb-1">${task}</p>
+                        
+                        ${countryId === 'Japan' 
+                            ? `<p class="text-xl font-bold text-white mt-2">${phraseData.japanese}</p>
+                               <p class="text-xs text-red-300">${phraseData.romaji}</p>` 
+                            : `<p class="text-lg font-bold text-white mt-2">Content Placeholder</p>`
+                        }
+                        
+                        ${phraseData.audio 
+                            ? '<span class="text-xs mt-2 text-yellow-400 font-semibold">🔊 HOVER TO HEAR</span>' 
+                            : '<span class="text-xs mt-2 text-gray-500 font-semibold">Audio N/A</span>'
+                        }
+                    </button>
                 `;
-                optionsEl.appendChild(button);
             });
-            
-            const nextBtn = document.getElementById('next-scene-btn');
-            const currentSceneNum = sceneIndex + 1;
-            
-            if (currentSceneNum < activeAdventure.sceneCount) {
-                nextBtn.textContent = `Continue Touring (${currentSceneNum + 1}/${activeAdventure.sceneCount} Scenes)`;
-            } else {
-                nextBtn.textContent = `Finish Adventure & Review`;
-            }
-        }
 
-        window.handlePhraseChoice = function(selectedButton, correctKey) {
-            window.stopAudio(); 
+            tasksHtml += `</div>`; // Close grid container
 
-            const selectedKey = selectedButton.getAttribute('data-key');
-            const isCorrect = selectedKey === correctKey;
-            const feedbackEl = document.getElementById('quiz-feedback');
-            const messageEl = document.getElementById('feedback-message');
-            
-            feedbackEl.classList.remove('hidden');
+            scenarioEl.innerHTML = tasksHtml;
 
-            if (isCorrect) {
-                messageEl.textContent = "Correct! You successfully communicated the phrase. 🎉";
-                messageEl.classList.replace('text-red-400', 'text-green-400');
+            document.getElementById('complete-scenario-btn').onclick = () => {
+                window.stopAudio(); // Ensure audio stops on completion click
                 
-                document.querySelectorAll('#quiz-options button').forEach(btn => {
-                    btn.disabled = true;
-                    btn.classList.add('revealed');
-                    if (btn.getAttribute('data-key') === correctKey) {
-                        btn.classList.add('correct');
-                    } else {
-                        btn.classList.add('incorrect');
-                    }
-                });
+                // Play a confirmation sound (SFX)
+                if (sfxAudio) {
+                    sfxAudio.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"; // Revert to generic SFX sound
+                    sfxAudio.currentTime = 0; 
+                    sfxAudio.play().catch(e => console.log("SFX play failed.", e));
+                }
                 
-                document.getElementById('next-scene-btn').classList.remove('hidden');
-                
-            } else {
-                messageEl.textContent = "Incorrect. That phrase has a different meaning. Try again.";
-                messageEl.classList.replace('text-green-400', 'text-red-400');
-                
-                selectedButton.classList.add('incorrect');
-                selectedButton.disabled = true;
-                
-                document.getElementById('next-scene-btn').classList.add('hidden');
-                
-                document.querySelectorAll('#quiz-options button').forEach(btn => {
-                    if (btn !== selectedButton && !btn.classList.contains('incorrect') && !btn.classList.contains('correct')) {
-                         btn.disabled = false; 
-                    }
-                });
-            }
-        }
+                // Call the original function to complete the adventure
+                completeAdventure(countryId, adventureIndex);
+                // Return to the adventure list to see the update
+                showView('adventures'); 
+            };
 
-        window.nextScene = function() {
-            const nextIndex = activeAdventure.sceneIndex + 1;
-            
-            if (nextIndex < activeAdventure.sceneCount) {
-                renderQuizScene(nextIndex);
-            } else {
-                const completionBtn = document.getElementById('complete-adventure-btn');
-                completionBtn.disabled = false;
-                completionBtn.classList.remove('bg-gray-700', 'opacity-50', 'cursor-not-allowed');
-                completionBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                
-                document.getElementById('quiz-feedback').classList.add('hidden');
-                document.getElementById('quiz-options').innerHTML = `<p class="text-xl font-semibold text-green-400 text-center">All ${activeAdventure.sceneCount} communication steps mastered! Click the button below to earn your badge.</p>`;
-                document.getElementById('quiz-question-text').textContent = "Adventure Mastered!";
-                document.getElementById('scenario-image').src = 'https://placehold.co/400x200/10B981/white?text=ADVENTURE+MASTERED';
-            }
+            showView('game');
         }
 
 
@@ -1149,8 +1058,9 @@
 
         function renderAdventuresView() {
             const country = PROGRESS_MAP.find(c => c.id === currentSelectedCountryId);
-            if (!country) return; 
+            if (!country) return; // Safety check
             
+            const { currentCountryBadgesCompleted } = getProgressInfo();
             const adventureListEl = document.getElementById('adventure-list');
             
             document.getElementById('current-rank-header').innerHTML = 
@@ -1163,8 +1073,9 @@
                 const adventureKey = `${country.id}_Adventure${adventureNumber}`;
                 const isCompleted = userData.progress[adventureKey] || false; 
                 
-                // An adventure is unlocked if it's the first adventure (i=0) OR the previous one is completed
-                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`]; 
+                // Check if the previous adventure is completed to unlock the current one
+                // Logic: adventure 1 is always unlocked (i===0) OR the previous one (i) is complete.
+                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`] || false;
                 
                 const isReadyToPlay = isUnlocked && !isCompleted;
                 
@@ -1247,15 +1158,11 @@
         }
 
 
-        // --- START APPLICATION ---
-        function initApp() {
-            // This function is now the safe entry point, called after the module loads.
+        // --- START APPLICATION (UNCHANGED) ---
+        window.onload = () => {
             showView('title'); 
             initializeFirebase();
-        }
-
-        // Call the initialization function after the module finishes loading
-        initApp();
+        };
 
     </script>
 </body>
