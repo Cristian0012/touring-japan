@@ -591,8 +591,8 @@
                     userProgress = {
                         badges: [], // e.g., ["japan-discovery"]
                         profile: { name: "Traveler", email: "" },
-                        // Set default music volume to 0 (muted) and audio volume to 1.0
-                        settings: { theme: 'dark-mode', musicVolume: 0.0, audioVolume: 1.0, musicMuted: true, audioMuted: false }, 
+                        // ******* FIX: Initial music volume set to 0.5 (50%) *******
+                        settings: { theme: 'dark-mode', musicVolume: 0.5, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
                     };
                     saveUserProgress(); 
                 }
@@ -1002,10 +1002,11 @@
             document.getElementById('themeToggle').checked = theme === 'light-mode';
 
             // Music Volume/Mute
-            document.getElementById('musicVolume').value = settings.musicVolume || 0.0;
+            // Use saved volume, or default to 0.5
+            document.getElementById('musicVolume').value = settings.musicVolume || 0.5;
             const musicIcon = settings.musicMuted ? 'fa-volume-off' : 'fa-volume-up';
             document.getElementById('musicToggle').innerHTML = `<i class="fas ${musicIcon}"></i>`;
-            setBackgroundMusicState(settings.musicVolume || 0.0, settings.musicMuted || true);
+            setBackgroundMusicState(settings.musicVolume || 0.5, settings.musicMuted || false);
 
             // Audio Volume/Mute
             document.getElementById('audioVolume').value = settings.audioVolume || 1.0;
@@ -1060,7 +1061,7 @@
             userProgress.settings.audioMuted = isMuted;
 
             const audioIcon = isMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('audioToggle').innerHTML = `<i class="fas ${audioIcon}"></i>`;
+            document.getElementById('audioToggle').innerHTML = `<i class="fas ${audioIcon}">`;
 
             saveUserProgress();
         });
@@ -1111,12 +1112,19 @@
 
         // Initialize on load
         window.onload = () => {
-            // FIX: Initialize userProgress with defaults immediately so renderUI() has data even before Firebase loads.
+            // FIX 1: Initial music volume set to 0.5 (50%) and not muted
             userProgress = { 
                 badges: [], 
                 profile: { name: "Traveler", email: "" },
-                settings: { theme: 'dark-mode', musicVolume: 0.0, audioVolume: 1.0, musicMuted: true, audioMuted: false }, 
+                settings: { theme: 'dark-mode', musicVolume: 0.5, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
             };
+            
+            // FIX 2: Ensure the music volume slider is initially set to 0.5 for the UI
+            const musicVolumeSlider = document.getElementById('musicVolume');
+            if (musicVolumeSlider) {
+                musicVolumeSlider.value = userProgress.settings.musicVolume;
+            }
+            
             renderUI(); 
             setupEventListeners();
             initFirebase();
