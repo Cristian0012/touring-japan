@@ -591,8 +591,8 @@
                     userProgress = {
                         badges: [], // e.g., ["japan-discovery"]
                         profile: { name: "Traveler", email: "" },
-                        // ******* FIX: Initial music volume set to 0.5 (50%) *******
-                        settings: { theme: 'dark-mode', musicVolume: 0.5, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
+                        // ******* FIX: Initial music volume set to 0.2 (20%) from old code *******
+                        settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
                     };
                     saveUserProgress(); 
                 }
@@ -826,6 +826,7 @@
         // FIX 2: Function to attempt playing music after a user interaction, with a retry mechanism
         function attemptMusicPlay() {
             const settings = userProgress.settings || { musicVolume: 0.0, musicMuted: true };
+            // ******* USING DEFAULT MUSIC VOLUME 0.2 HERE *******
             if (settings.musicMuted || !backgroundMusic.paused) return; // Don't play if muted or already playing
 
             backgroundMusic.volume = settings.musicVolume;
@@ -1002,11 +1003,12 @@
             document.getElementById('themeToggle').checked = theme === 'light-mode';
 
             // Music Volume/Mute
-            // Use saved volume, or default to 0.5
-            document.getElementById('musicVolume').value = settings.musicVolume || 0.5;
+            // Use saved volume, or default to 0.2
+            document.getElementById('musicVolume').value = settings.musicVolume || 0.2;
             const musicIcon = settings.musicMuted ? 'fa-volume-off' : 'fa-volume-up';
             document.getElementById('musicToggle').innerHTML = `<i class="fas ${musicIcon}"></i>`;
-            setBackgroundMusicState(settings.musicVolume || 0.5, settings.musicMuted || false);
+            // ******* USING DEFAULT MUSIC VOLUME 0.2 HERE *******
+            setBackgroundMusicState(settings.musicVolume || 0.2, settings.musicMuted || false);
 
             // Audio Volume/Mute
             document.getElementById('audioVolume').value = settings.audioVolume || 1.0;
@@ -1112,14 +1114,14 @@
 
         // Initialize on load
         window.onload = () => {
-            // FIX 1: Initial music volume set to 0.5 (50%) and not muted
+            // FIX 1: Initial music volume set to 0.2 (20%) and not muted
             userProgress = { 
                 badges: [], 
                 profile: { name: "Traveler", email: "" },
-                settings: { theme: 'dark-mode', musicVolume: 0.5, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
+                settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
             };
             
-            // FIX 2: Ensure the music volume slider is initially set to 0.5 for the UI
+            // FIX 2: Ensure the music volume slider is initially set to 0.2 for the UI
             const musicVolumeSlider = document.getElementById('musicVolume');
             if (musicVolumeSlider) {
                 musicVolumeSlider.value = userProgress.settings.musicVolume;
