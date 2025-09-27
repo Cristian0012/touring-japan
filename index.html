@@ -1,1204 +1,1196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA: Global Translation Adventures</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #0d1117; 
-            color: #e6e6e6; 
-            min-height: 100vh;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA: Global Translation Adventures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0d1117; 
+            color: #e6e6e6; 
+            min-height: 100vh;
+        }
 
-        .container-content { max-width: 600px; }
-        .rank-card {
-            background: linear-gradient(135deg, #161b22, #0d1117);
-            border: 1px solid #2f363d;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-        }
-        .rank-card:hover { transform: translateY(-3px); }
-        .badge { transition: transform 0.1s; }
-        .badge:hover:not(.completed) { transform: scale(1.1); }
-        .completed { filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.7)); }
-        .badge-placeholder { background-color: #1e242c; border: 1px dashed #2f363d; }
-        .nav-button { transition: background-color 0.1s; }
-        
-        /* Country Card Specific Styles */
-        .country-card {
-            background-color: #161b22;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .country-card:hover:not(.locked) {
-            border-color: #f87171; /* red-400 */
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(248, 113, 113, 0.4);
-        }
-        .country-card.locked {
-            opacity: 0.4;
-            cursor: not-allowed;
-            filter: grayscale(80%);
-            border-color: #374151; /* gray-700 */
-        }
-        /* Image styling */
-        .scenario-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        /* Interactive Phrase Boxes / Quiz Options */
-        .quiz-option-button {
-            text-align: center;
-            border-radius: 0.75rem;
-            background-color: #1f2937; /* Gray 800 */
-            border: 1px solid #374151; /* Gray 700 */
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        }
-        .quiz-option-button:hover:not([disabled]) {
-            background-color: #2b394d; 
-            transform: scale(1.03);
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); /* Red 500 shadow */
-        }
-        .quiz-option-button.correct {
-            background-color: #10b981 !important; /* Green 500 */
-            border-color: #059669 !important; /* Green 600 */
-        }
-        .quiz-option-button.incorrect {
-            background-color: #dc2626 !important; /* Red 600 */
-            border-color: #b91c1c !important; /* Red 700 */
-        }
-        .quiz-option-button:disabled {
-            cursor: not-allowed;
-        }
-        .quiz-option-button .translation {
-            display: none;
-            color: #ccc;
-        }
-        .quiz-option-button.revealed .translation {
-            display: block;
-        }
-        .phrase-box {
-            min-height: 120px; /* Ensure visual consistency */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+        .container-content { max-width: 600px; }
+        .rank-card {
+            background: linear-gradient(135deg, #161b22, #0d1117);
+            border: 1px solid #2f363d;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .rank-card:hover { transform: translateY(-3px); }
+        .badge { transition: transform 0.1s; }
+        .badge:hover:not(.completed) { transform: scale(1.1); }
+        .completed { filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.7)); }
+        .badge-placeholder { background-color: #1e242c; border: 1px dashed #2f363d; }
+        .nav-button { transition: background-color 0.1s; }
+        
+        /* Country Card Specific Styles */
+        .country-card {
+            background-color: #161b22;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .country-card:hover:not(.locked) {
+            border-color: #f87171; /* red-400 */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.4);
+        }
+        .country-card.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(80%);
+            border-color: #374151; /* gray-700 */
+        }
+        /* Image styling */
+        .scenario-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Interactive Phrase Boxes / Quiz Options */
+        .quiz-option-button {
+            text-align: center;
+            border-radius: 0.75rem;
+            background-color: #1f2937; /* Gray 800 */
+            border: 1px solid #374151; /* Gray 700 */
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .quiz-option-button:hover:not([disabled]) {
+            background-color: #2b394d; 
+            transform: scale(1.03);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); /* Red 500 shadow */
+        }
+        .quiz-option-button.correct {
+            background-color: #10b981 !important; /* Green 500 */
+            border-color: #059669 !important; /* Green 600 */
+        }
+        .quiz-option-button.incorrect {
+            background-color: #dc2626 !important; /* Red 600 */
+            border-color: #b91c1c !important; /* Red 700 */
+        }
+        .quiz-option-button:disabled {
+            cursor: not-allowed;
+        }
+        .quiz-option-button .translation {
+            display: none;
+            color: #ccc;
+        }
+        .quiz-option-button.revealed .translation {
+            display: block;
+        }
+        .phrase-box {
+            min-height: 120px; /* Ensure visual consistency */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-    </style>
+    </style>
 </head>
 <body>
-    <!-- Audio Elements -->
-    <audio id="bgm" loop src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3"></audio>
-    <!-- SFX will be played on demand -->
-    <audio id="sfx" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio> 
+        <audio id="bgm" loop src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3"></audio>
+        <audio id="sfx"></audio> 
 
-    <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="container-content w-full">
-            
-            <header class="text-center mb-10">
-                <h1 class="text-5xl font-extrabold text-red-400 mb-2">GTA: Global Translation Adventures</h1>
-                <p class="text-gray-400 text-sm" id="user-info">Loading user data...</p>
-            </header>
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="container-content w-full">
+            
+            <header class="text-center mb-10">
+                <h1 class="text-5xl font-extrabold text-red-400 mb-2">GTA: Global Translation Adventures</h1>
+                <p class="text-gray-400 text-sm" id="user-info">Loading user data...</p>
+            </header>
 
-            <!-- --------------------------------------- -->
-            <!-- 1. TITLE SCREEN (Initial Page)          -->
-            <!-- --------------------------------------- -->
-            <div id="view-title" class="text-center space-y-6">
-                <h2 class="text-3xl font-semibold text-white">Welcome, Traveler!</h2>
-                <p class="text-gray-400">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
-                
-                <button onclick="showView('countries')"
-                    class="w-full md:w-auto px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
-                    Start Your Journey
-                </button>
-                
-                <div class="grid grid-cols-3 gap-4 pt-4">
-                    <button onclick="showView('profile')"
-                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
-                        Profile
-                    </button>
-                    <button onclick="showView('tracker')"
-                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
-                        Progress Tracker
-                    </button>
-                    <button onclick="showView('settings')"
-                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
-                        Settings
-                    </button>
-                </div>
-            </div>
+                                                <div id="view-title" class="text-center space-y-6">
+                <h2 class="text-3xl font-semibold text-white">Welcome, Traveler!</h2>
+                <p class="text-gray-400">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
+                
+                <button onclick="showView('countries')"
+                    class="w-full md:w-auto px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
+                    Start Your Journey
+                </button>
+                
+                <div class="grid grid-cols-3 gap-4 pt-4">
+                    <button onclick="showView('profile')"
+                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
+                        Profile
+                    </button>
+                    <button onclick="showView('tracker')"
+                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
+                        Progress Tracker
+                    </button>
+                    <button onclick="showView('settings')"
+                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
+                        Settings
+                    </button>
+                </div>
+            </div>
 
-            <!-- --------------------------------------- -->
-            <!-- 2. COUNTRY SELECTION GRID (New View)    -->
-            <!-- --------------------------------------- -->
-            <div id="view-countries" class="hidden">
-                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-6 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Back to Title Screen
-                </button>
-                
-                <h2 class="text-3xl font-bold mb-6 text-red-400">Select Your Destination</h2>
-                <p class="text-gray-400 mb-8">Master a country's adventures to unlock the next destination and earn a rank up!</p>
-                
-                <div id="country-grid" class="grid grid-cols-2 gap-4">
-                    <!-- Country cards injected here -->
-                </div>
-            </div>
+                                                <div id="view-countries" class="hidden">
+                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Title Screen
+                </button>
+                
+                <h2 class="text-3xl font-bold mb-6 text-red-400">Select Your Destination</h2>
+                <p class="text-gray-400 mb-8">Master a country's adventures to unlock the next destination and earn a rank up!</p>
+                
+                <div id="country-grid" class="grid grid-cols-2 gap-4">
+                                    </div>
+            </div>
 
-            <!-- --------------------------------------- -->
-            <!-- 3. ADVENTURE LIST (Renamed from view-selection) -->
-            <!-- --------------------------------------- -->
-            <div id="view-adventures" class="hidden">
-                <div class="flex justify-between mb-6">
-                    <button onclick="showView('countries')" class="text-blue-400 hover:text-blue-300 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        Back to Country Selection
-                    </button>
-                    <button onclick="showView('tracker')" class="text-green-400 hover:text-green-300 flex items-center font-semibold">
-                        View Progress Tracker
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                </div>
+                                                <div id="view-adventures" class="hidden">
+                <div class="flex justify-between mb-6">
+                    <button onclick="showView('countries')" class="text-blue-400 hover:text-blue-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back to Country Selection
+                    </button>
+                    <button onclick="showView('tracker')" class="text-green-400 hover:text-green-300 flex items-center font-semibold">
+                        View Progress Tracker
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
 
-                <h2 class="text-3xl font-bold mb-6 text-yellow-400" id="current-rank-header">Destination: Japan (Traveler Rank)</h2>
-                
-                <div id="adventure-list" class="space-y-4">
-                    <!-- Adventures will be injected here -->
-                    <div class="text-center text-gray-500">Loading adventures...</div>
-                </div>
-            </div>
-            
-            <!-- --------------------------------------- -->
-            <!-- 4. PROGRESS TRACKER (Badges & Rank)     -->
-            <!-- --------------------------------------- -->
-            <div id="view-tracker" class="hidden">
-                <button onclick="showView('adventures')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m9 18 6-6-6-6"/></svg>
-                    Continue Adventures
-                </button>
+                <h2 class="text-3xl font-bold mb-6 text-yellow-400" id="current-rank-header">Destination: Japan (Traveler Rank)</h2>
+                
+                <div id="adventure-list" class="space-y-4">
+                                        <div class="text-center text-gray-500">Loading adventures...</div>
+                </div>
+            </div>
+            
+                                                <div id="view-tracker" class="hidden">
+                <button onclick="showView('adventures')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m9 18 6-6-6-6"/></svg>
+                    Continue Adventures
+                </button>
 
-                <!-- Current Rank Status -->
-                <div class="rank-card p-6 rounded-xl mb-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Current Rank (Country)</p>
-                            <h3 id="tracker-rank-name" class="text-4xl font-extrabold text-white mt-1">Japan</h3>
-                        </div>
-                        <div id="tracker-rank-icon" class="text-6xl">🇯🇵</div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-gray-700">
-                        <p id="tracker-progress" class="text-xl font-mono text-green-400">0 / 5 Adventures Completed</p>
-                        <p id="tracker-next-rank" class="text-sm text-gray-500 mt-1">Next Rank: France (Globetrotter)</p>
-                    </div>
-                </div>
+                                <div class="rank-card p-6 rounded-xl mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Current Rank (Country)</p>
+                            <h3 id="tracker-rank-name" class="text-4xl font-extrabold text-white mt-1">Japan</h3>
+                        </div>
+                        <div id="tracker-rank-icon" class="text-6xl">🇯🇵</div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                        <p id="tracker-progress" class="text-xl font-mono text-green-400">0 / 5 Adventures Completed</p>
+                        <p id="tracker-next-rank" class="text-sm text-gray-500 mt-1">Next Rank: France (Globetrotter)</p>
+                    </div>
+                </div>
 
-                <!-- 30 Badge Grid -->
-                <h3 class="text-2xl font-bold mb-4">All 30 Badges Earned</h3>
-                <div id="badge-grid" class="grid grid-cols-5 gap-3 p-4 bg-[#161b22] rounded-lg border border-[#2f363d]">
-                    <!-- Badges will be rendered here -->
-                </div>
-            </div>
-            
-            <!-- --------------------------------------- -->
-            <!-- 5. PROFILE VIEW (Enhanced)              -->
-            <!-- --------------------------------------- -->
-            <div id="view-profile" class="hidden text-left space-y-6">
-                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Back to Title Screen
-                </button>
-                <h2 class="text-3xl font-semibold text-red-400 text-center">Traveler Profile</h2>
+                                <h3 class="text-2xl font-bold mb-4">All 30 Badges Earned</h3>
+                <div id="badge-grid" class="grid grid-cols-5 gap-3 p-4 bg-[#161b22] rounded-lg border border-[#2f363d]">
+                                    </div>
+            </div>
+            
+                                                <div id="view-profile" class="hidden text-left space-y-6">
+                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Title Screen
+                </button>
+                <h2 class="text-3xl font-semibold text-red-400 text-center">Traveler Profile</h2>
 
-                <div class="bg-[#161b22] p-6 rounded-xl space-y-4 border border-gray-700 shadow-lg">
-                    <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">Your Details</h3>
-                    
-                    <div>
-                        <label for="profile-name-input" class="block text-sm font-medium text-gray-400 mb-1">Traveler Name</label>
-                        <input type="text" id="profile-name-input" placeholder="Enter your name"
-                               class="w-full p-2 rounded-lg bg-[#0d1117] border border-gray-700 focus:border-red-500 focus:ring-red-500 text-white">
-                    </div>
+                <div class="bg-[#161b22] p-6 rounded-xl space-y-4 border border-gray-700 shadow-lg">
+                    <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">Your Details</h3>
+                    
+                    <div>
+                        <label for="profile-name-input" class="block text-sm font-medium text-gray-400 mb-1">Traveler Name</label>
+                        <input type="text" id="profile-name-input" placeholder="Enter your name"
+                               class="w-full p-2 rounded-lg bg-[#0d1117] border border-gray-700 focus:border-red-500 focus:ring-red-500 text-white">
+                    </div>
 
-                    <div>
-                        <label for="profile-email-input" class="block text-sm font-medium text-gray-400 mb-1">Email (Optional, for updates)</label>
-                        <input type="email" id="profile-email-input" placeholder="your.email@example.com"
-                               class="w-full p-2 rounded-lg bg-[#0d1117] border border-gray-700 focus:border-red-500 focus:ring-red-500 text-white">
-                    </div>
-                    
-                    <button onclick="saveProfile()"
-                            class="w-full py-2 mt-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200">
-                        Save Profile
-                    </button>
-                </div>
-                
-                <div class="bg-[#161b22] p-6 rounded-xl space-y-3 border border-gray-700">
-                    <h3 class="text-xl font-bold text-white mb-2 border-b border-gray-700 pb-2">System Info</h3>
-                    <p class="text-sm text-gray-400">Unique Traveler ID:</p>
-                    <p class="text-sm text-green-400 break-all font-mono" id="profile-user-id">...</p>
-                    <p class="text-xs text-gray-500">*Your progress is saved securely using this ID.*</p>
-                </div>
-            </div>
+                    <div>
+                        <label for="profile-email-input" class="block text-sm font-medium text-gray-400 mb-1">Email (Optional, for updates)</label>
+                        <input type="email" id="profile-email-input" placeholder="your.email@example.com"
+                               class="w-full p-2 rounded-lg bg-[#0d1117] border border-gray-700 focus:border-red-500 focus:ring-red-500 text-white">
+                    </div>
+                    
+                    <button onclick="saveProfile()"
+                            class="w-full py-2 mt-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200">
+                        Save Profile
+                    </button>
+                </div>
+                
+                <div class="bg-[#161b22] p-6 rounded-xl space-y-3 border border-gray-700">
+                    <h3 class="text-xl font-bold text-white mb-2 border-b border-gray-700 pb-2">System Info</h3>
+                    <p class="text-sm text-gray-400">Unique Traveler ID:</p>
+                    <p class="text-sm text-green-400 break-all font-mono" id="profile-user-id">...</p>
+                    <p class="text-xs text-gray-500">*Your progress is saved securely using this ID.*</p>
+                </div>
+            </div>
 
-            <!-- --------------------------------------- -->
-            <!-- 6. SETTINGS VIEW (Implemented)          -->
-            <!-- --------------------------------------- -->
-            <div id="view-settings" class="hidden text-left space-y-6">
-                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Back to Title Screen
-                </button>
-                <h2 class="text-3xl font-semibold text-red-400 text-center">Game Settings</h2>
-                
-                <div class="bg-[#161b22] p-6 rounded-xl space-y-6 border border-gray-700 shadow-lg">
-                    
-                    <!-- Background Music Controls -->
-                    <div class="border-b border-gray-700 pb-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <p class="text-lg font-medium text-gray-300">Background Music</p>
-                            <button id="musicToggleBtn" onclick="toggleMusic()"
-                                    class="py-2 px-4 rounded-lg font-semibold transition duration-200 text-white bg-gray-500 hover:bg-gray-600">
-                                Music Off
-                            </button>
-                        </div>
-                        <label for="musicVolumeSlider" class="block text-sm font-medium text-gray-400 mb-2">
-                            Volume: <span id="musicVolumeValue">30%</span>
-                        </label>
-                        <input type="range" id="musicVolumeSlider" min="0" max="100" value="30" oninput="updateMusicVolume(this.value)"
-                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500">
-                    </div>
+                                                <div id="view-settings" class="hidden text-left space-y-6">
+                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Title Screen
+                </button>
+                <h2 class="text-3xl font-semibold text-red-400 text-center">Game Settings</h2>
+                
+                <div class="bg-[#161b22] p-6 rounded-xl space-y-6 border border-gray-700 shadow-lg">
+                    
+                                        <div class="border-b border-gray-700 pb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-lg font-medium text-gray-300">Background Music</p>
+                            <button id="musicToggleBtn" onclick="toggleMusic()"
+                                    class="py-2 px-4 rounded-lg font-semibold transition duration-200 text-white bg-gray-500 hover:bg-gray-600">
+                                Music Off
+                            </button>
+                        </div>
+                        <label for="musicVolumeSlider" class="block text-sm font-medium text-gray-400 mb-2">
+                            Volume: <span id="musicVolumeValue">30%</span>
+                        </label>
+                        <input type="range" id="musicVolumeSlider" min="0" max="100" value="30" oninput="updateMusicVolume(this.value)"
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500">
+                    </div>
 
-                    <!-- Pronunciation (SFX) Controls -->
-                    <div>
-                        <label for="sfxVolumeSlider" class="block text-lg font-medium text-gray-300 mb-3">Pronunciation Volume (SFX)</label>
-                        <label for="sfxVolumeSlider" class="block text-sm font-medium text-gray-400 mb-2">
-                            Volume: <span id="sfxVolumeValue">80%</span>
-                        </label>
-                        <input type="range" id="sfxVolumeSlider" min="0" max="100" value="80" oninput="updateSfxVolume(this.value)"
-                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500">
-                    </div>
+                                        <div>
+                        <label for="sfxVolumeSlider" class="block text-lg font-medium text-gray-300 mb-3">Pronunciation Volume (SFX)</label>
+                        <label for="sfxVolumeSlider" class="block text-sm font-medium text-gray-400 mb-2">
+                            Volume: <span id="sfxVolumeValue">80%</span>
+                        </label>
+                        <input type="range" id="sfxVolumeSlider" min="0" max="100" value="80" oninput="updateSfxVolume(this.value)"
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500">
+                    </div>
 
-                </div>
-            </div>
+                </div>
+            </div>
 
-            <!-- --------------------------------------- -->
-            <!-- 7. GAME/SCENARIO VIEW (New View)        -->
-            <!-- --------------------------------------- -->
-            <div id="view-game" class="hidden">
-                <button onclick="showView('adventures')" class="text-blue-400 hover:text-blue-300 mb-6 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Exit Scenario
-                </button>
-                
-                <h2 class="text-3xl font-bold mb-4 text-yellow-400" id="game-title">Adventure Title</h2>
-                <p class="text-gray-400 mb-8" id="game-subtitle">Country: Japan | Adventure 1</p>
-                <p class="text-xl font-bold text-white mb-4" id="quiz-question-text">Question Text Goes Here</p>
+                                                <div id="view-game" class="hidden">
+                <button onclick="showView('adventures')" class="text-blue-400 hover:text-blue-300 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Exit Scenario
+                </button>
+                
+                <h2 class="text-3xl font-bold mb-4 text-yellow-400" id="game-title">Adventure Title</h2>
+                <p class="text-gray-400 mb-8" id="game-subtitle">Country: Japan | Adventure 1</p>
+                <p class="text-xl font-bold text-white mb-4" id="quiz-question-text">Question Text Goes Here</p>
 
-                <div class="rank-card p-6 rounded-xl space-y-4">
-                    <!-- Image Placeholder -->
-                    <img id="scenario-image" class="scenario-image" alt="Scenario Context Image" src="">
-                    
-                    <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <!-- Quiz buttons injected here -->
-                    </div>
-                    
-                    <!-- Feedback and Next Scene button -->
-                    <div id="quiz-feedback" class="pt-4 border-t border-gray-700 hidden">
-                        <p id="feedback-message" class="text-xl font-bold mb-3"></p>
-                        <button id="next-scene-btn" onclick="nextScene()"
-                                class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition duration-200">
-                            Continue Touring (1/5 Scenes Complete)
-                        </button>
-                    </div>
-                </div>
+                <div class="rank-card p-6 rounded-xl space-y-4">
+                                        <img id="scenario-image" class="scenario-image" alt="Scenario Context Image" src="">
+                    
+                    <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            </div>
+                    
+                                        <div id="quiz-feedback" class="pt-4 border-t border-gray-700 hidden">
+                        <p id="feedback-message" class="text-xl font-bold mb-3"></p>
+                        <button id="next-scene-btn" onclick="nextScene()"
+                                class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition duration-200">
+                            Continue Touring (1/5 Scenes Complete)
+                        </button>
+                    </div>
+                </div>
 
-                <button id="complete-adventure-btn" disabled
-                    class="w-full mt-8 px-10 py-4 bg-gray-700 text-white font-bold rounded-xl shadow-lg transition duration-200 opacity-50 cursor-not-allowed">
-                    COMPLETE ADVENTURE AND EARN BADGE
-                </button>
-            </div>
-            
-            <!-- Message Box -->
-            <div id="message-box" class="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-2xl text-white font-semibold transition-opacity duration-300 opacity-0 pointer-events-none">
-                <!-- Messages go here -->
-            </div>
+                <button id="complete-adventure-btn" disabled
+                    class="w-full mt-8 px-10 py-4 bg-gray-700 text-white font-bold rounded-xl shadow-lg transition duration-200 opacity-50 cursor-not-allowed">
+                    COMPLETE ADVENTURE AND EARN BADGE
+                </button>
+            </div>
+            
+                        <div id="message-box" class="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-2xl text-white font-semibold transition-opacity duration-300 opacity-0 pointer-events-none">
+                            </div>
 
-        </div>
-    </div>
+        </div>
+    </div>
 
-    <!-- Firebase SDKs and Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Set log level for debugging
-        setLogLevel('Debug');
+        // Set log level for debugging
+        setLogLevel('Debug');
 
-        // --- GLOBAL VARIABLES & FIREBASE SETUP ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // --- GLOBAL VARIABLES & FIREBASE SETUP ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        let db, auth, userId;
-        let isAuthReady = false;
-        
-        const DEFAULT_SETTINGS = {
-            isMusicPlaying: false,
-            musicVolume: 0.3,
-            sfxVolume: 0.8
-        };
-        
-        let userData = { 
-            progress: {}, 
-            profile: { name: 'Traveler', email: '' },
-            settings: DEFAULT_SETTINGS
-        }; 
-        
-        let currentSelectedCountryId = 'Japan'; 
-        let activeAdventure = { 
-            countryId: null, 
-            adventureIndex: null, 
-            sceneIndex: 0, 
-            sceneCount: 0 
-        };
+        let db, auth, userId;
+        let isAuthReady = false;
+        
+        const DEFAULT_SETTINGS = {
+            isMusicPlaying: false,
+            musicVolume: 0.3,
+            sfxVolume: 0.8
+        };
+        
+        let userData = { 
+            progress: {}, 
+            profile: { name: 'Traveler', email: '' },
+            settings: DEFAULT_SETTINGS
+        }; 
+        
+        let currentSelectedCountryId = 'Japan'; 
+        let activeAdventure = { 
+            countryId: null, 
+            adventureIndex: null, 
+            sceneIndex: 0, 
+            sceneCount: 0 
+        };
 
-        // Firestore path for user's game state
-        const progressPath = (uid) => `artifacts/${appId}/users/${uid}/game_progress/travel_data`;
-        
-        // Audio elements
-        const bgmAudio = document.getElementById('bgm');
-        const sfxAudio = document.getElementById('sfx');
+        // Firestore path for user's game state
+        const progressPath = (uid) => `artifacts/${appId}/users/${uid}/game_progress/travel_data`;
+        
+        // Audio elements
+        const bgmAudio = document.getElementById('bgm');
+        const sfxAudio = document.getElementById('sfx');
 
 
-        // --- PROGRESSION DEFINITION (6 Countries x 5 Adventures = 30 Badges) ---
-        const PROGRESS_MAP = [
-            { id: 'Japan', name: "Japan", rankName: "Traveler", icon: '🇯🇵' },
-            { id: 'France', name: "France", rankName: "Globetrotter", icon: '🇫🇷' },
-            { id: 'Korea', name: "Korea", rankName: "Pioneer", icon: '🇰🇷' },
-            { id: 'Spain', name: "Spain", rankName: "Navigator", icon: '🇪🇸' },
-            { id: 'Germany', name: "Germany", rankName: "Diplomat", icon: '🇩🇪' },
-            { id: 'China', name: "China", rankName: "Ambassador", icon: '🇨🇳' }, // Final progression rank
-        ];
-        
-        const ADVENTURE_NAMES = ["Discovery", "Exploration", "Challenge", "Expedition", "Summit"];
+        // --- PROGRESSION DEFINITION (6 Countries x 5 Adventures = 30 Badges) ---
+        const PROGRESS_MAP = [
+            { id: 'Japan', name: "Japan", rankName: "Traveler", icon: '🇯🇵' },
+            { id: 'France', name: "France", rankName: "Globetrotter", icon: '🇫🇷' },
+            { id: 'Korea', name: "Korea", rankName: "Pioneer", icon: '🇰🇷' },
+            { id: 'Spain', name: "Spain", rankName: "Navigator", icon: '🇪🇸' },
+            { id: 'Germany', name: "Germany", rankName: "Diplomat", icon: '🇩🇪' },
+            { id: 'China', name: "China", rankName: "Ambassador", icon: '🇨🇳' }, // Final progression rank
+        ];
+        
+        const ADVENTURE_NAMES = ["Discovery", "Exploration", "Challenge", "Expedition", "Summit"];
 
-        // --- EXTRACTED JAPAN PHRASE CONTENT MAP (Used for all options) ---
-        const JAPAN_PHRASE_CONTENT = {
-            "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3", translation: "Where is the baggage?" },
-            "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3", translation: "Please take me to the hotel." },
-            "Say 'I would like to check in' to the hotel clerk.": { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", audio: "audio/checkin.mp3", translation: "I would like to check in." },
-            "Say 'I am really hungry.'": { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", audio: "audio/hungry.mp3", translation: "I'm hungry." },
-            "Say 'I would like a bowl of ramen.'": { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", audio: "audio/ramen.mp3", translation: "I would like a bowl of ramen." },
-            "Say 'Check, please.'": { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", audio: "audio/checkplease.mp3", translation: "Check, please." },
-            "Where is the toilet?": { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", audio: "audio/toire.mp3", translation: "Where is the toilet?" },
-            "How much is this?": { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", audio: "audio/ikura.mp3", translation: "How much is this?" },
-            "Where is the taxi stand?": { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", audio: "audio/taxistand.mp3", translation: "Where is the taxi stand?" },
-            "How are you?": { japanese: "元気ですか？", romaji: "Genki desu ka?", audio: "audio/genki.mp3", translation: "How are you?" },
-            "Where is a delicious restaurant?": { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", audio: "audio/restaurant.mp3", translation: "Where is a delicious restaurant?" },
-            "I have a reservation.": { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", audio: "audio/reservation.mp3", translation: "I have a reservation." },
-            "Order Miso Ramen and a beer.": { japanese: "味噌ラーメンとビールをお願いします。", romaji: "Miso rāmen to biiru o onegai shimasu.", audio: "audio/miso_ramen.mp3", translation: "Miso ramen and beer, please." },
-            "Say 'Thank you for the meal' after eating.": { japanese: "ごちそうさまでした。", romaji: "Gochisōsama deshita.", audio: "audio/gochisosama.mp3", translation: "Thank you for the meal (I am finished)." },
-            "Ask for the nearest subway station.": { japanese: "一番近い駅はどこですか？", romaji: "Ichiban chikai eki wa doko desu ka?", audio: "audio/chikai_eki.mp3", translation: "Where is the nearest subway station?" },
-        };
+        // --- EXTRACTED JAPAN PHRASE CONTENT MAP (Used for all options) ---
+        const JAPAN_PHRASE_CONTENT = {
+            "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3", translation: "Where is the baggage?" },
+            "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3", translation: "Please take me to the hotel." },
+            "Say 'I would like to check in' to the hotel clerk.": { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", audio: "audio/checkin.mp3", translation: "I would like to check in." },
+            "Say 'I am really hungry.'": { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", audio: "audio/hungry.mp3", translation: "I'm hungry." },
+            "Say 'I would like a bowl of ramen.'": { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", audio: "audio/ramen.mp3", translation: "I would like a bowl of ramen." },
+            "Say 'Check, please.'": { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", audio: "audio/checkplease.mp3", translation: "Check, please." },
+            "Where is the toilet?": { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", audio: "audio/toire.mp3", translation: "Where is the toilet?" },
+            "How much is this?": { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", audio: "audio/ikura.mp3", translation: "How much is this?" },
+            "Where is the taxi stand?": { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", audio: "audio/taxistand.mp3", translation: "Where is the taxi stand?" },
+            "How are you?": { japanese: "元気ですか？", romaji: "Genki desu ka?", audio: "audio/genki.mp3", translation: "How are you?" },
+            "Where is a delicious restaurant?": { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", audio: "audio/restaurant.mp3", translation: "Where is a delicious restaurant?" },
+            "I have a reservation.": { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", audio: "audio/reservation.mp3", translation: "I have a reservation." },
+            "Order Miso Ramen and a beer.": { japanese: "味噌ラーメンとビールをお願いします。", romaji: "Miso rāmen to biiru o onegai shimasu.", audio: "audio/miso_ramen.mp3", translation: "Miso ramen and beer, please." },
+            "Say 'Thank you for the meal' after eating.": { japanese: "ごちそうさまでした。", romaji: "Gochisōsama deshita.", audio: "audio/gochisosama.mp3", translation: "Thank you for the meal (I am finished)." },
+            "Ask for the nearest subway station.": { japanese: "一番近い駅はどこですか？", romaji: "Ichiban chikai eki wa doko desu ka?", audio: "audio/chikai_eki.mp3", translation: "Where is the nearest subway station?" },
+        };
 
 
-        // --- ADVENTURE CONTENT: DEFINE YOUR SCENARIO DETAILS HERE ---
-        const ADVENTURE_DETAILS = {
-            // ========================= JAPAN ADVENTURES (5 SCENES) =========================
-            'Japan_Adventure1': {
-                title: "Tokyo Arrival: Check-In & Transport",
-                image: "https://i.imgur.com/Qq6c0fj.jpeg", // Airport Image
+        // --- ADVENTURE CONTENT: DEFINE YOUR SCENARIO DETAILS HERE ---
+        const ADVENTURE_DETAILS = {
+            // ========================= JAPAN ADVENTURES (5 SCENES) =========================
+            'Japan_Adventure1': {
+                title: "Tokyo Arrival: Check-In & Transport",
+                image: "https://i.imgur.com/Qq6c0fj.jpeg", // Airport Image
+                scenes: [
+                    {
+                        question: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
+                        correct: "Ask for the baggage claim.",
+                        options: ["Where is the toilet?", "How much is this?"],
+                    },
+                    {
+                        question: "You find the baggage and need to take a taxi. How do you ask the driver to take you to the hotel?",
+                        correct: "Tell the taxi driver your hotel address.",
+                        options: ["Where is the taxi stand?", "Say 'I would like to check in' to the hotel clerk."],
+                    },
+                    {
+                        question: "You've arrived at the hotel and are talking to the front desk. What is the correct phrase to begin the check-in process?",
+                        correct: "Say 'I would like to check in' to the hotel clerk.",
+                        options: ["Say 'Check, please.'", "I have a reservation."],
+                    },
+                    {
+                        question: "After settling in, you realize you're starving. How do you tell the hotel staff or a friend 'I am really hungry'?",
+                        correct: "Say 'I am really hungry.'",
+                        options: ["How are you?", "Where is a delicious restaurant?"],
+                    },
+                    {
+                        question: "You find a local ramen shop and approach the counter. How do you ask for the dish you want?",
+                        correct: "Say 'I would like a bowl of ramen.'",
+                        options: ["Say 'Check, please.'", "Say 'Thank you for the meal' after eating."],
+                    },
+                ]
+            },
+            
+            // --- Remaining Japan Adventures ---
+            'Japan_Adventure2': { 
+                title: "Ramen & Hunger: Ordering Your First Meal", 
+                image: "https://i.imgur.com/8RAKAAT.jpeg", 
                 scenes: [
-                    {
-                        question: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
-                        correct: "Ask for the baggage claim.",
-                        options: ["Where is the toilet?", "How much is this?"],
-                    },
-                    {
-                        question: "You find the baggage and need to take a taxi. How do you ask the driver to take you to the hotel?",
-                        correct: "Tell the taxi driver your hotel address.",
-                        options: ["Where is the taxi stand?", "Say 'I would like to check in' to the hotel clerk."],
-                    },
-                    {
-                        question: "You've arrived at the hotel and are talking to the front desk. What is the correct phrase to begin the check-in process?",
-                        correct: "Say 'I would like to check in' to the hotel clerk.",
-                        options: ["Say 'Check, please.'", "I have a reservation."],
-                    },
-                    {
-                        question: "After settling in, you realize you're starving. How do you tell the hotel staff or a friend 'I am really hungry'?",
-                        correct: "Say 'I am really hungry.'",
-                        options: ["How are you?", "Where is a delicious restaurant?"],
-                    },
-                    {
-                        question: "You find a local ramen shop and approach the counter. How do you ask for the dish you want?",
-                        correct: "Say 'I would like a bowl of ramen.'",
-                        options: ["Say 'Check, please.'", "Say 'Thank you for the meal' after eating."],
-                    },
-                ]
+                    { question: "You are now finishing your ramen. How do you politely ask for the bill?", correct: "Say 'Check, please.'", options: ["Where is the toilet?", "How much is this?"] }, 
+                    { question: "You want to try something specific. How do you order Miso Ramen and a beer?", correct: "Order Miso Ramen and a beer.", options: ["Say 'I would like a bowl of ramen.'", "Say 'I am really hungry.'"] }, 
+                    { question: "Your meal is finished and you want to thank the chef for the food (essential etiquette).", correct: "Say 'Thank you for the meal' after eating.", options: ["Say 'Check, please.'", "How much is this?"] }, 
+                    { question: "You're thirsty and see a vending machine. How do you ask the price of a drink?", correct: "How much is this?", options: ["Ask for the nearest subway station.", "Where is the toilet?"] }, 
+                    { question: "You're full and need to locate the nearest restroom. What do you ask?", correct: "Where is the toilet?", options: ["How are you?", "Where is a delicious restaurant?"] }
+                ] 
             },
-            
-            // --- Remaining Japan Adventures (Placeholder Scenes) ---
-            'Japan_Adventure2': { title: "Ramen & Hunger: Ordering Your First Meal", image: "https://i.imgur.com/8RAKAAT.jpeg", scenes: [{ question: "Placeholder Q1", correct: "Say 'I am really hungry.'", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Say 'I would like a bowl of ramen.'", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "Say 'Check, please.'", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
-            'Japan_Adventure3': { title: "Shibuya Crossing Navigation", image: "https://i.imgur.com/WjxmkKu.jpeg", scenes: [{ question: "Placeholder Q1", correct: "Ask for the nearest subway station.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Where is the taxi stand?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "How much is this?", options: ["Where is the toilet?", "Ask for the baggage claim."] }, { question: "Placeholder Q4", correct: "Say 'I would like to check in' to the hotel clerk.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Where is a delicious restaurant?", options: ["Where is the toilet?", "How much is this?"] }] },
-            'Japan_Adventure4': { title: "Hotel Etiquette: Checking in and Asking for Help", image: "https://i.imgur.com/sAYoQkS.jpeg", scenes: [{ question: "Placeholder Q1", correct: "I have a reservation.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Where is the toilet?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "How are you?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
-            'Japan_Adventure5': { title: "Local Dining Recommendations", image: "https://i.imgur.com/EIidutG.png", scenes: [{ question: "Placeholder Q1", correct: "Where is a delicious restaurant?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Order Miso Ramen and a beer.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "Say 'Thank you for the meal' after eating.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
+            'Japan_Adventure3': { 
+                title: "Shibuya Crossing Navigation", 
+                image: "https://i.imgur.com/WjxmkKu.jpeg", 
+                scenes: [
+                    { question: "You need to find the train station entrance in the busy crowd. How do you ask for the nearest station?", correct: "Ask for the nearest subway station.", options: ["Where is the toilet?", "How much is this?"] }, 
+                    { question: "A friend is looking for a good dinner spot. How do you ask for a delicious restaurant recommendation?", correct: "Where is a delicious restaurant?", options: ["Where is the taxi stand?", "How are you?"] }, 
+                    { question: "You decide to take a taxi instead. How do you ask where to find one?", correct: "Where is the taxi stand?", options: ["How much is this?", "Ask for the nearest subway station."] }, 
+                    { question: "You bump into a polite stranger. How do you casually ask them how they are?", correct: "How are you?", options: ["Say 'Thank you for the meal' after eating.", "Ask for the baggage claim."] }, 
+                    { question: "A souvenir caught your eye. How do you ask a stall owner how much the item is?", correct: "How much is this?", options: ["Tell the taxi driver your hotel address.", "Say 'I am really hungry.'"] }
+                ] 
+            },
+            'Japan_Adventure4': { title: "Hotel Etiquette: Checking in and Asking for Help", image: "https://i.imgur.com/sAYoQkS.jpeg", scenes: [{ question: "Placeholder Q1", correct: "I have a reservation.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Where is the toilet?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "How are you?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
+            'Japan_Adventure5': { title: "Local Dining Recommendations", image: "https://i.imgur.com/EIidutG.png", scenes: [{ question: "Placeholder Q1", correct: "Where is a delicious restaurant?", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q2", correct: "Order Miso Ramen and a beer.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q3", correct: "Say 'Thank you for the meal' after eating.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q4", correct: "Ask for the baggage claim.", options: ["Where is the toilet?", "How much is this?"] }, { question: "Placeholder Q5", correct: "Tell the taxi driver your hotel address.", options: ["Where is the toilet?", "How much is this?"] }] },
 
-            // --- Remaining Countries (Simplified Placeholder Scenes) ---
-            'France_Adventure1': { title: "Paris Cafe: Perfecting the Order", image: "https://placehold.co/400x200/A0A0A0/white?text=FRENCH+CAFE+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Ask for the bill.", options: ["Order 'un café, s'il vous plaît'.", "Say 'Have a good day'."] }, { question: "Placeholder Q2", correct: "Order 'un café, s'il vous plaît'.", options: ["Ask for the bill.", "Say 'Have a good day'."] }, { question: "Placeholder Q3", correct: "Say 'Have a good day'.", options: ["Ask for the bill.", "Order 'un café, s'il vous plaît'."] }, { question: "Placeholder Q4", correct: "Ask for the bill.", options: ["Order 'un café, s'il vous plaît'.", "Say 'Have a good day'."] }, { question: "Placeholder Q5", correct: "Order 'un café, s'il vous plaît'.", options: ["Ask for the bill.", "Say 'Have a good day'."] }] },
-            'France_Adventure2': { title: "Metro Ticket Troubles", image: "https://placehold.co/400x200/607d8b/white?text=PARIS+METRO+STATION", scenes: [{ question: "Placeholder Q1", correct: "Ask for a book of ten tickets.", options: ["Apologize for bumping into someone.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q2", correct: "Ask if this line goes to the Louvre.", options: ["Ask for a book of ten tickets.", "Apologize for bumping into someone."] }, { question: "Placeholder Q3", correct: "Apologize for bumping into someone.", options: ["Ask for a book of ten tickets.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q4", correct: "Ask for a book of ten tickets.", options: ["Apologize for bumping into someone.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q5", correct: "Ask if this line goes to the Louvre.", options: ["Ask for a book of ten tickets.", "Apologize for bumping into someone."] }] },
-            'France_Adventure3': { title: "Art Museum Inquiry", image: "https://placehold.co/400x200/3F51B5/white?text=LOUVRE+MUSEUM+LOBBY", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Do you have audio guides?'", options: ["Thank the attendant for their assistance.", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the Mona Lisa?'", options: ["Ask 'Do you have audio guides?'", "Thank the attendant for their assistance."] }, { question: "Placeholder Q3", correct: "Thank the attendant for their assistance.", options: ["Ask 'Do you have audio guides?'", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q4", correct: "Ask 'Do you have audio guides?'", options: ["Thank the attendant for their assistance.", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the Mona Lisa?'", options: ["Ask 'Do you have audio guides?'", "Thank the attendant for their assistance."] }] },
-            'France_Adventure4': { title: "Market Day Bargaining", image: "https://placehold.co/400x200/8BC34A/white?text=STREET+MARKET+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How much is this?'", options: ["Agree to the final price.", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q2", correct: "Say 'It's too expensive!' (politely).", options: ["Ask 'How much is this?'", "Agree to the final price."] }, { question: "Placeholder Q3", correct: "Agree to the final price.", options: ["Ask 'How much is this?'", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q4", correct: "Ask 'How much is this?'", options: ["Agree to the final price.", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q5", correct: "Say 'It's too expensive!' (politely).", options: ["Ask 'How much is this?'", "Agree to the final price."] }] },
-            'France_Adventure5': { title: "Evening Dining Reservations", image: "https://placehold.co/400x200/795548/white?text=FINE+DINING+RESTAURANT", scenes: [{ question: "Placeholder Q1", correct: "State 'I have a reservation for two.'", options: ["Say 'The food was excellent'.", "Ask for a table near the window."] }, { question: "Placeholder Q2", correct: "Ask for a table near the window.", options: ["State 'I have a reservation for two.'", "Say 'The food was excellent'."] }, { question: "Placeholder Q3", correct: "Say 'The food was excellent'.", options: ["State 'I have a reservation for two.'", "Ask for a table near the window."] }, { question: "Placeholder Q4", correct: "State 'I have a reservation for two.'", options: ["Say 'The food was excellent'.", "Ask for a table near the window."] }, { question: "Placeholder Q5", correct: "Ask for a table near the window.", options: ["State 'I have a reservation for two.'", "Say 'The food was excellent'."] }] },
+            // --- Remaining Countries (Simplified Placeholder Scenes) ---
+            'France_Adventure1': { title: "Paris Cafe: Perfecting the Order", image: "https://placehold.co/400x200/A0A0A0/white?text=FRENCH+CAFE+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Ask for the bill.", options: ["Order 'un café, s'il vous plaît'.", "Say 'Have a good day'."] }, { question: "Placeholder Q2", correct: "Order 'un café, s'il vous plaît'.", options: ["Ask for the bill.", "Say 'Have a good day'."] }, { question: "Placeholder Q3", correct: "Say 'Have a good day'.", options: ["Ask for the bill.", "Order 'un café, s'il vous plaît'."] }, { question: "Placeholder Q4", correct: "Ask for the bill.", options: ["Order 'un café, s'il vous plaît'.", "Say 'Have a good day'."] }, { question: "Placeholder Q5", correct: "Order 'un café, s'il vous plaît'.", options: ["Ask for the bill.", "Say 'Have a good day'."] }] },
+            'France_Adventure2': { title: "Metro Ticket Troubles", image: "https://placehold.co/400x200/607d8b/white?text=PARIS+METRO+STATION", scenes: [{ question: "Placeholder Q1", correct: "Ask for a book of ten tickets.", options: ["Apologize for bumping into someone.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q2", correct: "Ask if this line goes to the Louvre.", options: ["Ask for a book of ten tickets.", "Apologize for bumping into someone."] }, { question: "Placeholder Q3", correct: "Apologize for bumping into someone.", options: ["Ask for a book of ten tickets.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q4", correct: "Ask for a book of ten tickets.", options: ["Apologize for bumping into someone.", "Ask if this line goes to the Louvre."] }, { question: "Placeholder Q5", correct: "Ask if this line goes to the Louvre.", options: ["Ask for a book of ten tickets.", "Apologize for bumping into someone."] }] },
+            'France_Adventure3': { title: "Art Museum Inquiry", image: "https://placehold.co/400x200/3F51B5/white?text=LOUVRE+MUSEUM+LOBBY", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Do you have audio guides?'", options: ["Thank the attendant for their assistance.", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the Mona Lisa?'", options: ["Ask 'Do you have audio guides?'", "Thank the attendant for their assistance."] }, { question: "Placeholder Q3", correct: "Thank the attendant for their assistance.", options: ["Ask 'Do you have audio guides?'", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q4", correct: "Ask 'Do you have audio guides?'", options: ["Thank the attendant for their assistance.", "Ask 'Where is the Mona Lisa?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the Mona Lisa?'", options: ["Ask 'Do you have audio guides?'", "Thank the attendant for their assistance."] }] },
+            'France_Adventure4': { title: "Market Day Bargaining", image: "https://placehold.co/400x200/8BC34A/white?text=STREET+MARKET+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How much is this?'", options: ["Agree to the final price.", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q2", correct: "Say 'It's too expensive!' (politely).", options: ["Ask 'How much is this?'", "Agree to the final price."] }, { question: "Placeholder Q3", correct: "Agree to the final price.", options: ["Ask 'How much is this?'", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q4", correct: "Ask 'How much is this?'", options: ["Agree to the final price.", "Say 'It's too expensive!' (politely)."] }, { question: "Placeholder Q5", correct: "Say 'It's too expensive!' (politely).", options: ["Ask 'How much is this?'", "Agree to the final price."] }] },
+            'France_Adventure5': { title: "Evening Dining Reservations", image: "https://placehold.co/400x200/795548/white?text=FINE+DINING+RESTAURANT", scenes: [{ question: "Placeholder Q1", correct: "State 'I have a reservation for two.'", options: ["Say 'The food was excellent'.", "Ask for a table near the window."] }, { question: "Placeholder Q2", correct: "Ask for a table near the window.", options: ["State 'I have a reservation for two.'", "Say 'The food was excellent'."] }, { question: "Placeholder Q3", correct: "Say 'The food was excellent'.", options: ["State 'I have a reservation for two.'", "Ask for a table near the window."] }, { question: "Placeholder Q4", correct: "State 'I have a reservation for two.'", options: ["Say 'The food was excellent'.", "Ask for a table near the window."] }, { question: "Placeholder Q5", correct: "Ask for a table near the window.", options: ["State 'I have a reservation for two.'", "Say 'The food was excellent'."] }] },
 
-            'Korea_Adventure1': { title: "Seoul Subway System", image: "https://placehold.co/400x200/FF9800/white?text=SEOUL+SUBWAY+RIDE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How do I get to Gangnam?'", options: ["Apologize for bumping into someone.", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this the transfer line?'", options: ["Ask 'How do I get to Gangnam?'", "Apologize for bumping into someone."] }, { question: "Placeholder Q3", correct: "Apologize for bumping into someone.", options: ["Ask 'How do I get to Gangnam?'", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q4", correct: "Ask 'How do I get to Gangnam?'", options: ["Apologize for bumping into someone.", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this the transfer line?'", options: ["Ask 'How do I get to Gangnam?'", "Apologize for bumping into someone."] }] },
-            'Korea_Adventure2': { title: "Korean BBQ Feast", image: "https://placehold.co/400x200/E91E63/white?text=KBBQ+RESTAURANT", scenes: [{ question: "Placeholder Q1", correct: "Ask for more Kimchi.", options: ["Say 'Cheers!' before drinking.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q2", correct: "Ask for a bottle of Soju.", options: ["Ask for more Kimchi.", "Say 'Cheers!' before drinking."] }, { question: "Placeholder Q3", correct: "Say 'Cheers!' before drinking.", options: ["Ask for more Kimchi.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q4", correct: "Ask for more Kimchi.", options: ["Say 'Cheers!' before drinking.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q5", correct: "Ask for a bottle of Soju.", options: ["Ask for more Kimchi.", "Say 'Cheers!' before drinking."] }] },
-            'Korea_Adventure3': { title: "Hailing a Taxi in Myeongdong", image: "https://placehold.co/400x200/9E9E9E/white?text=MYEONGDONG+TAXI+STAND", scenes: [{ question: "Placeholder Q1", correct: "Politely stop a taxi.", options: ["Ask 'How much is the fare?'", "Tell the driver your destination."] }, { question: "Placeholder Q2", correct: "Tell the driver your destination.", options: ["Politely stop a taxi.", "Ask 'How much is the fare?'"] }, { question: "Placeholder Q3", correct: "Ask 'How much is the fare?'", options: ["Politely stop a taxi.", "Tell the driver your destination."] }, { question: "Placeholder Q4", correct: "Politely stop a taxi.", options: ["Ask 'How much is the fare?'", "Tell the driver your destination."] }, { question: "Placeholder Q5", correct: "Tell the driver your destination.", options: ["Politely stop a taxi.", "Ask 'How much is the fare?'"] }] },
-            'Korea_Adventure4': { title: "Late-Night Convenience Store", image: "https://placehold.co/400x200/4CAF50/white?text=KOREAN+CONVENIENCE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Do you have bottled water?'", options: ["Say 'Thank you' in a casual way.", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the instant ramen?'", options: ["Ask 'Do you have bottled water?'", "Say 'Thank you' in a casual way."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' in a casual way.", options: ["Ask 'Do you have bottled water?'", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q4", correct: "Ask 'Do you have bottled water?'", options: ["Say 'Thank you' in a casual way.", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the instant ramen?'", options: ["Ask 'Do you have bottled water?'", "Say 'Thank you' in a casual way."] }] },
-            'Korea_Adventure5': { title: "Temple Stay Etiquette", image: "https://placehold.co/400x200/00BCD4/white?text=KOREAN+TEMPLE+GREETING", scenes: [{ question: "Placeholder Q1", correct: "Use a formal greeting to a monk.", options: ["Say 'Goodbye' respectfully.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q2", correct: "Ask 'Can I take a picture?'", options: ["Use a formal greeting to a monk.", "Say 'Goodbye' respectfully."] }, { question: "Placeholder Q3", correct: "Say 'Goodbye' respectfully.", options: ["Use a formal greeting to a monk.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q4", correct: "Use a formal greeting to a monk.", options: ["Say 'Goodbye' respectfully.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q5", correct: "Ask 'Can I take a picture?'", options: ["Use a formal greeting to a monk.", "Say 'Goodbye' respectfully."] }] },
-            // ... (Remaining countries follow the placeholder pattern)
-            'Spain_Adventure1': { title: "Madrid Airport Check-in", image: "https://placehold.co/400x200/F44336/white?text=MADRID+CHECKIN+DESK", scenes: [{ question: "Placeholder Q1", correct: "State 'I'd like to check in for the flight to Barcelona.'", options: ["Ask for a window seat.", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is the flight on time?'", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask for a window seat."] }, { question: "Placeholder Q3", correct: "Ask for a window seat.", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q4", correct: "State 'I'd like to check in for the flight to Barcelona.'", options: ["Ask for a window seat.", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is the flight on time?'", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask for a window seat."] }] },
-            'Spain_Adventure2': { title: "Ordering Tapas and Drinks", image: "https://placehold.co/400x200/FFEB3B/black?text=TAPAS+BAR+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Order a specific tapa (e.g., patatas bravas).", options: ["Ask for the bill.", "Ask for a glass of red wine."] }, { question: "Placeholder Q2", correct: "Ask for a glass of red wine.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for the bill."] }, { question: "Placeholder Q3", correct: "Ask for the bill.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for a glass of red wine."] }, { question: "Placeholder Q4", correct: "Order a specific tapa (e.g., patatas bravas).", options: ["Ask for the bill.", "Ask for a glass of red wine."] }, { question: "Placeholder Q5", correct: "Ask for a glass of red wine.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for the bill."] }] },
-            'Spain_Adventure3': { title: "Hotel Problem Solving", image: "https://placehold.co/400x200/03A9F4/white?text=SPANISH+HOTEL+LOBBY", scenes: [{ question: "Placeholder Q1", correct: "State 'The air conditioning isn't working.'", options: ["Thank them for their help.", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q2", correct: "Ask 'Can someone fix it now?'", options: ["State 'The air conditioning isn't working.'", "Thank them for their help."] }, { question: "Placeholder Q3", correct: "Thank them for their help.", options: ["State 'The air conditioning isn't working.'", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q4", correct: "State 'The air conditioning isn't working.'", options: ["Thank them for their help.", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q5", correct: "Ask 'Can someone fix it now?'", options: ["State 'The air conditioning isn't working.'", "Thank them for their help."] }] },
-            'Spain_Adventure4': { title: "Siesta Shopping Schedule", image: "https://placehold.co/400x200/CDDC39/black?text=SIESTA+SHOP+DOOR", scenes: [{ question: "Placeholder Q1", correct: "Ask 'What time do you open?'", options: ["Ask for a bag for your purchase.", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q2", correct: "Ask 'When does the siesta end?'", options: ["Ask 'What time do you open?'", "Ask for a bag for your purchase."] }, { question: "Placeholder Q3", correct: "Ask for a bag for your purchase.", options: ["Ask 'What time do you open?'", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q4", correct: "Ask 'What time do you open?'", options: ["Ask for a bag for your purchase.", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q5", correct: "Ask 'When does the siesta end?'", options: ["Ask 'What time do you open?'", "Ask for a bag for your purchase."] }] },
-            'Spain_Adventure5': { title: "Local Greetings and Farewell", image: "https://placehold.co/400x200/E91E63/white?text=LOCAL+FIESTA+GREETING", scenes: [{ question: "Placeholder Q1", correct: "Greet a new friend casually.", options: ["Say 'See you later!'", "Ask 'How are you?'"] }, { question: "Placeholder Q2", correct: "Ask 'How are you?'", options: ["Greet a new friend casually.", "Say 'See you later!'"] }, { question: "Placeholder Q3", correct: "Say 'See you later!'", options: ["Greet a new friend casually.", "Ask 'How are you?'"] }, { question: "Placeholder Q4", correct: "Greet a new friend casually.", options: ["Say 'See you later!'", "Ask 'How are you?'"] }, { question: "Placeholder Q5", correct: "Ask 'How are you?'", options: ["Greet a new friend casually.", "Say 'See you later!'"] }] },
+            'Korea_Adventure1': { title: "Seoul Subway System", image: "https://placehold.co/400x200/FF9800/white?text=SEOUL+SUBWAY+RIDE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How do I get to Gangnam?'", options: ["Apologize for bumping into someone.", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this the transfer line?'", options: ["Ask 'How do I get to Gangnam?'", "Apologize for bumping into someone."] }, { question: "Placeholder Q3", correct: "Apologize for bumping into someone.", options: ["Ask 'How do I get to Gangnam?'", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q4", correct: "Ask 'How do I get to Gangnam?'", options: ["Apologize for bumping into someone.", "Ask 'Is this the transfer line?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this the transfer line?'", options: ["Ask 'How do I get to Gangnam?'", "Apologize for bumping into someone."] }] },
+            'Korea_Adventure2': { title: "Korean BBQ Feast", image: "https://placehold.co/400x200/E91E63/white?text=KBBQ+RESTAURANT", scenes: [{ question: "Placeholder Q1", correct: "Ask for more Kimchi.", options: ["Say 'Cheers!' before drinking.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q2", correct: "Ask for a bottle of Soju.", options: ["Ask for more Kimchi.", "Say 'Cheers!' before drinking."] }, { question: "Placeholder Q3", correct: "Say 'Cheers!' before drinking.", options: ["Ask for more Kimchi.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q4", correct: "Ask for more Kimchi.", options: ["Say 'Cheers!' before drinking.", "Ask for a bottle of Soju."] }, { question: "Placeholder Q5", correct: "Ask for a bottle of Soju.", options: ["Ask for more Kimchi.", "Say 'Cheers!' before drinking."] }] },
+            'Korea_Adventure3': { title: "Hailing a Taxi in Myeongdong", image: "https://placehold.co/400x200/9E9E9E/white?text=MYEONGDONG+TAXI+STAND", scenes: [{ question: "Placeholder Q1", correct: "Politely stop a taxi.", options: ["Ask 'How much is the fare?'", "Tell the driver your destination."] }, { question: "Placeholder Q2", correct: "Tell the driver your destination.", options: ["Politely stop a taxi.", "Ask 'How much is the fare?'"] }, { question: "Placeholder Q3", correct: "Ask 'How much is the fare?'", options: ["Politely stop a taxi.", "Tell the driver your destination."] }, { question: "Placeholder Q4", correct: "Politely stop a taxi.", options: ["Ask 'How much is the fare?'", "Tell the driver your destination."] }, { question: "Placeholder Q5", correct: "Tell the driver your destination.", options: ["Politely stop a taxi.", "Ask 'How much is the fare?'"] }] },
+            'Korea_Adventure4': { title: "Late-Night Convenience Store", image: "https://placehold.co/400x200/4CAF50/white?text=KOREAN+CONVENIENCE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Do you have bottled water?'", options: ["Say 'Thank you' in a casual way.", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the instant ramen?'", options: ["Ask 'Do you have bottled water?'", "Say 'Thank you' in a casual way."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' in a casual way.", options: ["Ask 'Do you have bottled water?'", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q4", correct: "Ask 'Do you have bottled water?'", options: ["Say 'Thank you' in a casual way.", "Ask 'Where is the instant ramen?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the instant ramen?'", options: ["Ask 'Do you have bottled water?'", "Say 'Thank you' in a casual way."] }] },
+            'Korea_Adventure5': { title: "Temple Stay Etiquette", image: "https://placehold.co/400x200/00BCD4/white?text=KOREAN+TEMPLE+GREETING", scenes: [{ question: "Placeholder Q1", correct: "Use a formal greeting to a monk.", options: ["Say 'Goodbye' respectfully.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q2", correct: "Ask 'Can I take a picture?'", options: ["Use a formal greeting to a monk.", "Say 'Goodbye' respectfully."] }, { question: "Placeholder Q3", correct: "Say 'Goodbye' respectfully.", options: ["Use a formal greeting to a monk.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q4", correct: "Use a formal greeting to a monk.", options: ["Say 'Goodbye' respectfully.", "Ask 'Can I take a picture?'"] }, { question: "Placeholder Q5", correct: "Ask 'Can I take a picture?'", options: ["Use a formal greeting to a monk.", "Say 'Goodbye' respectfully."] }] },
+            // ... (Remaining countries follow the placeholder pattern)
+            'Spain_Adventure1': { title: "Madrid Airport Check-in", image: "https://placehold.co/400x200/F44336/white?text=MADRID+CHECKIN+DESK", scenes: [{ question: "Placeholder Q1", correct: "State 'I'd like to check in for the flight to Barcelona.'", options: ["Ask for a window seat.", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is the flight on time?'", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask for a window seat."] }, { question: "Placeholder Q3", correct: "Ask for a window seat.", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q4", correct: "State 'I'd like to check in for the flight to Barcelona.'", options: ["Ask for a window seat.", "Ask 'Is the flight on time?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is the flight on time?'", options: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask for a window seat."] }] },
+            'Spain_Adventure2': { title: "Ordering Tapas and Drinks", image: "https://placehold.co/400x200/FFEB3B/black?text=TAPAS+BAR+SCENE", scenes: [{ question: "Placeholder Q1", correct: "Order a specific tapa (e.g., patatas bravas).", options: ["Ask for the bill.", "Ask for a glass of red wine."] }, { question: "Placeholder Q2", correct: "Ask for a glass of red wine.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for the bill."] }, { question: "Placeholder Q3", correct: "Ask for the bill.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for a glass of red wine."] }, { question: "Placeholder Q4", correct: "Order a specific tapa (e.g., patatas bravas).", options: ["Ask for the bill.", "Ask for a glass of red wine."] }, { question: "Placeholder Q5", correct: "Ask for a glass of red wine.", options: ["Order a specific tapa (e.g., patatas bravas).", "Ask for the bill."] }] },
+            'Spain_Adventure3': { title: "Hotel Problem Solving", image: "https://placehold.co/400x200/03A9F4/white?text=SPANISH+HOTEL+LOBBY", scenes: [{ question: "Placeholder Q1", correct: "State 'The air conditioning isn't working.'", options: ["Thank them for their help.", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q2", correct: "Ask 'Can someone fix it now?'", options: ["State 'The air conditioning isn't working.'", "Thank them for their help."] }, { question: "Placeholder Q3", correct: "Thank them for their help.", options: ["State 'The air conditioning isn't working.'", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q4", correct: "State 'The air conditioning isn't working.'", options: ["Thank them for their help.", "Ask 'Can someone fix it now?'"] }, { question: "Placeholder Q5", correct: "Ask 'Can someone fix it now?'", options: ["State 'The air conditioning isn't working.'", "Thank them for their help."] }] },
+            'Spain_Adventure4': { title: "Siesta Shopping Schedule", image: "https://placehold.co/400x200/CDDC39/black?text=SIESTA+SHOP+DOOR", scenes: [{ question: "Placeholder Q1", correct: "Ask 'What time do you open?'", options: ["Ask for a bag for your purchase.", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q2", correct: "Ask 'When does the siesta end?'", options: ["Ask 'What time do you open?'", "Ask for a bag for your purchase."] }, { question: "Placeholder Q3", correct: "Ask for a bag for your purchase.", options: ["Ask 'What time do you open?'", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q4", correct: "Ask 'What time do you open?'", options: ["Ask for a bag for your purchase.", "Ask 'When does the siesta end?'"] }, { question: "Placeholder Q5", correct: "Ask 'When does the siesta end?'", options: ["Ask 'What time do you open?'", "Ask for a bag for your purchase."] }] },
+            'Spain_Adventure5': { title: "Local Greetings and Farewell", image: "https://placehold.co/400x200/E91E63/white?text=LOCAL+FIESTA+GREETING", scenes: [{ question: "Placeholder Q1", correct: "Greet a new friend casually.", options: ["Say 'See you later!'", "Ask 'How are you?'"] }, { question: "Placeholder Q2", correct: "Ask 'How are you?'", options: ["Greet a new friend casually.", "Say 'See you later!'"] }, { question: "Placeholder Q3", correct: "Say 'See you later!'", options: ["Greet a new friend casually.", "Ask 'How are you?'"] }, { question: "Placeholder Q4", correct: "Greet a new friend casually.", options: ["Say 'See you later!'", "Ask 'How are you?'"] }, { question: "Placeholder Q5", correct: "Ask 'How are you?'", options: ["Greet a new friend casually.", "Say 'See you later!'"] }] },
 
-            'Germany_Adventure1': { title: "Buying a Train Ticket", image: "https://placehold.co/400x200/607D8B/white?text=GERMAN+TRAIN+STATION", scenes: [{ question: "Placeholder Q1", correct: "Ask for a ticket to Berlin.", options: ["Say 'Thank you' formally.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this the correct platform?'", options: ["Ask for a ticket to Berlin.", "Say 'Thank you' formally."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' formally.", options: ["Ask for a ticket to Berlin.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q4", correct: "Ask for a ticket to Berlin.", options: ["Say 'Thank you' formally.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this the correct platform?'", options: ["Ask for a ticket to Berlin.", "Say 'Thank you' formally."] }] },
-            'Germany_Adventure2': { title: "Biergarten Order", image: "https://placehold.co/400x200/FF9800/white?text=BIERGARTEN+TABLE", scenes: [{ question: "Placeholder Q1", correct: "Order two large beers.", options: ["Say 'Prost!' (Cheers).", "Ask for the menu."] }, { question: "Placeholder Q2", correct: "Ask for the menu.", options: ["Order two large beers.", "Say 'Prost!' (Cheers)."] }, { question: "Placeholder Q3", correct: "Say 'Prost!' (Cheers).", options: ["Order two large beers.", "Ask for the menu."] }, { question: "Placeholder Q4", correct: "Order two large beers.", options: ["Say 'Prost!' (Cheers).", "Ask for the menu."] }, { question: "Placeholder Q5", correct: "Ask for the menu.", options: ["Order two large beers.", "Say 'Prost!' (Cheers)."] }] },
-            'Germany_Adventure3': { title: "Currency Exchange at a Bank", image: "https://placehold.co/400x200/4CAF50/white?text=GERMAN+BANK+COUNTER", scenes: [{ question: "Placeholder Q1", correct: "Ask 'I would like to exchange money.'", options: ["Ask 'Is there a commission?'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q2", correct: "Ask 'What is the exchange rate?'", options: ["Ask 'I would like to exchange money.'", "Ask 'Is there a commission?'"] }, { question: "Placeholder Q3", correct: "Ask 'Is there a commission?'", options: ["Ask 'I would like to exchange money.'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q4", correct: "Ask 'I would like to exchange money.'", options: ["Ask 'Is there a commission?'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q5", correct: "Ask 'What is the exchange rate?'", options: ["Ask 'I would like to exchange money.'", "Ask 'Is there a commission?'"] }] },
-            'Germany_Adventure4': { title: "Formal Street Address", image: "https://placehold.co/400x200/03A9F4/white?text=CITY+STREET", scenes: [{ question: "Placeholder Q1", correct: "Use a formal greeting to a stranger.", options: ["Ask 'Excuse me, may I pass?'", "Ask for the time."] }, { question: "Placeholder Q2", correct: "Ask for the time.", options: ["Use a formal greeting to a stranger.", "Ask 'Excuse me, may I pass?'"] }, { question: "Placeholder Q3", correct: "Ask 'Excuse me, may I pass?'", options: ["Use a formal greeting to a stranger.", "Ask for the time."] }, { question: "Placeholder Q4", correct: "Use a formal greeting to a stranger.", options: ["Ask 'Excuse me, may I pass?'", "Ask for the time."] }, { question: "Placeholder Q5", correct: "Ask for the time.", options: ["Use a formal greeting to a stranger.", "Ask 'Excuse me, may I pass?'"] }] },
-            'Germany_Adventure5': { title: "Castle Tour & History", image: "https://placehold.co/400x200/795548/white?text=CASTLE+ENTRY", scenes: [{ question: "Placeholder Q1", correct: "Ask 'When was this castle built?'", options: ["Express admiration for the castle.", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the exit?'", options: ["Ask 'When was this castle built?'", "Express admiration for the castle."] }, { question: "Placeholder Q3", correct: "Express admiration for the castle.", options: ["Ask 'When was this castle built?'", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q4", correct: "Ask 'When was this castle built?'", options: ["Express admiration for the castle.", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the exit?'", options: ["Ask 'When was this castle built?'", "Express admiration for the castle."] }] },
+            'Germany_Adventure1': { title: "Buying a Train Ticket", image: "https://placehold.co/400x200/607D8B/white?text=GERMAN+TRAIN+STATION", scenes: [{ question: "Placeholder Q1", correct: "Ask for a ticket to Berlin.", options: ["Say 'Thank you' formally.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this the correct platform?'", options: ["Ask for a ticket to Berlin.", "Say 'Thank you' formally."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' formally.", options: ["Ask for a ticket to Berlin.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q4", correct: "Ask for a ticket to Berlin.", options: ["Say 'Thank you' formally.", "Ask 'Is this the correct platform?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this the correct platform?'", options: ["Ask for a ticket to Berlin.", "Say 'Thank you' formally."] }] },
+            'Germany_Adventure2': { title: "Biergarten Order", image: "https://placehold.co/400x200/FF9800/white?text=BIERGARTEN+TABLE", scenes: [{ question: "Placeholder Q1", correct: "Order two large beers.", options: ["Say 'Prost!' (Cheers).", "Ask for the menu."] }, { question: "Placeholder Q2", correct: "Ask for the menu.", options: ["Order two large beers.", "Say 'Prost!' (Cheers)."] }, { question: "Placeholder Q3", correct: "Say 'Prost!' (Cheers).", options: ["Order two large beers.", "Ask for the menu."] }, { question: "Placeholder Q4", correct: "Order two large beers.", options: ["Say 'Prost!' (Cheers).", "Ask for the menu."] }, { question: "Placeholder Q5", correct: "Ask for the menu.", options: ["Order two large beers.", "Say 'Prost!' (Cheers)."] }] },
+            'Germany_Adventure3': { title: "Currency Exchange at a Bank", image: "https://placehold.co/400x200/4CAF50/white?text=GERMAN+BANK+COUNTER", scenes: [{ question: "Placeholder Q1", correct: "Ask 'I would like to exchange money.'", options: ["Ask 'Is there a commission?'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q2", correct: "Ask 'What is the exchange rate?'", options: ["Ask 'I would like to exchange money.'", "Ask 'Is there a commission?'"] }, { question: "Placeholder Q3", correct: "Ask 'Is there a commission?'", options: ["Ask 'I would like to exchange money.'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q4", correct: "Ask 'I would like to exchange money.'", options: ["Ask 'Is there a commission?'", "Ask 'What is the exchange rate?'"] }, { question: "Placeholder Q5", correct: "Ask 'What is the exchange rate?'", options: ["Ask 'I would like to exchange money.'", "Ask 'Is there a commission?'"] }] },
+            'Germany_Adventure4': { title: "Formal Street Address", image: "https://placehold.co/400x200/03A9F4/white?text=CITY+STREET", scenes: [{ question: "Placeholder Q1", correct: "Use a formal greeting to a stranger.", options: ["Ask 'Excuse me, may I pass?'", "Ask for the time."] }, { question: "Placeholder Q2", correct: "Ask for the time.", options: ["Use a formal greeting to a stranger.", "Ask 'Excuse me, may I pass?'"] }, { question: "Placeholder Q3", correct: "Ask 'Excuse me, may I pass?'", options: ["Use a formal greeting to a stranger.", "Ask for the time."] }, { question: "Placeholder Q4", correct: "Use a formal greeting to a stranger.", options: ["Ask 'Excuse me, may I pass?'", "Ask for the time."] }, { question: "Placeholder Q5", correct: "Ask for the time.", options: ["Use a formal greeting to a stranger.", "Ask 'Excuse me, may I pass?'"] }] },
+            'Germany_Adventure5': { title: "Castle Tour & History", image: "https://placehold.co/400x200/795548/white?text=CASTLE+ENTRY", scenes: [{ question: "Placeholder Q1", correct: "Ask 'When was this castle built?'", options: ["Express admiration for the castle.", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q2", correct: "Ask 'Where is the exit?'", options: ["Ask 'When was this castle built?'", "Express admiration for the castle."] }, { question: "Placeholder Q3", correct: "Express admiration for the castle.", options: ["Ask 'When was this castle built?'", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q4", correct: "Ask 'When was this castle built?'", options: ["Express admiration for the castle.", "Ask 'Where is the exit?'"] }, { question: "Placeholder Q5", correct: "Ask 'Where is the exit?'", options: ["Ask 'When was this castle built?'", "Express admiration for the castle."] }] },
 
-            'China_Adventure1': { title: "Customs and Arrival", image: "https://placehold.co/400x200/F44336/white?text=BEIJING+AIRPORT", scenes: [{ question: "Placeholder Q1", correct: "Respond to the Customs officer's greeting.", options: ["Ask 'Where is the taxi stand?'", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q2", correct: "State your purpose of visit (tourism).", options: ["Respond to the Customs officer's greeting.", "Ask 'Where is the taxi stand?'"] }, { question: "Placeholder Q3", correct: "Ask 'Where is the taxi stand?'", options: ["Respond to the Customs officer's greeting.", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q4", correct: "Respond to the Customs officer's greeting.", options: ["Ask 'Where is the taxi stand?'", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q5", correct: "State your purpose of visit (tourism).", options: ["Respond to the Customs officer's greeting.", "Ask 'Where is the taxi stand?'"] }] },
-            'China_Adventure2': { title: "Tea House Etiquette", image: "https://placehold.co/400x200/9C27B0/white?text=TEA+HOUSE", scenes: [{ question: "Placeholder Q1", correct: "Ask for a cup of green tea.", options: ["Say 'Thank you' with a small bow.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this tea hot?'", options: ["Ask for a cup of green tea.", "Say 'Thank you' with a small bow."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' with a small bow.", options: ["Ask for a cup of green tea.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q4", correct: "Ask for a cup of green tea.", options: ["Say 'Thank you' with a small bow.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this tea hot?'", options: ["Ask for a cup of green tea.", "Say 'Thank you' with a small bow."] }] },
-            'China_Adventure3': { title: "Hutong Navigation", image: "https://placehold.co/400x200/FFC107/black?text=HUTONG+ALLEY", scenes: [{ question: "Placeholder Q1", correct: "Ask for directions to the nearest landmark.", options: ["Ask 'How long does it take?'", "Ask 'Is it far?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is it far?'", options: ["Ask for directions to the nearest landmark.", "Ask 'How long does it take?'"] }, { question: "Placeholder Q3", correct: "Ask 'How long does it take?'", options: ["Ask for directions to the nearest landmark.", "Ask 'Is it far?'"] }, { question: "Placeholder Q4", correct: "Ask for directions to the nearest landmark.", options: ["Ask 'How long does it take?'", "Ask 'Is it far?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is it far?'", options: ["Ask for directions to the nearest landmark.", "Ask 'How long does it take?'"] }] },
-            'China_Adventure4': { title: "Group Meal Etiquette", image: "https://placehold.co/400x200/00BCD4/white?text=DINNER+TABLE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Could you pass the rice?'", options: ["Say 'I'm full, thank thank you!'", "Ask for a clean plate."] }, { question: "Placeholder Q2", correct: "Ask for a clean plate.", options: ["Ask 'Could you pass the rice?'", "Say 'I'm full, thank thank you!'"] }, { question: "Placeholder Q3", correct: "Say 'I'm full, thank thank you!'", options: ["Ask 'Could you pass the rice?'", "Ask for a clean plate."] }, { question: "Placeholder Q4", correct: "Ask 'Could you pass the rice?'", options: ["Say 'I'm full, thank thank you!'", "Ask for a clean plate."] }, { question: "Placeholder Q5", correct: "Ask for a clean plate.", options: ["Ask 'Could you pass the rice?'", "Say 'I'm full, thank thank you!'"] }] },
-            'China_Adventure5': { title: "Bargaining in the Market", image: "https://placehold.co/400x200/FF9800/white?text=ELECTRONICS+MARKET", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How much does this cost?'", options: ["Say 'That's fine, I'll take it!'", "Try to negotiate the price down."] }, { question: "Placeholder Q2", correct: "Try to negotiate the price down.", options: ["Ask 'How much does this cost?'", "Say 'That's fine, I'll take it!'"] }, { question: "Placeholder Q3", correct: "Say 'That's fine, I'll take it!'", options: ["Ask 'How much does this cost?'", "Try to negotiate the price down."] }, { question: "Placeholder Q4", correct: "Ask 'How much does this cost?'", options: ["Say 'That's fine, I'll take it!'", "Try to negotiate the price down."] }, { question: "Placeholder Q5", correct: "Try to negotiate the price down.", options: ["Ask 'How much does this cost?'", "Say 'That's fine, I'll take it!'"] }] },
-        };
-        // --- END ADVENTURE CONTENT ---
+            'China_Adventure1': { title: "Customs and Arrival", image: "https://placehold.co/400x200/F44336/white?text=BEIJING+AIRPORT", scenes: [{ question: "Placeholder Q1", correct: "Respond to the Customs officer's greeting.", options: ["Ask 'Where is the taxi stand?'", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q2", correct: "State your purpose of visit (tourism).", options: ["Respond to the Customs officer's greeting.", "Ask 'Where is the taxi stand?'"] }, { question: "Placeholder Q3", correct: "Ask 'Where is the taxi stand?'", options: ["Respond to the Customs officer's greeting.", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q4", correct: "Respond to the Customs officer's greeting.", options: ["Ask 'Where is the taxi stand?'", "State your purpose of visit (tourism)."] }, { question: "Placeholder Q5", correct: "State your purpose of visit (tourism).", options: ["Respond to the Customs officer's greeting.", "Ask 'Where is the taxi stand?'"] }] },
+            'China_Adventure2': { title: "Tea House Etiquette", image: "https://placehold.co/400x200/9C27B0/white?text=TEA+HOUSE", scenes: [{ question: "Placeholder Q1", correct: "Ask for a cup of green tea.", options: ["Say 'Thank you' with a small bow.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is this tea hot?'", options: ["Ask for a cup of green tea.", "Say 'Thank you' with a small bow."] }, { question: "Placeholder Q3", correct: "Say 'Thank you' with a small bow.", options: ["Ask for a cup of green tea.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q4", correct: "Ask for a cup of green tea.", options: ["Say 'Thank you' with a small bow.", "Ask 'Is this tea hot?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is this tea hot?'", options: ["Ask for a cup of green tea.", "Say 'Thank you' with a small bow."] }] },
+            'China_Adventure3': { title: "Hutong Navigation", image: "https://placehold.co/400x200/FFC107/black?text=HUTONG+ALLEY", scenes: [{ question: "Placeholder Q1", correct: "Ask for directions to the nearest landmark.", options: ["Ask 'How long does it take?'", "Ask 'Is it far?'"] }, { question: "Placeholder Q2", correct: "Ask 'Is it far?'", options: ["Ask for directions to the nearest landmark.", "Ask 'How long does it take?'"] }, { question: "Placeholder Q3", correct: "Ask 'How long does it take?'", options: ["Ask for directions to the nearest landmark.", "Ask 'Is it far?'"] }, { question: "Placeholder Q4", correct: "Ask for directions to the nearest landmark.", options: ["Ask 'How long does it take?'", "Ask 'Is it far?'"] }, { question: "Placeholder Q5", correct: "Ask 'Is it far?'", options: ["Ask for directions to the nearest landmark.", "Ask 'How long does it take?'"] }] },
+            'China_Adventure4': { title: "Group Meal Etiquette", image: "https://placehold.co/400x200/00BCD4/white?text=DINNER+TABLE", scenes: [{ question: "Placeholder Q1", correct: "Ask 'Could you pass the rice?'", options: ["Say 'I'm full, thank thank you!'", "Ask for a clean plate."] }, { question: "Placeholder Q2", correct: "Ask for a clean plate.", options: ["Ask 'Could you pass the rice?'", "Say 'I'm full, thank thank you!'"] }, { question: "Placeholder Q3", correct: "Say 'I'm full, thank thank you!'", options: ["Ask 'Could you pass the rice?'", "Ask for a clean plate."] }, { question: "Placeholder Q4", correct: "Ask 'Could you pass the rice?'", options: ["Say 'I'm full, thank thank you!'", "Ask for a clean plate."] }, { question: "Placeholder Q5", correct: "Ask for a clean plate.", options: ["Ask 'Could you pass the rice?'", "Say 'I'm full, thank thank you!'"] }] },
+            'China_Adventure5': { title: "Bargaining in the Market", image: "https://placehold.co/400x200/FF9800/white?text=ELECTRONICS+MARKET", scenes: [{ question: "Placeholder Q1", correct: "Ask 'How much does this cost?'", options: ["Say 'That's fine, I'll take it!'", "Try to negotiate the price down."] }, { question: "Placeholder Q2", correct: "Try to negotiate the price down.", options: ["Ask 'How much does this cost?'", "Say 'That's fine, I'll take it!'"] }, { question: "Placeholder Q3", correct: "Say 'That's fine, I'll take it!'", options: ["Ask 'How much does this cost?'", "Try to negotiate the price down."] }, { question: "Placeholder Q4", correct: "Ask 'How much does this cost?'", options: ["Say 'That's fine, I'll take it!'", "Try to negotiate the price down."] }, { question: "Placeholder Q5", correct: "Try to negotiate the price down.", options: ["Ask 'How much does this cost?'", "Say 'That's fine, I'll take it!'"] }] },
+        };
+        // --- END ADVENTURE CONTENT ---
 
-        // --- UI UTILITY FUNCTIONS (UNCHANGED) ---
+        // --- UI UTILITY FUNCTIONS (UNCHANGED) ---
 
-        function showMessage(text, isError = false) {
-            const box = document.getElementById('message-box');
-            box.textContent = text;
-            box.classList.remove('opacity-0', 'bg-red-700', 'bg-green-700');
-            box.classList.add(isError ? 'bg-red-700' : 'bg-green-700', 'opacity-100');
-            setTimeout(() => {
-                box.classList.remove('opacity-100');
-                box.classList.add('opacity-0');
-            }, 3000);
-        }
+        function showMessage(text, isError = false) {
+            const box = document.getElementById('message-box');
+            box.textContent = text;
+            box.classList.remove('opacity-0', 'bg-red-700', 'bg-green-700');
+            box.classList.add(isError ? 'bg-red-700' : 'bg-green-700', 'opacity-100');
+            setTimeout(() => {
+                box.classList.remove('opacity-100');
+                box.classList.add('opacity-0');
+            }, 3000);
+        }
 
-        window.showView = (viewId) => {
-            const validViews = ['title', 'countries', 'adventures', 'tracker', 'profile', 'settings', 'game'];
-            validViews.forEach(id => {
-                const el = document.getElementById(`view-${id}`);
-                if (el) { el.classList.add('hidden'); }
-            });
+        window.showView = (viewId) => {
+            const validViews = ['title', 'countries', 'adventures', 'tracker', 'profile', 'settings', 'game'];
+            validViews.forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if (el) { el.classList.add('hidden'); }
+            });
 
-            const viewElement = document.getElementById(`view-${viewId}`);
-            if (viewElement) {
-                viewElement.classList.remove('hidden');
-            }
+            const viewElement = document.getElementById(`view-${viewId}`);
+            if (viewElement) {
+                viewElement.classList.remove('hidden');
+            }
 
-            // Specific rendering/setup logic per view
+            // ⭐ START BGM ON FIRST USER INTERACTION (Start Your Journey)
             if (viewId === 'countries') {
-                renderCountriesView();
-            } else if (viewId === 'adventures') {
-                renderAdventuresView();
-            } else if (viewId === 'tracker') {
-                renderProgressTracker();
-            } else if (viewId === 'profile') {
-                renderProfileView();
-            } else if (viewId === 'settings') {
-                renderSettingsView();
-            }
-        };
-
-
-        // --- FIREBASE INITIALIZATION & AUTH (UNCHANGED) ---
-
-        async function initializeFirebase() {
-            if (!firebaseConfig) {
-                document.getElementById('user-info').textContent = 'Error: Firebase configuration missing.';
-                return;
-            }
-            
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            onAuthStateChanged(auth, async (user) => {
-                if (!user) {
-                    try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                        userId = auth.currentUser.uid;
-                    } catch (error) {
-                        console.error("Authentication failed:", error);
-                        document.getElementById('user-info').textContent = 'Error: Authentication failed.';
-                        return;
-                    }
-                } else {
-                    userId = user.uid;
-                }
-                
-                isAuthReady = true;
-                document.getElementById('user-info').textContent = `User ID: ${userId.substring(0, 4)}...`;
-                startRealtimeListener();
-            });
-        }
-
-        // --- REAL-TIME DATA LISTENER & HANDLER (UNCHANGED) ---
-
-        function startRealtimeListener() {
-            if (!isAuthReady || !db || !userId) return;
-
-            const docRef = doc(db, progressPath(userId));
-            
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Load data
-                    userData.progress = data.progress || {};
-                    userData.profile = data.profile || { name: 'Traveler', email: '' };
-                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings }; // Merge with defaults
-                    
-                    // Initialize audio settings
-                    initializeAudio();
-
-                    // Update global info header with name
-                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}...`;
-
-                    recalculateAndRender();
-                } else {
-                    // Initialize if no document exists
-                    userData = { progress: {}, profile: { name: 'Traveler', email: '' }, settings: DEFAULT_SETTINGS };
-                    setDoc(docRef, userData, { merge: true });
-                    recalculateAndRender();
-                }
-            }, (error) => {
-                console.error("Error listening to Firestore:", error);
-                showMessage('Error fetching progress data.', true);
-            });
-        }
-        
-        // --- CORE PROGRESSION LOGIC (UNCHANGED) ---
-        
-        function getProgressInfo() {
-            let completedCount = 0;
-            let currentCountryIndex = 0;
-            
-            // Find the highest completed country
-            for (let i = 0; i < PROGRESS_MAP.length; i++) {
-                const countryId = PROGRESS_MAP[i].id;
-                let countryBadgesCompleted = 0;
-
-                for (let j = 0; j < ADVENTURE_NAMES.length; j++) {
-                    const key = `${countryId}_Adventure${j + 1}`;
-                    if (userData.progress[key]) { 
-                        countryBadgesCompleted++;
-                        completedCount++;
-                    }
-                }
-
-                if (countryBadgesCompleted === ADVENTURE_NAMES.length) {
-                    if (i < PROGRESS_MAP.length - 1) {
-                        currentCountryIndex = i + 1;
-                    } else {
-                        currentCountryIndex = PROGRESS_MAP.length - 1;
-                    }
-                } else {
-                    currentCountryIndex = i;
-                    break;
+                if (userData.settings.isMusicPlaying && bgmAudio && bgmAudio.paused) {
+                    bgmAudio.play().catch(e => console.log("BGM Play failed, likely due to a timing issue, but subsequent clicks will work.", e));
                 }
             }
+            // ⭐ END BGM START
 
-            const currentCountry = PROGRESS_MAP[currentCountryIndex];
-            const nextCountry = PROGRESS_MAP[currentCountryIndex + 1];
-
-            let currentCountryBadgesCompleted = 0;
-            for (let j = 0; j < ADVENTURE_NAMES.length; j++) {
-                const key = `${currentCountry.id}_Adventure${j + 1}`;
-                if (userData.progress[key]) {
-                    currentCountryBadgesCompleted++;
-                }
-            }
-
-            return {
-                currentCountry, 
-                currentCountryIndex,
-                nextCountry,
-                currentCountryBadgesCompleted,
-                totalBadgesCompleted: completedCount
-            };
-        }
-
-        // Helper to check if a country is unlocked
-        function isCountryUnlocked(countryId) {
-            const { currentCountryIndex } = getProgressInfo();
-            const countryIndex = PROGRESS_MAP.findIndex(c => c.id === countryId);
-            return countryIndex <= currentCountryIndex;
-        }
-
-        function recalculateAndRender() {
-            const activeView = document.querySelector('[id^="view-"]:not(.hidden)');
-            if (activeView) {
-                const viewId = activeView.id.replace('view-', '');
-                if (viewId === 'countries') renderCountriesView();
-                if (viewId === 'adventures') renderAdventuresView();
-                if (viewId === 'tracker') renderProgressTracker();
-                if (viewId === 'profile') renderProfileView();
-                if (viewId === 'settings') renderSettingsView();
-            }
-        }
+            // Specific rendering/setup logic per view
+            if (viewId === 'countries') {
+                renderCountriesView();
+            } else if (viewId === 'adventures') {
+                renderAdventuresView();
+            } else if (viewId === 'tracker') {
+                renderProgressTracker();
+            } else if (viewId === 'profile') {
+                renderProfileView();
+            } else if (viewId === 'settings') {
+                renderSettingsView();
+            }
+        };
 
 
-        // --- FIREBASE TRANSACTION: COMPLETE ADVENTURE (UPDATED RETURN FLOW) ---
-        
-        window.completeAdventure = async function(countryId, adventureIndex) {
-            if (!isAuthReady || !db || !userId) return;
+        // --- FIREBASE INITIALIZATION & AUTH (UNCHANGED) ---
 
-            const adventureKey = `${countryId}_Adventure${adventureIndex}`;
-            if (userData.progress[adventureKey]) { 
-                showMessage(`Badge already earned for ${countryId} Adventure ${adventureIndex}!`, true);
-                // Return to the adventures list if already completed
-                showView('adventures'); 
-                return;
-            }
+        async function initializeFirebase() {
+            if (!firebaseConfig) {
+                document.getElementById('user-info').textContent = 'Error: Firebase configuration missing.';
+                return;
+            }
+            
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
 
-            const docRef = doc(db, progressPath(userId));
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                        userId = auth.currentUser.uid;
+                    } catch (error) {
+                        console.error("Authentication failed:", error);
+                        document.getElementById('user-info').textContent = 'Error: Authentication failed.';
+                        return;
+                    }
+                } else {
+                    userId = user.uid;
+                }
+                
+                isAuthReady = true;
+                document.getElementById('user-info').textContent = `User ID: ${userId.substring(0, 4)}...`;
+                startRealtimeListener();
+            });
+        }
 
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const docSnap = await transaction.get(docRef);
-                    const data = docSnap.data() || { progress: {}, profile: {} };
-                    let progress = data.progress;
-                    
-                    progress[adventureKey] = true;
-                    
-                    transaction.update(docRef, { progress: progress });
-                });
-                
-                showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
-                
-                // CRITICAL: Return to the Adventure List view after successful completion
-                showView('adventures'); 
-                
-            } catch (e) {
-                console.error("Transaction failed: ", e);
-                showMessage('Error completing adventure.', true);
-            }
-        }
+        // --- REAL-TIME DATA LISTENER & HANDLER (UNCHANGED) ---
 
-        // --- PROFILE, SETTINGS, AUDIO LOGIC (UNCHANGED) ---
+        function startRealtimeListener() {
+            if (!isAuthReady || !db || !userId) return;
 
-        window.saveProfile = async function() {
-            if (!isAuthReady || !db || !userId) {
-                showMessage('Authentication not ready. Please wait.', true);
-                return;
-            }
+            const docRef = doc(db, progressPath(userId));
+            
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Load data
+                    userData.progress = data.progress || {};
+                    userData.profile = data.profile || { name: 'Traveler', email: '' };
+                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings }; // Merge with defaults
+                    
+                    // Initialize audio settings
+                    initializeAudio();
 
-            const nameInput = document.getElementById('profile-name-input');
-            const emailInput = document.getElementById('profile-email-input');
-            
-            const newName = nameInput.value.trim() || 'Traveler';
-            const newEmail = emailInput.value.trim();
+                    // Update global info header with name
+                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}...`;
 
-            if (newName.length < 2) {
-                showMessage('Name must be at least 2 characters.', true);
-                return;
-            }
+                    recalculateAndRender();
+                } else {
+                    // Initialize if no document exists
+                    userData = { progress: {}, profile: { name: 'Traveler', email: '' }, settings: DEFAULT_SETTINGS };
+                    setDoc(docRef, userData, { merge: true });
+                    recalculateAndRender();
+                }
+            }, (error) => {
+                console.error("Error listening to Firestore:", error);
+                showMessage('Error fetching progress data.', true);
+            });
+        }
+        
+        // --- CORE PROGRESSION LOGIC (UNCHANGED) ---
+        
+        function getProgressInfo() {
+            let completedCount = 0;
+            let currentCountryIndex = 0;
+            
+            // Find the highest completed country
+            for (let i = 0; i < PROGRESS_MAP.length; i++) {
+                const countryId = PROGRESS_MAP[i].id;
+                let countryBadgesCompleted = 0;
 
-            const docRef = doc(db, progressPath(userId));
+                for (let j = 0; j < ADVENTURE_NAMES.length; j++) {
+                    const key = `${countryId}_Adventure${j + 1}`;
+                    if (userData.progress[key]) { 
+                        countryBadgesCompleted++;
+                        completedCount++;
+                    }
+                }
 
-            try {
-                await setDoc(docRef, { 
-                    profile: { 
-                        name: newName, 
-                        email: newEmail 
-                    } 
-                }, { merge: true });
+                if (countryBadgesCompleted === ADVENTURE_NAMES.length) {
+                    if (i < PROGRESS_MAP.length - 1) {
+                        currentCountryIndex = i + 1;
+                    } else {
+                        currentCountryIndex = PROGRESS_MAP.length - 1;
+                    }
+                } else {
+                    currentCountryIndex = i;
+                    break;
+                }
+            }
 
-                showMessage('Profile saved successfully!');
-            } catch (e) {
-                console.error("Error saving profile:", e);
-                showMessage('Failed to save profile.', true);
-            }
-        }
+            const currentCountry = PROGRESS_MAP[currentCountryIndex];
+            const nextCountry = PROGRESS_MAP[currentCountryIndex + 1];
 
-        function renderProfileView() {
-            document.getElementById('profile-name-input').value = userData.profile.name || '';
-            document.getElementById('profile-email-input').value = userData.profile.email || '';
-            document.getElementById('profile-user-id').textContent = userId || 'N/A';
-        }
+            let currentCountryBadgesCompleted = 0;
+            for (let j = 0; j < ADVENTURE_NAMES.length; j++) {
+                const key = `${currentCountry.id}_Adventure${j + 1}`;
+                if (userData.progress[key]) {
+                    currentCountryBadgesCompleted++;
+                }
+            }
 
-        async function saveSettings() {
-            if (!isAuthReady || !db || !userId) return;
-            const docRef = doc(db, progressPath(userId));
-            try {
-                 await setDoc(docRef, { settings: userData.settings }, { merge: true });
-            } catch (e) {
-                console.error("Failed to save settings:", e);
-                showMessage('Failed to save settings.', true);
-            }
-        }
+            return {
+                currentCountry, 
+                currentCountryIndex,
+                nextCountry,
+                currentCountryBadgesCompleted,
+                totalBadgesCompleted: completedCount
+            };
+        }
 
-        window.toggleMusic = function() {
-            const isPlaying = !userData.settings.isMusicPlaying;
-            userData.settings.isMusicPlaying = isPlaying;
-            
-            if (bgmAudio) {
-                if (isPlaying) {
-                    bgmAudio.play().catch(e => console.error("BGM Play failed, requiring user interaction.", e));
-                } else {
-                    bgmAudio.pause();
-                }
-            }
-            renderSettingsView(); 
-            saveSettings();
-        }
+        // Helper to check if a country is unlocked
+        function isCountryUnlocked(countryId) {
+            const { currentCountryIndex } = getProgressInfo();
+            const countryIndex = PROGRESS_MAP.findIndex(c => c.id === countryId);
+            return countryIndex <= currentCountryIndex;
+        }
 
-        window.updateMusicVolume = function(value) {
-            const volume = parseFloat(value) / 100;
-            userData.settings.musicVolume = volume;
-            if (bgmAudio) bgmAudio.volume = volume;
-            document.getElementById('musicVolumeValue').textContent = `${value}%`;
-            saveSettings();
-        }
-        
-        window.updateSfxVolume = function(value) {
-            const volume = parseFloat(value) / 100;
-            userData.settings.sfxVolume = volume;
-            if (sfxAudio) sfxAudio.volume = volume;
-            document.getElementById('sfxVolumeValue').textContent = `${value}%`;
-            saveSettings();
-        }
-        
-        function initializeAudio() {
-            if (bgmAudio) {
-                bgmAudio.volume = userData.settings.musicVolume;
-                if (userData.settings.isMusicPlaying) {
-                    bgmAudio.play().catch(e => console.log("BGM Autoplay prevented. User must click to start."));
-                } else {
-                    bgmAudio.pause();
-                }
-            }
-            if (sfxAudio) sfxAudio.volume = userData.settings.sfxVolume;
-        }
-
-        function renderSettingsView() {
-            const settings = userData.settings;
-            
-            const musicBtn = document.getElementById('musicToggleBtn');
-            if (musicBtn) {
-                if (settings.isMusicPlaying) {
-                    musicBtn.textContent = 'Music On';
-                    musicBtn.classList.replace('bg-gray-500', 'bg-red-600');
-                    musicBtn.classList.replace('hover:bg-gray-600', 'hover:bg-red-700');
-                } else {
-                    musicBtn.textContent = 'Music Off';
-                    musicBtn.classList.replace('bg-red-600', 'bg-gray-500');
-                    musicBtn.classList.replace('hover:bg-red-700', 'hover:bg-gray-600');
-                }
-            }
-
-            const musicSlider = document.getElementById('musicVolumeSlider');
-            const sfxSlider = document.getElementById('sfxVolumeSlider');
-            
-            if (musicSlider) musicSlider.value = Math.round(settings.musicVolume * 100);
-            if (sfxSlider) sfxSlider.value = Math.round(settings.sfxVolume * 100);
-
-            document.getElementById('musicVolumeValue').textContent = `${Math.round(settings.musicVolume * 100)}%`;
-            document.getElementById('sfxVolumeValue').textContent = `${Math.round(settings.sfxVolume * 100)}%`;
-        }
-        
-        
-        // --- HOVER AUDIO LOGIC (UNCHANGED) ---
-        let hoverAudioTimeout = null;
-
-        window.stopAudio = function() {
-            if (hoverAudioTimeout) clearTimeout(hoverAudioTimeout);
-            if (sfxAudio) {
-                sfxAudio.pause();
-                sfxAudio.currentTime = 0;
-            }
-        };
-
-        window.playPronunciation = function(audioPath) {
-            if (sfxAudio && audioPath) {
-                sfxAudio.src = audioPath; 
-                sfxAudio.currentTime = 0; 
-                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}:`, e));
-            }
-        }
-
-        window.handlePhraseHover = function(audioPath) {
-            window.stopAudio(); 
-
-            hoverAudioTimeout = setTimeout(() => {
-                window.playPronunciation(audioPath);
-            }, 400); 
-        };
+        function recalculateAndRender() {
+            const activeView = document.querySelector('[id^="view-"]:not(.hidden)');
+            if (activeView) {
+                const viewId = activeView.id.replace('view-', '');
+                if (viewId === 'countries') renderCountriesView();
+                if (viewId === 'adventures') renderAdventuresView();
+                if (viewId === 'tracker') renderProgressTracker();
+                if (viewId === 'profile') renderProfileView();
+                if (viewId === 'settings') renderSettingsView();
+            }
+        }
 
 
-        // --- QUIZ & GAME SCENARIO LOGIC (UPDATED) ---
-        
-        window.loadGameScenario = function(countryId, adventureIndex) {
-            const adventureKey = `${countryId}_Adventure${adventureIndex}`;
-            const details = ADVENTURE_DETAILS[adventureKey];
+        // --- FIREBASE TRANSACTION: COMPLETE ADVENTURE (UPDATED RETURN FLOW) ---
+        
+        window.completeAdventure = async function(countryId, adventureIndex) {
+            if (!isAuthReady || !db || !userId) return;
 
-            if (!details) {
-                 showMessage(`Error: Content not found for ${adventureKey}`, true);
-                 return;
-            }
+            const adventureKey = `${countryId}_Adventure${adventureIndex}`;
+            if (userData.progress[adventureKey]) { 
+                showMessage(`Badge already earned for ${countryId} Adventure ${adventureIndex}!`, true);
+                // Return to the adventures list if already completed
+                showView('adventures'); 
+                return;
+            }
 
-            activeAdventure = { 
-                countryId, 
-                adventureIndex, 
-                sceneIndex: 0, 
-                sceneCount: details.scenes.length 
-            };
-            
-            // Set adventure metadata
-            document.getElementById('game-title').textContent = details.title;
-            document.getElementById('game-subtitle').textContent = `Country: ${countryId} | Adventure ${adventureIndex}`;
-            
-            // Set image source
-            document.getElementById('scenario-image').src = details.image;
-            document.getElementById('scenario-image').onerror = () => {
-                document.getElementById('scenario-image').src = 'https://placehold.co/400x200/555/white?text=IMAGE+LOAD+ERROR';
-            };
+            const docRef = doc(db, progressPath(userId));
 
-            // Setup the adventure completion button
-            const isAdventureCompleted = userData.progress[adventureKey];
-            const completionBtn = document.getElementById('complete-adventure-btn');
-            
-            if (isAdventureCompleted) {
-                completionBtn.disabled = true;
-                completionBtn.textContent = 'BADGE ALREADY EARNED';
-                completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
-                completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                // Will be enabled only after all scenes are complete
-                completionBtn.onclick = () => window.completeAdventure(countryId, adventureIndex);
-                completionBtn.disabled = true;
-                completionBtn.textContent = 'COMPLETE ADVENTURE AND EARN BADGE';
-                completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
-                completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-            
-            // Start the first scene
-            showView('game');
-            renderQuizScene(0);
-        }
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const docSnap = await transaction.get(docRef);
+                    const data = docSnap.data() || { progress: {}, profile: {} };
+                    let progress = data.progress;
+                    
+                    progress[adventureKey] = true;
+                    
+                    transaction.update(docRef, { progress: progress });
+                });
+                
+                showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
+                
+                // CRITICAL: Return to the Adventure List view after successful completion
+                showView('adventures'); 
+                
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+                showMessage('Error completing adventure.', true);
+            }
+        }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
+        // --- PROFILE, SETTINGS, AUDIO LOGIC (UPDATED initializeAudio) ---
 
-        window.renderQuizScene = function(sceneIndex) {
-            window.stopAudio(); 
+        window.saveProfile = async function() {
+            if (!isAuthReady || !db || !userId) {
+                showMessage('Authentication not ready. Please wait.', true);
+                return;
+            }
 
-            const adventureKey = `${activeAdventure.countryId}_Adventure${activeAdventure.adventureIndex}`;
-            const details = ADVENTURE_DETAILS[adventureKey];
-            const scene = details.scenes[sceneIndex];
-            activeAdventure.sceneIndex = sceneIndex;
-            
-            // Reset UI elements
-            document.getElementById('quiz-feedback').classList.add('hidden');
-            document.getElementById('next-scene-btn').classList.add('hidden'); // Hide Next button for a new scene
-            document.getElementById('quiz-question-text').textContent = scene.question;
-            const optionsEl = document.getElementById('quiz-options');
-            optionsEl.innerHTML = '';
+            const nameInput = document.getElementById('profile-name-input');
+            const emailInput = document.getElementById('profile-email-input');
+            
+            const newName = nameInput.value.trim() || 'Traveler';
+            const newEmail = emailInput.value.trim();
 
-            // Combine correct and incorrect options
-            let options = [];
-            
-            const allPhraseKeys = [scene.correct, ...scene.options];
-            
-            allPhraseKeys.forEach(key => {
-                // Determine if this is the correct answer
-                const isCorrect = key === scene.correct;
-                
-                if (activeAdventure.countryId === 'Japan' && JAPAN_PHRASE_CONTENT[key]) {
-                    options.push({ key, correct: isCorrect });
-                } else if (activeAdventure.countryId !== 'Japan') {
-                    // Fallback for placeholder countries
-                    options.push({ key, correct: isCorrect });
-                }
-            });
-            
-            // Shuffle the display order of options
-            options = shuffleArray(options);
+            if (newName.length < 2) {
+                showMessage('Name must be at least 2 characters.', true);
+                return;
+            }
 
-            options.forEach(option => {
-                const key = option.key;
-                const phraseData = JAPAN_PHRASE_CONTENT[key] || { japanese: key, romaji: 'N/A', audio: null, translation: key };
+            const docRef = doc(db, progressPath(userId));
 
-                const hoverEvents = phraseData.audio 
-                    ? `onmouseenter="handlePhraseHover('${phraseData.audio}')" onmouseleave="stopAudio()"` 
-                    : '';
+            try {
+                await setDoc(docRef, { 
+                    profile: { 
+                        name: newName, 
+                        email: newEmail 
+                    } 
+                }, { merge: true });
 
-                const button = document.createElement('button');
-                button.className = `quiz-option-button w-full p-4 block ${hoverEvents}`;
-                button.setAttribute('data-key', key);
-                button.setAttribute('data-correct', option.correct);
-                button.onclick = (e) => handlePhraseChoice(e.currentTarget, scene.correct);
+                showMessage('Profile saved successfully!');
+            } catch (e) {
+                console.error("Error saving profile:", e);
+                showMessage('Failed to save profile.', true);
+            }
+        }
 
-                button.innerHTML = `
-                    <div class="phrase-box">
-                        <p class="text-xl font-bold text-white">${phraseData.japanese}</p>
-                        <p class="text-xs text-red-300">${phraseData.romaji}</p>
-                        <p class="text-sm font-semibold translation mt-2">${phraseData.translation}</p>
-                    </div>
-                `;
-                optionsEl.appendChild(button);
-            });
-            
-            // Update next scene button text
-            const nextBtn = document.getElementById('next-scene-btn');
-            const currentSceneNum = sceneIndex + 1;
-            
-            if (currentSceneNum < activeAdventure.sceneCount) {
-                nextBtn.textContent = `Continue Touring (${currentSceneNum + 1}/${activeAdventure.sceneCount} Scenes)`;
-            } else {
-                nextBtn.textContent = `Finish Adventure & Review`;
-            }
-        }
+        function renderProfileView() {
+            document.getElementById('profile-name-input').value = userData.profile.name || '';
+            document.getElementById('profile-email-input').value = userData.profile.email || '';
+            document.getElementById('profile-user-id').textContent = userId || 'N/A';
+        }
 
-        window.handlePhraseChoice = function(selectedButton, correctKey) {
-            window.stopAudio(); 
+        async function saveSettings() {
+            if (!isAuthReady || !db || !userId) return;
+            const docRef = doc(db, progressPath(userId));
+            try {
+                 await setDoc(docRef, { settings: userData.settings }, { merge: true });
+            } catch (e) {
+                console.error("Failed to save settings:", e);
+                showMessage('Failed to save settings.', true);
+            }
+        }
 
-            const selectedKey = selectedButton.getAttribute('data-key');
-            const isCorrect = selectedKey === correctKey;
-            const feedbackEl = document.getElementById('quiz-feedback');
-            const messageEl = document.getElementById('feedback-message');
-            
-            feedbackEl.classList.remove('hidden');
+        window.toggleMusic = function() {
+            const isPlaying = !userData.settings.isMusicPlaying;
+            userData.settings.isMusicPlaying = isPlaying;
+            
+            if (bgmAudio) {
+                if (isPlaying) {
+                    // Try to play here. If it was paused, this is a user click to resume.
+                    bgmAudio.play().catch(e => console.error("BGM Play failed, requiring user interaction.", e));
+                } else {
+                    bgmAudio.pause();
+                }
+            }
+            renderSettingsView(); 
+            saveSettings();
+        }
 
-            if (isCorrect) {
-                messageEl.textContent = "Correct! You successfully communicated the phrase. 🎉";
-                messageEl.classList.replace('text-red-400', 'text-green-400');
-                
-                // 1. Disable all buttons and reveal translations
-                document.querySelectorAll('#quiz-options button').forEach(btn => {
-                    btn.disabled = true;
-                    btn.classList.add('revealed');
-                    if (btn.getAttribute('data-key') === correctKey) {
-                        btn.classList.add('correct');
-                    } else {
-                        btn.classList.add('incorrect');
-                    }
-                });
-                
-                // 2. Enable next button
-                document.getElementById('next-scene-btn').classList.remove('hidden');
-                
-            } else {
-                messageEl.textContent = "Incorrect. That phrase has a different meaning. Try again.";
-                messageEl.classList.replace('text-green-400', 'text-red-400');
-                
-                // 1. Mark selected button as incorrect and disable it
-                selectedButton.classList.add('incorrect');
-                selectedButton.disabled = true;
-                
-                // 2. Hide next button (if it was visible)
-                document.getElementById('next-scene-btn').classList.add('hidden');
-                
-                // 3. Ensure non-selected buttons that aren't already marked incorrect are still clickable
-                document.querySelectorAll('#quiz-options button').forEach(btn => {
-                    if (btn !== selectedButton && !btn.classList.contains('incorrect') && !btn.classList.contains('correct')) {
-                         btn.disabled = false; 
-                    }
-                });
-            }
-        }
+        window.updateMusicVolume = function(value) {
+            const volume = parseFloat(value) / 100;
+            userData.settings.musicVolume = volume;
+            if (bgmAudio) bgmAudio.volume = volume;
+            document.getElementById('musicVolumeValue').textContent = `${value}%`;
+            saveSettings();
+        }
+        
+        window.updateSfxVolume = function(value) {
+            const volume = parseFloat(value) / 100;
+            userData.settings.sfxVolume = volume;
+            if (sfxAudio) sfxAudio.volume = volume;
+            document.getElementById('sfxVolumeValue').textContent = `${value}%`;
+            saveSettings();
+        }
+        
+        function initializeAudio() {
+            if (bgmAudio) {
+                bgmAudio.volume = userData.settings.musicVolume;
+                if (!userData.settings.isMusicPlaying) {
+                    bgmAudio.pause();
+                }
+                // NOTE: We no longer try to autoplay here. Play is initiated in showView('countries') or via the Settings toggle.
+            }
+            if (sfxAudio) sfxAudio.volume = userData.settings.sfxVolume;
+        }
 
-        window.nextScene = function() {
-            const nextIndex = activeAdventure.sceneIndex + 1;
-            
-            if (nextIndex < activeAdventure.sceneCount) {
-                // Move to next scene
-                renderQuizScene(nextIndex);
-            } else {
-                // All scenes complete, enable adventure completion button
-                const completionBtn = document.getElementById('complete-adventure-btn');
-                completionBtn.disabled = false;
-                completionBtn.classList.remove('bg-gray-700', 'opacity-50', 'cursor-not-allowed');
-                completionBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                
-                // Hide feedback and next scene button
-                document.getElementById('quiz-feedback').classList.add('hidden');
-                document.getElementById('quiz-options').innerHTML = `<p class="text-xl font-semibold text-green-400 text-center">All ${activeAdventure.sceneCount} communication steps mastered! Click the button below to earn your badge.</p>`;
-                document.getElementById('quiz-question-text').textContent = "Adventure Mastered!";
-                document.getElementById('scenario-image').src = 'https://placehold.co/400x200/10B981/white?text=ADVENTURE+MASTERED';
-            }
-        }
+        function renderSettingsView() {
+            const settings = userData.settings;
+            
+            const musicBtn = document.getElementById('musicToggleBtn');
+            if (musicBtn) {
+                if (settings.isMusicPlaying) {
+                    musicBtn.textContent = 'Music On';
+                    musicBtn.classList.replace('bg-gray-500', 'bg-red-600');
+                    musicBtn.classList.replace('hover:bg-gray-600', 'hover:bg-red-700');
+                } else {
+                    musicBtn.textContent = 'Music Off';
+                    musicBtn.classList.replace('bg-red-600', 'bg-gray-500');
+                    musicBtn.classList.replace('hover:bg-red-700', 'hover:bg-gray-600');
+                }
+            }
+
+            const musicSlider = document.getElementById('musicVolumeSlider');
+            const sfxSlider = document.getElementById('sfxVolumeSlider');
+            
+            if (musicSlider) musicSlider.value = Math.round(settings.musicVolume * 100);
+            if (sfxSlider) sfxSlider.value = Math.round(settings.sfxVolume * 100);
+
+            document.getElementById('musicVolumeValue').textContent = `${Math.round(settings.musicVolume * 100)}%`;
+            document.getElementById('sfxVolumeValue').textContent = `${Math.round(settings.sfxVolume * 100)}%`;
+        }
+        
+        
+        // --- HOVER AUDIO LOGIC (UNCHANGED) ---
+        let hoverAudioTimeout = null;
+
+        window.stopAudio = function() {
+            if (hoverAudioTimeout) clearTimeout(hoverAudioTimeout);
+            if (sfxAudio) {
+                sfxAudio.pause();
+                sfxAudio.currentTime = 0;
+            }
+        };
+
+        window.playPronunciation = function(audioPath) {
+            if (sfxAudio && audioPath) {
+                sfxAudio.src = audioPath; 
+                sfxAudio.currentTime = 0; 
+                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}:`, e));
+            }
+        }
+
+        window.handlePhraseHover = function(audioPath) {
+            window.stopAudio(); 
+
+            hoverAudioTimeout = setTimeout(() => {
+                window.playPronunciation(audioPath);
+            }, 400); 
+        };
 
 
-        // --- UI RENDERING FUNCTIONS (UNCHANGED) ---
-        
-        window.selectCountry = function(countryId) {
-            if (isCountryUnlocked(countryId)) {
-                currentSelectedCountryId = countryId;
-                showView('adventures');
-            } else {
-                showMessage(`You must complete all adventures in the previous country to unlock ${countryId}.`, true);
-            }
-        }
+        // --- QUIZ & GAME SCENARIO LOGIC (UPDATED) ---
+        
+        window.loadGameScenario = function(countryId, adventureIndex) {
+            const adventureKey = `${countryId}_Adventure${adventureIndex}`;
+            const details = ADVENTURE_DETAILS[adventureKey];
 
-        function renderCountriesView() {
-            const { currentCountry } = getProgressInfo();
-            const gridEl = document.getElementById('country-grid');
-            let html = '';
+            if (!details) {
+                 showMessage(`Error: Content not found for ${adventureKey}`, true);
+                 return;
+            }
 
-            PROGRESS_MAP.forEach(country => {
-                const isUnlocked = isCountryUnlocked(country.id);
-                const isCurrent = country.id === currentCountry.id;
-                
-                const cardClass = isUnlocked ? '' : 'locked';
-                const currentBadge = isCurrent && isUnlocked ? '<span class="absolute top-2 right-2 text-xl">🌟</span>' : '';
+            activeAdventure = { 
+                countryId, 
+                adventureIndex, 
+                sceneIndex: 0, 
+                sceneCount: details.scenes.length 
+            };
+            
+            // Set adventure metadata
+            document.getElementById('game-title').textContent = details.title;
+            document.getElementById('game-subtitle').textContent = `Country: ${countryId} | Adventure ${adventureIndex}`;
+            
+            // Set image source
+            document.getElementById('scenario-image').src = details.image;
+            document.getElementById('scenario-image').onerror = () => {
+                document.getElementById('scenario-image').src = 'https://placehold.co/400x200/555/white?text=IMAGE+LOAD+ERROR';
+            };
 
-                html += `
-                    <div onclick="selectCountry('${country.id}')"
-                         class="country-card p-4 rounded-xl shadow-lg flex flex-col items-center justify-center relative ${cardClass}">
-                        ${currentBadge}
-                        <span class="text-6xl">${country.icon}</span>
-                        <p class="text-xl font-bold mt-3">${country.name}</p>
-                        <p class="text-sm text-gray-500">${isUnlocked ? country.rankName : 'LOCKED'}</p>
-                    </div>
-                `;
-            });
+            // Setup the adventure completion button
+            const isAdventureCompleted = userData.progress[adventureKey];
+            const completionBtn = document.getElementById('complete-adventure-btn');
+            
+            if (isAdventureCompleted) {
+                completionBtn.disabled = true;
+                completionBtn.textContent = 'BADGE ALREADY EARNED';
+                completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
+                completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                // Will be enabled only after all scenes are complete
+                completionBtn.onclick = () => window.completeAdventure(countryId, adventureIndex);
+                completionBtn.disabled = true;
+                completionBtn.textContent = 'COMPLETE ADVENTURE AND EARN BADGE';
+                completionBtn.classList.replace('bg-green-600', 'bg-gray-700');
+                completionBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Start the first scene
+            showView('game');
+            renderQuizScene(0);
+        }
 
-            gridEl.innerHTML = html;
-        }
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.renderQuizScene = function(sceneIndex) {
+            window.stopAudio(); 
+
+            const adventureKey = `${activeAdventure.countryId}_Adventure${activeAdventure.adventureIndex}`;
+            const details = ADVENTURE_DETAILS[adventureKey];
+            const scene = details.scenes[sceneIndex];
+            activeAdventure.sceneIndex = sceneIndex;
+            
+            // Reset UI elements
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('next-scene-btn').classList.add('hidden'); // Hide Next button for a new scene
+            document.getElementById('quiz-question-text').textContent = scene.question;
+            const optionsEl = document.getElementById('quiz-options');
+            optionsEl.innerHTML = '';
+
+            // Combine correct and incorrect options
+            let options = [];
+            
+            const allPhraseKeys = [scene.correct, ...scene.options];
+            
+            allPhraseKeys.forEach(key => {
+                // Determine if this is the correct answer
+                const isCorrect = key === scene.correct;
+                
+                if (activeAdventure.countryId === 'Japan' && JAPAN_PHRASE_CONTENT[key]) {
+                    options.push({ key, correct: isCorrect });
+                } else if (activeAdventure.countryId !== 'Japan') {
+                    // Fallback for placeholder countries
+                    options.push({ key, correct: isCorrect });
+                }
+            });
+            
+            // Shuffle the display order of options
+            options = shuffleArray(options);
+
+            options.forEach(option => {
+                const key = option.key;
+                const phraseData = JAPAN_PHRASE_CONTENT[key] || { japanese: key, romaji: 'N/A', audio: null, translation: key };
+
+                const hoverEvents = phraseData.audio 
+                    ? `onmouseenter="handlePhraseHover('${phraseData.audio}')" onmouseleave="stopAudio()"` 
+                    : '';
+
+                const button = document.createElement('button');
+                button.className = `quiz-option-button w-full p-4 block ${hoverEvents}`;
+                button.setAttribute('data-key', key);
+                button.setAttribute('data-correct', option.correct);
+                button.onclick = (e) => handlePhraseChoice(e.currentTarget, scene.correct);
+
+                button.innerHTML = `
+                    <div class="phrase-box">
+                        <p class="text-xl font-bold text-white">${phraseData.japanese}</p>
+                        <p class="text-xs text-red-300">${phraseData.romaji}</p>
+                        <p class="text-sm font-semibold translation mt-2">${phraseData.translation}</p>
+                    </div>
+                `;
+                optionsEl.appendChild(button);
+            });
+            
+            // Update next scene button text
+            const nextBtn = document.getElementById('next-scene-btn');
+            const currentSceneNum = sceneIndex + 1;
+            
+            if (currentSceneNum < activeAdventure.sceneCount) {
+                nextBtn.textContent = `Continue Touring (${currentSceneNum + 1}/${activeAdventure.sceneCount} Scenes)`;
+            } else {
+                nextBtn.textContent = `Finish Adventure & Review`;
+            }
+        }
+
+        window.handlePhraseChoice = function(selectedButton, correctKey) {
+            window.stopAudio(); 
+
+            const selectedKey = selectedButton.getAttribute('data-key');
+            const isCorrect = selectedKey === correctKey;
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const messageEl = document.getElementById('feedback-message');
+            
+            feedbackEl.classList.remove('hidden');
+
+            if (isCorrect) {
+                messageEl.textContent = "Correct! You successfully communicated the phrase. 🎉";
+                messageEl.classList.replace('text-red-400', 'text-green-400');
+                
+                // 1. Disable all buttons and reveal translations
+                document.querySelectorAll('#quiz-options button').forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('revealed');
+                    if (btn.getAttribute('data-key') === correctKey) {
+                        btn.classList.add('correct');
+                    } else {
+                        btn.classList.add('incorrect');
+                    }
+                });
+                
+                // 2. Enable next button
+                document.getElementById('next-scene-btn').classList.remove('hidden');
+                
+            } else {
+                messageEl.textContent = "Incorrect. That phrase has a different meaning. Try again.";
+                messageEl.classList.replace('text-green-400', 'text-red-400');
+                
+                // 1. Mark selected button as incorrect and disable it
+                selectedButton.classList.add('incorrect');
+                selectedButton.disabled = true;
+                
+                // 2. Hide next button (if it was visible)
+                document.getElementById('next-scene-btn').classList.add('hidden');
+                
+                // 3. Ensure non-selected buttons that aren't already marked incorrect are still clickable
+                document.querySelectorAll('#quiz-options button').forEach(btn => {
+                    if (btn !== selectedButton && !btn.classList.contains('incorrect') && !btn.classList.contains('correct')) {
+                         btn.disabled = false; 
+                    }
+                });
+            }
+        }
+
+        window.nextScene = function() {
+            const nextIndex = activeAdventure.sceneIndex + 1;
+            
+            if (nextIndex < activeAdventure.sceneCount) {
+                // Move to next scene
+                renderQuizScene(nextIndex);
+            } else {
+                // All scenes complete, enable adventure completion button
+                const completionBtn = document.getElementById('complete-adventure-btn');
+                completionBtn.disabled = false;
+                completionBtn.classList.remove('bg-gray-700', 'opacity-50', 'cursor-not-allowed');
+                completionBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                
+                // Hide feedback and next scene button
+                document.getElementById('quiz-feedback').classList.add('hidden');
+                document.getElementById('quiz-options').innerHTML = `<p class="text-xl font-semibold text-green-400 text-center">All ${activeAdventure.sceneCount} communication steps mastered! Click the button below to earn your badge.</p>`;
+                document.getElementById('quiz-question-text').textContent = "Adventure Mastered!";
+                document.getElementById('scenario-image').src = 'https://placehold.co/400x200/10B981/white?text=ADVENTURE+MASTERED';
+            }
+        }
 
 
-        function renderAdventuresView() {
-            const country = PROGRESS_MAP.find(c => c.id === currentSelectedCountryId);
-            if (!country) return; 
-            
-            const { currentCountryBadgesCompleted } = getProgressInfo();
-            const adventureListEl = document.getElementById('adventure-list');
-            
-            document.getElementById('current-rank-header').innerHTML = 
-                `Destination: <span class="text-white">${country.name}</span> (${country.rankName} Rank)`;
-            
-            let html = '';
-            
-            for (let i = 0; i < ADVENTURE_NAMES.length; i++) {
-                const adventureNumber = i + 1;
-                const adventureKey = `${country.id}_Adventure${adventureNumber}`;
-                const isCompleted = userData.progress[adventureKey] || false; 
-                
-                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`] || false;
-                
-                const isReadyToPlay = isUnlocked && !isCompleted;
-                
-                const buttonClasses = isCompleted
-                    ? 'bg-green-600 hover:bg-green-500 cursor-default'
-                    : isReadyToPlay
-                        ? 'bg-red-600 hover:bg-red-700 cursor-pointer'
-                        : 'bg-gray-700 cursor-not-allowed opacity-50';
-                
-                const clickHandler = isCompleted || !isReadyToPlay 
-                    ? '' 
-                    : `onclick="loadGameScenario('${country.id}', ${adventureNumber})"`;
-                
-                const buttonText = isCompleted
-                    ? `Badge Earned: ${ADVENTURE_NAMES[i]} ${country.icon}`
-                    : isReadyToPlay
-                        ? `Start Adventure ${adventureNumber}: ${ADVENTURE_NAMES[i]}`
-                        : 'Locked: Complete previous adventure first';
+        // --- UI RENDERING FUNCTIONS (UNCHANGED) ---
+        
+        window.selectCountry = function(countryId) {
+            if (isCountryUnlocked(countryId)) {
+                currentSelectedCountryId = countryId;
+                showView('adventures');
+            } else {
+                showMessage(`You must complete all adventures in the previous country to unlock ${countryId}.`, true);
+            }
+        }
 
-                
-                html += `
-                    <div class="rank-card p-4 rounded-lg flex items-center justify-between">
-                        <span class="text-lg font-medium text-gray-300">
-                            ${country.id} ${adventureNumber}: ${ADVENTURE_NAMES[i]}
-                        </span>
-                        <button ${clickHandler}
-                            class="px-5 py-2 text-sm font-semibold rounded-lg text-white transition duration-150 ${buttonClasses}"
-                            ${isCompleted || !isReadyToPlay ? 'disabled' : ''}>
-                            ${buttonText}
-                        </button>
-                    </div>
-                `;
-            }
-            
-            adventureListEl.innerHTML = html;
-        }
+        function renderCountriesView() {
+            const { currentCountry } = getProgressInfo();
+            const gridEl = document.getElementById('country-grid');
+            let html = '';
 
-        function renderProgressTracker() {
-            const { currentCountry, currentCountryBadgesCompleted, nextCountry } = getProgressInfo();
-            
-            document.getElementById('tracker-rank-name').textContent = `${currentCountry.name} (${currentCountry.rankName})`;
-            document.getElementById('tracker-rank-icon').innerHTML = currentCountry.icon;
-            document.getElementById('tracker-progress').textContent = 
-                `${currentCountryBadgesCompleted} / ${ADVENTURE_NAMES.length} Adventures Completed`;
-            
-            const nextRankName = nextCountry ? `${nextCountry.name} (${nextCountry.rankName})` : 'Master Translator';
+            PROGRESS_MAP.forEach(country => {
+                const isUnlocked = isCountryUnlocked(country.id);
+                const isCurrent = country.id === currentCountry.id;
+                
+                const cardClass = isUnlocked ? '' : 'locked';
+                const currentBadge = isCurrent && isUnlocked ? '<span class="absolute top-2 right-2 text-xl">🌟</span>' : '';
 
-            document.getElementById('tracker-next-rank').textContent = nextCountry 
-                ? `Next Rank: ${nextRankName}` 
-                : 'Maximum Rank Achieved!';
-                
-            const continueButton = document.querySelector('#view-tracker button');
-            if (continueButton) {
-                 continueButton.onclick = function() {
-                    currentSelectedCountryId = currentCountry.id; 
-                    showView('adventures');
-                 }
-            }
+                html += `
+                    <div onclick="selectCountry('${country.id}')"
+                         class="country-card p-4 rounded-xl shadow-lg flex flex-col items-center justify-center relative ${cardClass}">
+                        ${currentBadge}
+                        <span class="text-6xl">${country.icon}</span>
+                        <p class="text-xl font-bold mt-3">${country.name}</p>
+                        <p class="text-sm text-gray-500">${isUnlocked ? country.rankName : 'LOCKED'}</p>
+                    </div>
+                `;
+            });
 
-            const badgeGridEl = document.getElementById('badge-grid');
-            let badgeHtml = '';
-            
-            PROGRESS_MAP.forEach((country, countryIndex) => {
-                ADVENTURE_NAMES.forEach((adventureName, adventureIndex) => {
-                    const adventureKey = `${country.id}_Adventure${adventureIndex + 1}`;
-                    const isCompleted = userData.progress[adventureKey] || false; 
-                    
-                    const countryBadgeIcon = country.icon;
-                    
-                    badgeHtml += `
-                        <div class="badge w-full h-full aspect-square flex flex-col items-center justify-center rounded-lg ${isCompleted ? 'completed bg-green-900/40' : 'badge-placeholder'}">
-                            <span class="text-2xl">${countryBadgeIcon}</span>
-                            <span class="text-xs font-semibold mt-1 ${isCompleted ? 'text-green-300' : 'text-gray-400'}">${country.name} ${adventureIndex + 1}</span>
-                        </div>
-                    `;
-                });
-            });
-            
-            badgeGridEl.innerHTML = badgeHtml;
-        }
+            gridEl.innerHTML = html;
+        }
 
 
-        // --- START APPLICATION (UNCHANGED) ---
-        window.onload = () => {
-            showView('title'); 
-            initializeFirebase();
-        };
+        function renderAdventuresView() {
+            const country = PROGRESS_MAP.find(c => c.id === currentSelectedCountryId);
+            if (!country) return; 
+            
+            const { currentCountryBadgesCompleted } = getProgressInfo();
+            const adventureListEl = document.getElementById('adventure-list');
+            
+            document.getElementById('current-rank-header').innerHTML = 
+                `Destination: <span class="text-white">${country.name}</span> (${country.rankName} Rank)`;
+            
+            let html = '';
+            
+            for (let i = 0; i < ADVENTURE_NAMES.length; i++) {
+                const adventureNumber = i + 1;
+                const adventureKey = `${country.id}_Adventure${adventureNumber}`;
+                const isCompleted = userData.progress[adventureKey] || false; 
+                
+                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`] || false;
+                
+                const isReadyToPlay = isUnlocked && !isCompleted;
+                
+                const buttonClasses = isCompleted
+                    ? 'bg-green-600 hover:bg-green-500 cursor-default'
+                    : isReadyToPlay
+                        ? 'bg-red-600 hover:bg-red-700 cursor-pointer'
+                        : 'bg-gray-700 cursor-not-allowed opacity-50';
+                
+                const clickHandler = isCompleted || !isReadyToPlay 
+                    ? '' 
+                    : `onclick="loadGameScenario('${country.id}', ${adventureNumber})"`;
+                
+                const buttonText = isCompleted
+                    ? `Badge Earned: ${ADVENTURE_NAMES[i]} ${country.icon}`
+                    : isReadyToPlay
+                        ? `Start Adventure ${adventureNumber}: ${ADVENTURE_NAMES[i]}`
+                        : 'Locked: Complete previous adventure first';
 
-    </script>
+                
+                html += `
+                    <div class="rank-card p-4 rounded-lg flex items-center justify-between">
+                        <span class="text-lg font-medium text-gray-300">
+                            ${country.id} ${adventureNumber}: ${ADVENTURE_NAMES[i]}
+                        </span>
+                        <button ${clickHandler}
+                            class="px-5 py-2 text-sm font-semibold rounded-lg text-white transition duration-150 ${buttonClasses}"
+                            ${isCompleted || !isReadyToPlay ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
+                    </div>
+                `;
+            }
+            
+            adventureListEl.innerHTML = html;
+        }
+
+        function renderProgressTracker() {
+            const { currentCountry, currentCountryBadgesCompleted, nextCountry } = getProgressInfo();
+            
+            document.getElementById('tracker-rank-name').textContent = `${currentCountry.name} (${currentCountry.rankName})`;
+            document.getElementById('tracker-rank-icon').innerHTML = currentCountry.icon;
+            document.getElementById('tracker-progress').textContent = 
+                `${currentCountryBadgesCompleted} / ${ADVENTURE_NAMES.length} Adventures Completed`;
+            
+            const nextRankName = nextCountry ? `${nextCountry.name} (${nextCountry.rankName})` : 'Master Translator';
+
+            document.getElementById('tracker-next-rank').textContent = nextCountry 
+                ? `Next Rank: ${nextRankName}` 
+                : 'Maximum Rank Achieved!';
+                
+            const continueButton = document.querySelector('#view-tracker button');
+            if (continueButton) {
+                 continueButton.onclick = function() {
+                    currentSelectedCountryId = currentCountry.id; 
+                    showView('adventures');
+                 }
+            }
+
+            const badgeGridEl = document.getElementById('badge-grid');
+            let badgeHtml = '';
+            
+            PROGRESS_MAP.forEach((country, countryIndex) => {
+                ADVENTURE_NAMES.forEach((adventureName, adventureIndex) => {
+                    const adventureKey = `${country.id}_Adventure${adventureIndex + 1}`;
+                    const isCompleted = userData.progress[adventureKey] || false; 
+                    
+                    const countryBadgeIcon = country.icon;
+                    
+                    badgeHtml += `
+                        <div class="badge w-full h-full aspect-square flex flex-col items-center justify-center rounded-lg ${isCompleted ? 'completed bg-green-900/40' : 'badge-placeholder'}">
+                            <span class="text-2xl">${countryBadgeIcon}</span>
+                            <span class="text-xs font-semibold mt-1 ${isCompleted ? 'text-green-300' : 'text-gray-400'}">${country.name} ${adventureIndex + 1}</span>
+                        </div>
+                    `;
+                });
+            });
+            
+            badgeGridEl.innerHTML = badgeHtml;
+        }
+
+
+        // --- START APPLICATION (UNCHANGED) ---
+        window.onload = () => {
+            showView('title'); 
+            initializeFirebase();
+        };
+
+    </script>
 </body>
 </html>
