@@ -219,6 +219,28 @@
         .slider.round:before {
             border-radius: 50%;
         }
+        
+        /* New Floating Nav Style */
+        .quick-access-btn {
+            background-color: #4A4A4A;
+            color: var(--text-light);
+            padding: 1rem;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quick-access-btn:hover {
+            background-color: #666666;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body class="dark-mode"> <!-- Changed default to dark-mode based on images -->
@@ -421,6 +443,21 @@
         </div>
     </div>
     
+    <!-- ============================================== -->
+    <!-- QUICK ACCESS FLOATING NAV -->
+    <!-- ============================================== -->
+    <div id="quickAccessNav" class="fixed bottom-4 right-4 space-y-3 flex flex-col hidden z-40">
+        <!-- Settings Toggle -->
+        <button id="quickSettingsButton" class="quick-access-btn" data-target="settingsScreen">
+            <i class="fas fa-cog"></i>
+        </button>
+        <!-- Home Button -->
+        <button id="quickHomeButton" class="quick-access-btn" data-target="titlePage">
+            <i class="fas fa-home"></i>
+        </button>
+    </div>
+
+    
     <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -543,6 +580,9 @@
         let currentSceneIndex = 0;
         let correctOption = null;
         let isProcessing = false;
+        
+        // --- UI Elements ---
+        const quickAccessNav = document.getElementById('quickAccessNav');
 
         // --- FIREBASE AND AUTHENTICATION SETUP (No changes needed here) ---
 
@@ -591,7 +631,7 @@
                     userProgress = {
                         badges: [], // e.g., ["japan-discovery"]
                         profile: { name: "Traveler", email: "" },
-                        // ******* FIX: Initial music volume set to 0.2 (20%) from old code *******
+                        // FIX: Initial music volume set to 0.2 (20%) from old code 
                         settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
                     };
                     saveUserProgress(); 
@@ -623,6 +663,13 @@
                 screen.classList.add('hidden');
             });
             document.getElementById(targetId).classList.remove('hidden');
+
+            // Control Quick Access Nav visibility
+            if (targetId === 'titlePage') {
+                quickAccessNav.classList.add('hidden');
+            } else {
+                quickAccessNav.classList.remove('hidden');
+            }
 
             if (targetId === 'destinationScreen') {
                 renderDestinationScreen();
@@ -1086,11 +1133,14 @@
             document.getElementById('progressButton').addEventListener('click', () => switchScreen('progressScreen'));
             document.getElementById('settingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
             
+            // ************ CRITICAL FIX HERE ************
             document.getElementById('closeBadgeModal').addEventListener('click', () => {
                 document.getElementById('badgeModal').classList.add('hidden');
-                // After closing, go back to adventure selection
-                switchScreen('adventureScreen');
+                // IMPORTANT: When closing the modal, we must explicitly re-render the adventure screen
+                // to force the UI to check the updated userProgress.badges and unlock the next level.
+                renderAdventureScreen(currentDestinationId);
             });
+            // *******************************************
             
             // Expose game functions to global scope for HTML onclicks in dynamically created elements.
             window.startAdventure = startAdventure;
@@ -1104,6 +1154,10 @@
                     switchScreen(target);
                 });
             });
+            
+            // Handle quick access navigation
+            document.getElementById('quickSettingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
+            document.getElementById('quickHomeButton').addEventListener('click', () => switchScreen('titlePage'));
         }
 
         function renderUI() {
