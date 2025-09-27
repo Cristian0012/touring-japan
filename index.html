@@ -99,8 +99,9 @@
 </head>
 <body>
     <!-- Audio Elements -->
+    <!-- This URL is absolute and should work fine when deployed -->
     <audio id="bgm" loop src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3"></audio>
-    <!-- SFX will be played on demand -->
+    <!-- SFX will use relative paths (audio/*.mp3) - ensure 'audio' folder is deployed! -->
     <audio id="sfx" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio> 
 
     <div class="min-h-screen flex items-center justify-center p-4">
@@ -394,6 +395,8 @@
         const ADVENTURE_NAMES = ["Discovery", "Exploration", "Challenge", "Expedition", "Summit"];
 
         // --- EXTRACTED JAPAN PHRASE CONTENT MAP (Used for all options) ---
+        // NOTE: These relative audio paths (e.g., audio/nimotsu.mp3) assume an 'audio' folder 
+        // exists at the root of your GitHub Pages deployment, next to this HTML file.
         const JAPAN_PHRASE_CONTENT = {
             "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3", translation: "Where is the baggage?" },
             "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3", translation: "Please take me to the hotel." },
