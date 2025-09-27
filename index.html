@@ -443,13 +443,14 @@
         let userName = "Traveler";
         let userProgress = {}; // Stores all game state: { badges: [], profile: {}, settings: {} }
         
-        // --- BACKGROUND MUSIC SETUP ---
-        // FIX FOR DEPLOYMENT: Changed the music URL from the Canvas-internal ID to the relative path.
-        // User MUST upload this MP3 file to an 'audio' folder in their GitHub repo root.
+        // --- AUDIO PLAYERS ---
         const BACKGROUND_MUSIC_URL = './audio/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3';
         const backgroundMusic = new Audio(BACKGROUND_MUSIC_URL);
         backgroundMusic.loop = true;
         backgroundMusic.volume = 0; // Start muted, volume controlled by settings
+        
+        // FIX 1: Global variable to track the currently playing phrase audio
+        let currentAudioPlayer = null; 
 
         // --- GAME DATA STRUCTURE (The Core Content) ---
         // Updated to use the user's requested 6 countries: Japan, Italy, France, Mexico, Germany, Korean.
@@ -791,8 +792,16 @@
             const audioSettings = userProgress.settings || { audioVolume: 1.0, audioMuted: false };
             if (audioSettings.audioMuted) return;
 
+            // FIX 1: Stop previous audio if it's playing
+            if (currentAudioPlayer && !currentAudioPlayer.paused) {
+                currentAudioPlayer.pause();
+                currentAudioPlayer.currentTime = 0;
+            }
+
             const audio = new Audio(path);
             audio.volume = audioSettings.audioVolume;
+            currentAudioPlayer = audio; // Set global tracker
+
             audio.play().catch(e => console.warn("Audio playback failed (file not found or user gesture required):", e));
         }
         
@@ -812,6 +821,25 @@
                      backgroundMusic.volume = volume;
                 }
             }
+        }
+
+        // FIX 2: Function to attempt playing music after a user interaction, with a retry mechanism
+        function attemptMusicPlay() {
+            const settings = userProgress.settings || { musicVolume: 0.0, musicMuted: true };
+            if (settings.musicMuted || !backgroundMusic.paused) return; // Don't play if muted or already playing
+
+            backgroundMusic.volume = settings.musicVolume;
+            backgroundMusic.play()
+                .then(() => {
+                    console.log("Background music started successfully.");
+                })
+                .catch(e => {
+                    console.warn("Music play blocked, retrying in 500ms. Error:", e);
+                    // Retry once after a short delay, which often works after a page change
+                    setTimeout(() => {
+                         backgroundMusic.play().catch(e => console.warn("Music play failed after retry.", e));
+                    }, 500);
+                });
         }
 
         function showFeedback(message, type) {
@@ -1045,12 +1073,8 @@
             
             // ************ MODIFIED LISTENER ************
             document.getElementById('startButton').addEventListener('click', () => {
-                const settings = userProgress.settings || { musicVolume: 0.0, musicMuted: true };
-                // Start playing music if it's not muted, using the saved volume setting
-                if (!settings.musicMuted) {
-                    backgroundMusic.volume = settings.musicVolume;
-                    backgroundMusic.play().catch(e => console.log("Music auto-play prevented. Please try adjusting volume in Settings.", e));
-                }
+                // Now calls attemptMusicPlay() which handles retry logic for deployment
+                attemptMusicPlay(); 
                 switchScreen('destinationScreen');
             });
             // *******************************************
