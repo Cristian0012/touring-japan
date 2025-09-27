@@ -119,7 +119,7 @@
                 <h2 class="text-3xl font-semibold text-white">Welcome, Traveler!</h2>
                 <p class="text-gray-400">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
                 
-                <button onclick="showView('countries')"
+                <button id="startButton" onclick="handleStartJourney()"
                     class="w-full md:w-auto px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
                     Start Your Journey
                 </button>
@@ -529,14 +529,32 @@
             }
         };
 
+        window.handleStartJourney = function() {
+            // Attempt to start BGM immediately upon user interaction
+            if (bgmAudio && userData.settings.isMusicPlaying) {
+                 bgmAudio.play().catch(e => console.log("BGM playback blocked (needs user interaction)."));
+            }
+            showView('countries');
+        }
 
-        // --- FIREBASE INITIALIZATION & AUTH (UNCHANGED) ---
+
+        // --- FIREBASE INITIALIZATION & AUTH ---
 
         async function initializeFirebase() {
+            const userInfoEl = document.getElementById('user-info');
+
+            // --- 1. HANDLE EXTERNAL DEPLOYMENT (GitHub Pages) ---
             if (!firebaseConfig) {
-                document.getElementById('user-info').textContent = 'Error: Firebase configuration missing.';
+                // If firebaseConfig is missing (which is expected outside the Canvas environment)
+                userInfoEl.textContent = 'Data Persistence: Disabled (Local Mode)';
+                // We set isAuthReady to true so the app runs without database access
+                isAuthReady = true;
                 return;
             }
+            // --- END EXTERNAL DEPLOYMENT HANDLING ---
+            
+            // If running inside the Canvas, proceed with Auth
+            userInfoEl.textContent = 'Loading user data... (Connecting to Firebase)';
             
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -548,12 +566,13 @@
                         if (initialAuthToken) {
                             await signInWithCustomToken(auth, initialAuthToken);
                         } else {
+                            // Only sign in anonymously if an auth token is not provided (outside Canvas environment)
                             await signInAnonymously(auth);
                         }
                         userId = auth.currentUser.uid;
                     } catch (error) {
                         console.error("Authentication failed:", error);
-                        document.getElementById('user-info').textContent = 'Error: Authentication failed.';
+                        userInfoEl.textContent = 'Error: Authentication failed.';
                         return;
                     }
                 } else {
@@ -561,14 +580,21 @@
                 }
                 
                 isAuthReady = true;
-                document.getElementById('user-info').textContent = `User ID: ${userId.substring(0, 4)}...`;
+                userInfoEl.textContent = `User ID: ${userId.substring(0, 4)}...`;
                 startRealtimeListener();
             });
         }
 
-        // --- REAL-TIME DATA LISTENER & HANDLER (UNCHANGED) ---
+        // --- REAL-TIME DATA LISTENER & HANDLER (MODIFIED FOR LOCAL MODE FALLBACK) ---
 
         function startRealtimeListener() {
+            // If running in local mode (outside Canvas), skip real-time listener
+            if (!db) {
+                // Fallback to in-memory/localStorage logic if needed, but for now, just skip.
+                console.log("Firebase not initialized. Running in local data simulation mode.");
+                return;
+            }
+            
             if (!isAuthReady || !db || !userId) return;
 
             const docRef = doc(db, progressPath(userId));
@@ -674,12 +700,21 @@
         // --- FIREBASE TRANSACTION: COMPLETE ADVENTURE (UPDATED RETURN FLOW) ---
         
         window.completeAdventure = async function(countryId, adventureIndex) {
+            if (!db) {
+                showMessage('Progress not saved: Firebase is disabled in this environment.', true);
+                // Simulate local completion for UI feedback
+                const adventureKey = `${countryId}_Adventure${adventureIndex}`;
+                userData.progress[adventureKey] = true;
+                recalculateAndRender();
+                showView('adventures'); 
+                return;
+            }
+            
             if (!isAuthReady || !db || !userId) return;
 
             const adventureKey = `${countryId}_Adventure${adventureIndex}`;
             if (userData.progress[adventureKey]) { 
                 showMessage(`Badge already earned for ${countryId} Adventure ${adventureIndex}!`, true);
-                // Return to the adventures list if already completed
                 showView('adventures'); 
                 return;
             }
@@ -699,7 +734,6 @@
                 
                 showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
                 
-                // CRITICAL: Return to the Adventure List view after successful completion
                 showView('adventures'); 
                 
             } catch (e) {
@@ -708,14 +742,9 @@
             }
         }
 
-        // --- PROFILE, SETTINGS, AUDIO LOGIC (UNCHANGED) ---
+        // --- PROFILE, SETTINGS, AUDIO LOGIC (MODIFIED FOR LOCAL/FIREBASE SAVE) ---
 
         window.saveProfile = async function() {
-            if (!isAuthReady || !db || !userId) {
-                showMessage('Authentication not ready. Please wait.', true);
-                return;
-            }
-
             const nameInput = document.getElementById('profile-name-input');
             const emailInput = document.getElementById('profile-email-input');
             
@@ -727,37 +756,40 @@
                 return;
             }
 
-            const docRef = doc(db, progressPath(userId));
-
-            try {
-                await setDoc(docRef, { 
-                    profile: { 
-                        name: newName, 
-                        email: newEmail 
-                    } 
-                }, { merge: true });
-
-                showMessage('Profile saved successfully!');
-            } catch (e) {
-                console.error("Error saving profile:", e);
-                showMessage('Failed to save profile.', true);
+            userData.profile = { name: newName, email: newEmail };
+            
+            if (db) {
+                const docRef = doc(db, progressPath(userId));
+                try {
+                    await setDoc(docRef, { 
+                        profile: userData.profile
+                    }, { merge: true });
+                    showMessage('Profile saved successfully!');
+                } catch (e) {
+                    console.error("Error saving profile:", e);
+                    showMessage('Failed to save profile.', true);
+                }
+            } else {
+                 showMessage('Profile updated locally (Firebase disabled).');
+                 document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: Disabled (Local Mode)`;
             }
         }
 
         function renderProfileView() {
             document.getElementById('profile-name-input').value = userData.profile.name || '';
             document.getElementById('profile-email-input').value = userData.profile.email || '';
-            document.getElementById('profile-user-id').textContent = userId || 'N/A';
+            document.getElementById('profile-user-id').textContent = userId || 'N/A (Local Mode)';
         }
 
         async function saveSettings() {
-            if (!isAuthReady || !db || !userId) return;
-            const docRef = doc(db, progressPath(userId));
-            try {
-                 await setDoc(docRef, { settings: userData.settings }, { merge: true });
-            } catch (e) {
-                console.error("Failed to save settings:", e);
-                showMessage('Failed to save settings.', true);
+             if (db) {
+                const docRef = doc(db, progressPath(userId));
+                try {
+                     await setDoc(docRef, { settings: userData.settings }, { merge: true });
+                } catch (e) {
+                    console.error("Failed to save settings:", e);
+                    showMessage('Failed to save settings.', true);
+                }
             }
         }
 
@@ -767,7 +799,8 @@
             
             if (bgmAudio) {
                 if (isPlaying) {
-                    bgmAudio.play().catch(e => console.error("BGM Play failed, requiring user interaction.", e));
+                    // Start playback attempt here on user interaction
+                    bgmAudio.play().catch(e => console.error("BGM Play failed, user interaction needed.", e));
                 } else {
                     bgmAudio.pause();
                 }
@@ -795,11 +828,7 @@
         function initializeAudio() {
             if (bgmAudio) {
                 bgmAudio.volume = userData.settings.musicVolume;
-                if (userData.settings.isMusicPlaying) {
-                    bgmAudio.play().catch(e => console.log("BGM Autoplay prevented. User must click to start."));
-                } else {
-                    bgmAudio.pause();
-                }
+                // Do not auto-play here, wait for user interaction (handleStartJourney or toggleMusic)
             }
             if (sfxAudio) sfxAudio.volume = userData.settings.sfxVolume;
         }
@@ -831,7 +860,7 @@
         }
         
         
-        // --- HOVER AUDIO LOGIC (UNCHANGED) ---
+        // --- HOVER AUDIO LOGIC (MODIFIED FOR MISSING FILE CHECK) ---
         let hoverAudioTimeout = null;
 
         window.stopAudio = function() {
@@ -843,10 +872,15 @@
         };
 
         window.playPronunciation = function(audioPath) {
-            if (sfxAudio && audioPath) {
+            if (!audioPath) return;
+
+            // Simple check to ensure we are trying to load an actual file
+            if (sfxAudio && audioPath.startsWith('audio/')) {
                 sfxAudio.src = audioPath; 
                 sfxAudio.currentTime = 0; 
-                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}:`, e));
+                sfxAudio.play().catch(e => console.log(`Pronunciation playback blocked or file not found for ${audioPath}.`, e));
+            } else {
+                console.log(`Audio path invalid or missing: ${audioPath}`);
             }
         }
 
@@ -859,7 +893,7 @@
         };
 
 
-        // --- QUIZ & GAME SCENARIO LOGIC (UPDATED) ---
+        // --- QUIZ & GAME SCENARIO LOGIC (UNCHANGED) ---
         
         window.loadGameScenario = function(countryId, adventureIndex) {
             const adventureKey = `${countryId}_Adventure${adventureIndex}`;
