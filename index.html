@@ -3,476 +3,1167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Touring Japan - Language Adventure</title>
+    <title>GTA: Global Translation Adventures</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Base styles */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f3e9;
-            /* FORCED BLACK TEXT */
-            color: #000000 !important;  
-            transition: background-color 0.5s ease, color 0.5s ease;
-        }
-        body.dark-mode {
-            /* KEEP DARK BACKGROUND FOR DARK MODE */
-            background-color: #1a202c;
-        }
-        
-        /* Container and Card styles */
-        .container {
-            max-width: 800px;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0d1117; 
+            color: #e6e6e6; 
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            text-align: center;
-        }
-        .card {
-            background: #ffffff;
-            border-radius: 1.5rem;
-            padding: 2rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
-            transition: background-color 0.5s ease;
-        }
-        body.dark-mode .card {
-            background: #2d3748;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 5px 15px -5px rgba(0, 0, 0, 0.1);
-        }
-        .card:hover {
-            transform: translateY(-5px);
         }
 
-        /* Button styles */
-        .option-button {
-            background-color: #e8f0f7;
-            color: #000000 !important; /* FORCED BLACK TEXT */
-            padding: 1rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            transition: background-color 0.3s, transform 0.2s;
+        .container-content { max-width: 600px; }
+        .rank-card {
+            background: linear-gradient(135deg, #161b22, #0d1117);
+            border: 1px solid #2f363d;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .rank-card:hover { transform: translateY(-3px); }
+        .badge { transition: transform 0.1s; }
+        .badge:hover:not(.completed) { transform: scale(1.1); }
+        .completed { filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.7)); }
+        .badge-placeholder { background-color: #1e242c; border: 1px dashed #2f363d; }
+        .nav-button { transition: background-color 0.1s; }
+        
+        /* Country Card Specific Styles */
+        .country-card {
+            background-color: #161b22;
+            border: 2px solid transparent;
             cursor: pointer;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-            border: 2px solid #3498db;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            transition: all 0.2s;
         }
-        body.dark-mode .option-button {
-            background-color: #4a5568;
-            color: #000000 !important; /* FORCED BLACK TEXT */
-            border: 2px solid #63b3ed;
+        .country-card:hover:not(.locked) {
+            border-color: #f87171; /* red-400 */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.4);
         }
-        .option-button:hover:not(:disabled) {
-            background-color: #d1e2f3;
-            transform: scale(1.03);
-        }
-        body.dark-mode .option-button:hover:not(:disabled) {
-            background-color: #5a6b81;
-        }
-
-        /* State styles */
-        .option-button:disabled {
+        .country-card.locked {
+            opacity: 0.4;
             cursor: not-allowed;
-            opacity: 0.7; /* Dim disabled buttons */
-            transform: none !important; 
+            filter: grayscale(80%);
+            border-color: #374151; /* gray-700 */
         }
-        .correct {
-            background-color: #2ecc71 !important;
-            color: #000000 !important; /* Keep correct text black */
-            border-color: #27ae60 !important;
-            animation: pulse-correct 1s infinite;
-            opacity: 1 !important;
-        }
-        .incorrect {
-            background-color: #e74c3c !important;
-            color: #000000 !important; /* Keep incorrect text black */
-            border-color: #c0392b !important;
-            opacity: 1 !important;
-        }
-
-        /* Override specific Tailwind classes in HTML to force black text */
-        .dark\:text-gray-50, .dark\:text-gray-200, .dark\:text-gray-300, .dark\:text-gray-400 {
-            color: #000000 !important;
+        /* Image styling */
+        .scenario-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
         
-        @keyframes pulse-correct {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        /* Interactive Phrase Boxes */
+        .phrase-button {
+            text-align: center;
+            border-radius: 0.75rem;
+            background-color: #1f2937; /* Gray 800 */
+            border: 1px solid #374151; /* Gray 700 */
+            transition: all 0.2s ease;
+        }
+        .phrase-button:hover:not([disabled]) {
+            transform: scale(1.03);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); /* Red 500 shadow */
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body>
+    <!-- Audio Elements -->
+    <audio id="bgm" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+    <!-- SFX will be played on demand -->
+    <audio id="sfx" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio> 
 
-<audio id="background-music" src="https://ia902808.us.archive.org/20/items/petals-on-the-water-full-version-japanese-fusion-lofi-392739/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3" autoplay loop muted></audio>
-
-<div id="game-container" class="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-8 md:p-12 space-y-8 flex flex-col items-center card">
-    <div id="start-screen" class="space-y-6 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Touring Japan 🏯</h1>
-        <img src="https://i.imgur.com/O7Fa5O7.jpeg" alt="Welcome to Japan" class="w-full max-w-sm mx-auto mb-4 rounded-lg shadow-md">
-        <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">Welcome to your adventure! Learn essential Japanese phrases. Hover over the phrases to hear the audio.</p>
-        <button id="start-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-            Start Your Journey
-        </button>
-    </div>
-
-    <div id="game-screen" class="w-full space-y-6 hidden">
-        <div class="flex justify-between items-center w-full">
-            <div id="score-display" class="text-lg font-bold text-gray-800 dark:text-gray-200">Score: 0/0</div>
-
-            <button id="music-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                Music Off
-            </button>
-            <button id="theme-toggle-button" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                Dark Mode
-            </button>
-        </div>
-        <img id="scenario-image" class="rounded-lg shadow-md mb-4 w-full h-auto object-cover max-h-80" alt="Scenario Image" style="display: none;">
-        <div id="scenario-text" class="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-50 leading-relaxed mb-6"></div>
-        
-        <div id="options-container" class="w-full grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        
-        <div id="feedback-area" class="mt-6 text-center" aria-live="polite">
-            <p id="feedback-text" class="text-lg font-bold"></p>
-            <p id="translation-text" class="text-sm mt-2 text-gray-700 italic dark:text-gray-400"></p>
-        </div>
-        <button id="next-button" class="mt-8 hidden bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow transition duration-300">
-            Continue Touring
-        </button>
-    </div>
-</div>
-
-<script>
-    // --- Game Data ---
-    const scenarios = [
-        {
-            text: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
-            imageUrl: "https://i.imgur.com/Qq6c0fj.jpeg",
-            options: [
-                { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", isCorrect: true, audioFile: "audio/nimotsu.mp3" }, 
-                { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", translation: "Where is the toilet?", isCorrect: false, audioFile: "audio/toire.mp3" },
-                { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", translation: "How much is this?", isCorrect: false, audioFile: "audio/ikura.mp3" }
-            ],
-        },
-        {
-            text: "You need to get to your hotel. How do you ask the taxi driver, 'Please take me to my hotel?'",
-            imageUrl: "https://i.imgur.com/WjxmkKu.jpeg",
-            options: [
-                { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", translation: "Please take me to my hotel.", isCorrect: true, audioFile: "audio/hoteru.mp3" },
-                { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", translation: "Where is the taxi stand?", isCorrect: false, audioFile: "audio/taxistand.mp3" },
-                { japanese: "元気ですか？", romaji: "Genki desu ka?", translation: "How are you?", isCorrect: false, audioFile: "audio/genki.mp3" }
-            ],
-        },
-        {
-            text: "You arrive at your hotel. How do you tell the front desk, 'I am here to check in'?",
-            imageUrl: "https://i.imgur.com/sAYoQkS.jpeg",
-            options: [
-                { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", translation: "I am here to check in.", isCorrect: true, audioFile: "audio/checkin.mp3" },
-                { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", translation: "Check, please.", isCorrect: false, audioFile: "audio/checkplease.mp3" },
-                { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", translation: "Where is the toilet?", isCorrect: false, audioFile: "audio/toire.mp3" }
-            ],
-        },
-        {
-            text: "You've arrived at your room, how do you say 'I am really hungry'?",
-            imageUrl: "https://i.imgur.com/EIidutG.png",
-            options: [
-                { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", translation: "I'm hungry.", isCorrect: true, audioFile: "audio/hungry.mp3" },
-                { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", translation: "I have a reservation.", isCorrect: false, audioFile: "audio/reservation.mp3" },
-                { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", translation: "I'd like to check in.", isCorrect: false, audioFile: "audio/checkin.mp3" }
-            ],
-        },
-        {
-            text: "You arrive at a local ramen shop, how do you say, 'I would like a bowl of ramen'?",
-            imageUrl: "https://i.imgur.com/8RAKAAT.jpeg",
-            options: [
-                { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", translation: "I would like a bowl of ramen.", isCorrect: true, audioFile: "audio/ramen.mp3" },
-                { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", translation: "Where is a delicious restaurant?", isCorrect: false, audioFile: "audio/restaurant.mp3" },
-                { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", translation: "Check, please.", isCorrect: false, audioFile: "audio/checkplease.mp3" }
-            ],
-        },
-    ];
-
-    let currentScenarioIndex = 0;
-    let score = 0; 
-    let hoverTimeout = null;
-    let currentAudio = null; 
-
-    // UI elements
-    const startScreen = document.getElementById('start-screen');
-    const gameScreen = document.getElementById('game-screen');
-    const startButton = document.getElementById('start-button');
-    const scenarioImage = document.getElementById('scenario-image');
-    const scenarioText = document.getElementById('scenario-text');
-    const optionsContainer = document.getElementById('options-container');
-    const feedbackText = document.getElementById('feedback-text');
-    const translationText = document.getElementById('translation-text');
-    const nextButton = document.getElementById('next-button');
-    const backgroundMusic = document.getElementById('background-music');
-    const musicToggleButton = document.getElementById('music-toggle-button');
-    const themeToggleButton = document.getElementById('theme-toggle-button');
-    const scoreDisplay = document.getElementById('score-display'); 
-
-    // Set initial music volume
-    backgroundMusic.volume = 0.2;
-
-    // --- Core Functions ---
-
-    /**
-     * Plays the custom MP3 audio file.
-     * @param {string} filePath - The path to the MP3 file (e.g., 'audio/nimotsu.mp3').
-     */
-    function playJapaneseAudio(filePath) {
-        // Stop any currently playing audio
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-        }
-
-        currentAudio = new Audio(filePath);
-        currentAudio.volume = 1.0; 
-        currentAudio.play().catch(e => console.error("Audio playback failed:", e));
-    }
-
-    /**
-     * Fisher-Yates shuffle algorithm
-     */
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    /**
-     * Updates the score display.
-     */
-    function updateScoreDisplay() {
-        scoreDisplay.textContent = `Score: ${score}/${scenarios.length}`;
-    }
-
-    /**
-     * Renders the current scenario.
-     */
-    function renderScenario() {
-        if (currentScenarioIndex >= scenarios.length) {
-            endGame();
-            return;
-        }
-
-        const scenario = scenarios[currentScenarioIndex];
-        scenarioText.textContent = scenario.text;
-        optionsContainer.innerHTML = '';
-        feedbackText.textContent = '';
-        nextButton.classList.add('hidden');
-        
-        updateScoreDisplay(); 
-        
-        // Handle image display
-        scenarioImage.src = scenario.imageUrl;
-        scenarioImage.style.display = scenario.imageUrl ? 'block' : 'none';
-
-        // Shuffle the options before rendering
-        const shuffledOptions = shuffleArray([...scenario.options]);
-
-        shuffledOptions.forEach(option => {
-            const wrapper = document.createElement('div');
-            wrapper.className = "flex flex-col items-center w-full";
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="container-content w-full">
             
-            const button = document.createElement('button');
-            button.className = "option-button font-inter hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none transition-all duration-300 transform active:scale-95 text-xl p-4";
-            
-            const japaneseText = document.createElement('span');
-            japaneseText.textContent = option.japanese;
-            japaneseText.className = "text-2xl font-bold";
+            <header class="text-center mb-10">
+                <h1 class="text-5xl font-extrabold text-red-400 mb-2">GTA: Global Translation Adventures</h1>
+                <p class="text-gray-400 text-sm" id="user-info">Loading user data...</p>
+            </header>
 
-            const romajiText = document.createElement('span');
-            romajiText.textContent = option.romaji;
-            romajiText.className = "text-base italic text-gray-500 dark:text-gray-300 mt-1";
-
-            button.appendChild(japaneseText);
-            button.appendChild(romajiText);
-
-            button.dataset.isCorrect = option.isCorrect;
-            button.dataset.translation = option.translation;
-            button.dataset.audio = option.audioFile; // Store audio file path
-
-            // --- HOVER AUDIO TRIGGER (MouseEnter and MouseLeave) ---
-            button.addEventListener('mouseenter', () => {
-                if (hoverTimeout) clearTimeout(hoverTimeout);
+            <!-- --------------------------------------- -->
+            <!-- 1. TITLE SCREEN (Initial Page)          -->
+            <!-- --------------------------------------- -->
+            <div id="view-title" class="text-center space-y-6">
+                <h2 class="text-3xl font-semibold text-white">Welcome, Traveler!</h2>
+                <p class="text-gray-400">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
                 
-                hoverTimeout = setTimeout(() => {
-                    playJapaneseAudio(option.audioFile);
-                }, 300); // 300ms delay for intentional hover
-            });
-
-            button.addEventListener('mouseleave', () => {
-                if (hoverTimeout) {
-                    clearTimeout(hoverTimeout);
-                }
-                // Stop audio immediately when mouse leaves
-                if (currentAudio) {
-                    currentAudio.pause();
-                    currentAudio.currentTime = 0;
-                }
-            });
-
-            // Add click event listener for the game choice
-            button.addEventListener('click', handleChoice);
-
-            wrapper.appendChild(button);
-            optionsContainer.appendChild(wrapper);
-        });
-    }
-
-    function handleChoice(event) {
-        const chosenButton = event.currentTarget;
-        const isCorrect = chosenButton.dataset.isCorrect === 'true';
-
-        // Ensure hover audio stops if playing
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-        }
-        if (hoverTimeout) clearTimeout(hoverTimeout);
-
-
-        // Disable all buttons to prevent further clicks
-        optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
-        
-        if (isCorrect) {
-            score++; // Increment score
-            updateScoreDisplay(); // Update the display
-
-            feedbackText.textContent = "Correct! 💮 You chose the right phrase. Continue your journey!";
-            feedbackText.className = "text-green-600 dark:text-green-400 font-bold text-xl mt-4";
-            nextButton.classList.remove('hidden');
-            
-            // Highlight all options with their translations
-            optionsContainer.childNodes.forEach(btnWrapper => {
-                const button = btnWrapper.querySelector('button');
-                const translation = button.dataset.translation;
+                <button onclick="showView('countries')"
+                    class="w-full md:w-auto px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
+                    Start Your Journey
+                </button>
                 
-                // Add correct class to the right button
-                if (button.dataset.isCorrect === 'true') {
-                    button.classList.add('correct');
-                }
+                <div class="grid grid-cols-3 gap-4 pt-4">
+                    <button onclick="showView('profile')"
+                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
+                        Profile
+                    </button>
+                    <button onclick="showView('tracker')"
+                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
+                        Progress Tracker
+                    </button>
+                    <button onclick="showView('settings')"
+                        class="nav-button py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition duration-200">
+                        Settings
+                    </button>
+                </div>
+            </div>
 
-                // Append the translation for review
-                let translationDisplay = btnWrapper.querySelector('.translation-display');
-                if (!translationDisplay) {
-                    translationDisplay = document.createElement('p');
-                    translationDisplay.className = "translation-display text-base mt-2 text-gray-700 dark:text-gray-200 font-semibold";
-                    btnWrapper.appendChild(translationDisplay);
-                }
-                translationDisplay.textContent = `[${translation}]`;
-            });
+            <!-- --------------------------------------- -->
+            <!-- 2. COUNTRY SELECTION GRID (New View)    -->
+            <!-- --------------------------------------- -->
+            <div id="view-countries" class="hidden">
+                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Title Screen
+                </button>
+                
+                <h2 class="text-3xl font-bold mb-6 text-red-400">Select Your Destination</h2>
+                <p class="text-gray-400 mb-8">Master a country's adventures to unlock the next destination and earn a rank up!</p>
+                
+                <div id="country-grid" class="grid grid-cols-2 gap-4">
+                    <!-- Country cards injected here -->
+                </div>
+            </div>
+
+            <!-- --------------------------------------- -->
+            <!-- 3. ADVENTURE LIST (Renamed from view-selection) -->
+            <!-- --------------------------------------- -->
+            <div id="view-adventures" class="hidden">
+                <div class="flex justify-between mb-6">
+                    <button onclick="showView('countries')" class="text-blue-400 hover:text-blue-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Back to Country Selection
+                    </button>
+                    <button onclick="showView('tracker')" class="text-green-400 hover:text-green-300 flex items-center font-semibold">
+                        View Progress Tracker
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+
+                <h2 class="text-3xl font-bold mb-6 text-yellow-400" id="current-rank-header">Destination: Japan (Traveler Rank)</h2>
+                
+                <div id="adventure-list" class="space-y-4">
+                    <!-- Adventures will be injected here -->
+                    <div class="text-center text-gray-500">Loading adventures...</div>
+                </div>
+            </div>
             
-        } else {
-            feedbackText.textContent = "That's not quite right. Try again.";
-            feedbackText.className = "text-red-600 dark:text-red-400 font-bold text-xl mt-4";
+            <!-- --------------------------------------- -->
+            <!-- 4. PROGRESS TRACKER (Badges & Rank)     -->
+            <!-- --------------------------------------- -->
+            <div id="view-tracker" class="hidden">
+                <button onclick="showView('adventures')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m9 18 6-6-6-6"/></svg>
+                    Continue Adventures
+                </button>
+
+                <!-- Current Rank Status -->
+                <div class="rank-card p-6 rounded-xl mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Current Rank (Country)</p>
+                            <h3 id="tracker-rank-name" class="text-4xl font-extrabold text-white mt-1">Japan</h3>
+                        </div>
+                        <div id="tracker-rank-icon" class="text-6xl">🇯🇵</div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-700">
+                        <p id="tracker-progress" class="text-xl font-mono text-green-400">0 / 5 Adventures Completed</p>
+                        <p id="tracker-next-rank" class="text-sm text-gray-500 mt-1">Next Rank: France (Globetrotter)</p>
+                    </div>
+                </div>
+
+                <!-- 30 Badge Grid -->
+                <h3 class="text-2xl font-bold mb-4">All 30 Badges Earned</h3>
+                <div id="badge-grid" class="grid grid-cols-5 gap-3 p-4 bg-[#161b22] rounded-lg border border-[#2f363d]">
+                    <!-- Badges will be rendered here -->
+                </div>
+            </div>
             
-            // Only disable the incorrect button, allowing re-attempt
-            chosenButton.disabled = true;
-            chosenButton.classList.add('incorrect');
+            <!-- --------------------------------------- -->
+            <!-- 5. PROFILE VIEW (Enhanced)              -->
+            <!-- --------------------------------------- -->
+            <div id="view-profile" class="hidden text-left space-y-6">
+                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Title Screen
+                </button>
+                <h2 class="text-3xl font-semibold text-red-400 text-center">Traveler Profile</h2>
 
-            // Re-enable other buttons, but only those that are not correct
-            optionsContainer.querySelectorAll('button').forEach(btn => {
-                if (btn !== chosenButton && !btn.classList.contains('correct')) {
-                    btn.disabled = false;
-                }
-            });
-        }
-    }
+                <div class="bg-[#161b22] p-6 rounded-xl space-y-4 border border-gray-700 shadow-lg">
+                    <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">Your Details</h3>
+                    
+                    <div>
+                        <label for="profile-name-input" class="block text-sm font-medium text-gray-400 mb-1">Traveler Name</label>
+                        <input type="text" id="profile-name-input" placeholder="Enter your name"
+                               class="w-full p-2 rounded-lg bg-[#0d1117] border border-gray-700 focus:border-red-500 focus:ring-red-500 text-white">
+                    </div>
 
-    function nextScenario() {
-        currentScenarioIndex++;
-        renderScenario();
-    }
+                    <div>
+                        <label for="profile-email-input" class="block text-sm font-medium text-gray-400 mb-1">Email (Optional, for updates)</label>
+                        <input type="email" id="profile-email-input" placeholder="your.email@example.com"
+                               class="w-full p-2 rounded-lg bg-[#0d1117] border border-gray-700 focus:border-red-500 focus:ring-red-500 text-white">
+                    </div>
+                    
+                    <button onclick="saveProfile()"
+                            class="w-full py-2 mt-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200">
+                        Save Profile
+                    </button>
+                </div>
+                
+                <div class="bg-[#161b22] p-6 rounded-xl space-y-3 border border-gray-700">
+                    <h3 class="text-xl font-bold text-white mb-2 border-b border-gray-700 pb-2">System Info</h3>
+                    <p class="text-sm text-gray-400">Unique Traveler ID:</p>
+                    <p class="text-sm text-green-400 break-all font-mono" id="profile-user-id">...</p>
+                    <p class="text-xs text-gray-500">*Your progress is saved securely using this ID.*</p>
+                </div>
+            </div>
 
-    function endGame() {
-        // Clear game screen and display completion message
-        gameScreen.innerHTML = `
-            <div class="space-y-6 text-center">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50">Adventure Complete!</h1>
-                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-                    Your Final Score: ${score} out of ${scenarios.length}!
-                </p>
-                <p class="text-lg md:text-xl text-gray-900 dark:text-gray-50 max-w-md mx-auto">
-                    You've successfully completed your first journey through Japan and mastered essential phrases.
-                    Keep practicing to become a language master!
-                </p>
-                <button id="restart-button" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-                    Start Over
+            <!-- --------------------------------------- -->
+            <!-- 6. SETTINGS VIEW (Implemented)          -->
+            <!-- --------------------------------------- -->
+            <div id="view-settings" class="hidden text-left space-y-6">
+                <button onclick="showView('title')" class="text-blue-400 hover:text-blue-300 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Title Screen
+                </button>
+                <h2 class="text-3xl font-semibold text-red-400 text-center">Game Settings</h2>
+                
+                <div class="bg-[#161b22] p-6 rounded-xl space-y-6 border border-gray-700 shadow-lg">
+                    
+                    <!-- Background Music Controls -->
+                    <div class="border-b border-gray-700 pb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-lg font-medium text-gray-300">Background Music</p>
+                            <button id="musicToggleBtn" onclick="toggleMusic()"
+                                    class="py-2 px-4 rounded-lg font-semibold transition duration-200 text-white bg-gray-500 hover:bg-gray-600">
+                                Music Off
+                            </button>
+                        </div>
+                        <label for="musicVolumeSlider" class="block text-sm font-medium text-gray-400 mb-2">
+                            Volume: <span id="musicVolumeValue">30%</span>
+                        </label>
+                        <input type="range" id="musicVolumeSlider" min="0" max="100" value="30" oninput="updateMusicVolume(this.value)"
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500">
+                    </div>
+
+                    <!-- Pronunciation (SFX) Controls -->
+                    <div>
+                        <label for="sfxVolumeSlider" class="block text-lg font-medium text-gray-300 mb-3">Pronunciation Volume (SFX)</label>
+                        <label for="sfxVolumeSlider" class="block text-sm font-medium text-gray-400 mb-2">
+                            Volume: <span id="sfxVolumeValue">80%</span>
+                        </label>
+                        <input type="range" id="sfxVolumeSlider" min="0" max="100" value="80" oninput="updateSfxVolume(this.value)"
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- --------------------------------------- -->
+            <!-- 7. GAME/SCENARIO VIEW (New View)        -->
+            <!-- --------------------------------------- -->
+            <div id="view-game" class="hidden">
+                <button onclick="showView('adventures')" class="text-blue-400 hover:text-blue-300 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Exit Scenario
+                </button>
+                
+                <h2 class="text-3xl font-bold mb-4 text-yellow-400" id="game-title">Adventure Title</h2>
+                <p class="text-gray-400 mb-8" id="game-subtitle">Country: Japan | Adventure 1</p>
+
+                <div class="rank-card p-6 rounded-xl space-y-4">
+                    <!-- Image Placeholder -->
+                    <img id="scenario-image" class="scenario-image" alt="Scenario Context Image" src="">
+                    
+                    <div id="game-scenario" class="space-y-3">
+                        <!-- Scenario steps dynamically loaded here -->
+                    </div>
+                </div>
+
+                <button id="complete-scenario-btn"
+                    class="w-full mt-8 px-10 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
+                    COMPLETE ADVENTURE AND EARN BADGE
                 </button>
             </div>
-        `;
-        document.getElementById('restart-button').addEventListener('click', restartGame);
-    }
+            
+            <!-- Message Box -->
+            <div id="message-box" class="fixed bottom-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-2xl text-white font-semibold transition-opacity duration-300 opacity-0 pointer-events-none">
+                <!-- Messages go here -->
+            </div>
 
-    function restartGame() {
-        currentScenarioIndex = 0;
-        // Reload the page to reset the state cleanly
-        window.location.reload(); 
-    }
+        </div>
+    </div>
 
-    // --- Initialization and Event Listeners ---
+    <!-- Firebase SDKs and Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    function initGame() {
-        // Event Listeners for Start and Navigation
-        startButton.addEventListener('click', () => {
-            backgroundMusic.muted = false;
-            backgroundMusic.play().catch(e => console.error("Music playback failed:", e));
-            startScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            renderScenario();
-        });
+        // Set log level for debugging
+        setLogLevel('Debug');
 
-        nextButton.addEventListener('click', nextScenario);
+        // --- GLOBAL VARIABLES & FIREBASE SETUP ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Music Toggle
-        musicToggleButton.addEventListener('click', () => {
-            if (backgroundMusic.paused || backgroundMusic.muted) {
-                backgroundMusic.muted = false;
-                backgroundMusic.play();
-                musicToggleButton.textContent = "Music Off";
-            } else {
-                backgroundMusic.pause();
-                backgroundMusic.muted = true;
-                musicToggleButton.textContent = "Music On";
-            }
-        });
+        let db, auth, userId;
+        let isAuthReady = false;
         
-        // Theme Toggle
-        themeToggleButton.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const gameContainer = document.getElementById('game-container');
-            // Toggle the card class for dark mode background
-            gameContainer.classList.toggle('card'); 
+        const DEFAULT_SETTINGS = {
+            isMusicPlaying: false,
+            musicVolume: 0.3,
+            sfxVolume: 0.8
+        };
+        
+        let userData = { 
+            progress: {}, 
+            profile: { name: 'Traveler', email: '' },
+            settings: DEFAULT_SETTINGS
+        }; 
+        
+        let currentSelectedCountryId = 'Japan'; 
+        let activeScenario = { countryId: null, adventureIndex: null };
 
-            if (document.body.classList.contains('dark-mode')) {
-                themeToggleButton.textContent = "Light Mode";
-            } else {
-                themeToggleButton.textContent = "Dark Mode";
+        // Firestore path for user's game state
+        const progressPath = (uid) => `artifacts/${appId}/users/${uid}/game_progress/travel_data`;
+        
+        // Audio elements
+        const bgmAudio = document.getElementById('bgm');
+        const sfxAudio = document.getElementById('sfx');
+
+
+        // --- PROGRESSION DEFINITION (6 Countries x 5 Adventures = 30 Badges) ---
+        const PROGRESS_MAP = [
+            { id: 'Japan', name: "Japan", rankName: "Traveler", icon: '🇯🇵' },
+            { id: 'France', name: "France", rankName: "Globetrotter", icon: '🇫🇷' },
+            { id: 'Korea', name: "Korea", rankName: "Pioneer", icon: '🇰🇷' },
+            { id: 'Spain', name: "Spain", rankName: "Navigator", icon: '🇪🇸' },
+            { id: 'Germany', name: "Germany", rankName: "Diplomat", icon: '🇩🇪' },
+            { id: 'China', name: "China", rankName: "Ambassador", icon: '🇨🇳' }, // Final progression rank
+        ];
+        
+        const ADVENTURE_NAMES = ["Discovery", "Exploration", "Challenge", "Expedition", "Summit"];
+
+        // --- EXTRACTED JAPAN PHRASE CONTENT MAP ---
+        // NOTE: The audio paths are now RELATIVE to where this HTML file is hosted (e.g., your GitHub Pages root).
+        // If audio doesn't play, you must replace these with the full ABSOLUTE URL (e.g., https://yourusername.github.io/repo/audio/nimotsu.mp3)
+        const JAPAN_PHRASE_CONTENT = {
+            "Ask for the baggage claim.": { japanese: "荷物はどこですか？", romaji: "Nimotsu wa doko desu ka?", audio: "audio/nimotsu.mp3" },
+            "Tell the taxi driver your hotel address.": { japanese: "ホテルまでお願いします。", romaji: "Hoteru made onegai shimasu.", audio: "audio/hoteru.mp3" },
+            "Say 'I would like to check in' to the hotel clerk.": { japanese: "チェックインをお願いします。", romaji: "Chekkuin o onegai shimasu.", audio: "audio/checkin.mp3" },
+            "Say 'I am really hungry.'": { japanese: "お腹がすきました。", romaji: "Onaka ga sukimashita.", audio: "audio/hungry.mp3" },
+            "Say 'I would like a bowl of ramen.'": { japanese: "ラーメンをください。", romaji: "Rāmen o kudasai.", audio: "audio/ramen.mp3" },
+            "Say 'Check, please.'": { japanese: "お会計をお願いします。", romaji: "Okaikei o onegai shimasu.", audio: "audio/checkplease.mp3" },
+            "Where is the toilet?": { japanese: "トイレはどこですか？", romaji: "Toire wa doko desu ka?", audio: "audio/toire.mp3" },
+            "How much is this?": { japanese: "これはいくらですか？", romaji: "Kore wa ikura desu ka?", audio: "audio/ikura.mp3" },
+            "Where is the taxi stand?": { japanese: "タクシー乗り場はどこですか？", romaji: "Takushii-noriba wa doko desu ka?", audio: "audio/taxistand.mp3" },
+            "How are you?": { japanese: "元気ですか？", romaji: "Genki desu ka?", audio: "audio/genki.mp3" },
+            "Where is a delicious restaurant?": { japanese: "おいしいレストランはどこですか？", romaji: "Oishii resutoran wa doko desu ka?", audio: "audio/restaurant.mp3" },
+            "I have a reservation.": { japanese: "予約をしました。", romaji: "Yoyaku o shimashita.", audio: "audio/reservation.mp3" },
+            "Order Miso Ramen and a beer.": { japanese: "味噌ラーメンとビールをお願いします。", romaji: "Miso rāmen to biiru o onegai shimasu.", audio: "audio/miso_ramen.mp3" },
+            "Say 'Thank you for the meal' after eating.": { japanese: "ごちそうさまでした。", romaji: "Gochisōsama deshita.", audio: "audio/gochisosama.mp3" },
+            "Ask for the nearest subway station.": { japanese: "一番近い駅はどこですか？", romaji: "Ichiban chikai eki wa doko desu ka?", audio: "audio/chikai_eki.mp3" },
+        };
+
+
+        // --- ADVENTURE CONTENT: DEFINE YOUR SCENARIO DETAILS HERE ---
+        const ADVENTURE_DETAILS = {
+            // ========================= JAPAN ADVENTURES (5) =========================
+            'Japan_Adventure1': {
+                title: "Tokyo Arrival: Getting to the Hotel",
+                image: "https://i.imgur.com/Qq6c0fj.jpeg", // Original Airport Image
+                tasks: [
+                    "Ask for the baggage claim.",
+                    "Tell the taxi driver your hotel address.",
+                    "Say 'I would like to check in' to the hotel clerk."
+                ],
+            },
+            'Japan_Adventure2': {
+                title: "Ramen & Hunger: Ordering Your First Meal",
+                image: "https://i.imgur.com/8RAKAAT.jpeg", // Original Ramen Shop Image
+                tasks: [
+                    "Say 'I am really hungry.'",
+                    "Say 'I would like a bowl of ramen.'",
+                    "Say 'Check, please.'"
+                ],
+            },
+            'Japan_Adventure3': {
+                title: "Shibuya Crossing Navigation",
+                image: "https://i.imgur.com/WjxmkKu.jpeg", // Original Taxi Image repurposed for street scene
+                tasks: [
+                    "Where is the taxi stand?",
+                    "Ask for the nearest subway station.", 
+                    "How much is this?"
+                ], 
+            },
+            'Japan_Adventure4': {
+                title: "Hotel Etiquette: Checking in and Asking for Help",
+                image: "https://i.imgur.com/sAYoQkS.jpeg", // Original Hotel Image
+                tasks: [
+                    "Say 'I have a reservation.'",
+                    "Ask 'Where is the toilet?'",
+                    "Ask 'How are you?' (to the staff)."
+                ], 
+            },
+            'Japan_Adventure5': {
+                title: "Local Dining Recommendations",
+                image: "https://i.imgur.com/EIidutG.png", // Original Room Image repurposed
+                tasks: [
+                    "Where is a delicious restaurant?",
+                    "Order Miso Ramen and a beer.",
+                    "Say 'Thank you for the meal' after eating."
+                ], 
+            },
+
+            // ========================= FRANCE ADVENTURES (5) (PLACEHOLDERS) =========================
+            'France_Adventure1': {
+                title: "Paris Cafe: Perfecting the Order",
+                image: "https://placehold.co/400x200/A0A0A0/white?text=FRENCH+CAFE+SCENE",
+                tasks: ["Order 'un café, s'il vous plaît'.", "Ask for the bill.", "Say 'Have a good day'." ], audioUrls: {} 
+            },
+            'France_Adventure2': {
+                title: "Metro Ticket Troubles",
+                image: "https://placehold.co/400x200/607d8b/white?text=PARIS+METRO+STATION",
+                tasks: ["Ask for a book of ten tickets.", "Ask if this line goes to the Louvre.", "Apologize for bumping into someone."], audioUrls: {} 
+            },
+            'France_Adventure3': {
+                title: "Art Museum Inquiry",
+                image: "https://placehold.co/400x200/3F51B5/white?text=LOUVRE+MUSEUM+LOBBY",
+                tasks: ["Ask 'Do you have audio guides?'", "Ask 'Where is the Mona Lisa?'", "Thank the attendant for their assistance."], audioUrls: {} 
+            },
+            'France_Adventure4': {
+                title: "Market Day Bargaining",
+                image: "https://placehold.co/400x200/8BC34A/white?text=STREET+MARKET+SCENE",
+                tasks: ["Ask 'How much is this?'", "Say 'It's too expensive!' (politely).", "Agree to the final price."], audioUrls: {} 
+            },
+            'France_Adventure5': {
+                title: "Evening Dining Reservations",
+                image: "https://placehold.co/400x200/795548/white?text=FINE+DINING+RESTAURANT",
+                tasks: ["State 'I have a reservation for two.'", "Ask for a table near the window.", "Say 'The food was excellent'." ], audioUrls: {} 
+            },
+
+            // ========================= KOREA ADVENTURES (5) (PLACEHOLDERS) =========================
+            'Korea_Adventure1': {
+                title: "Seoul Subway System",
+                image: "https://placehold.co/400x200/FF9800/white?text=SEOUL+SUBWAY+RIDE",
+                tasks: ["Ask 'How do I get to Gangnam?'", "Ask 'Is this the transfer line?'", "Apologize for bumping into someone."], audioUrls: {} 
+            },
+            'Korea_Adventure2': {
+                title: "Korean BBQ Feast",
+                image: "https://placehold.co/400x200/E91E63/white?text=KBBQ+RESTAURANT",
+                tasks: ["Ask for more Kimchi.", "Ask for a bottle of Soju.", "Say 'Cheers!' before drinking."], audioUrls: {} 
+            },
+            'Korea_Adventure3': {
+                title: "Hailing a Taxi in Myeongdong",
+                image: "https://placehold.co/400x200/9E9E9E/white?text=MYEONGDONG+TAXI+STAND",
+                tasks: ["Politely stop a taxi.", "Tell the driver your destination.", "Ask 'How much is the fare?'" ], audioUrls: {} 
+            },
+            'Korea_Adventure4': {
+                title: "Late-Night Convenience Store",
+                image: "https://placehold.co/400x200/4CAF50/white?text=KOREAN+CONVENIENCE",
+                tasks: ["Ask 'Do you have bottled water?'", "Ask 'Where is the instant ramen?'", "Say 'Thank you' in a casual way."], audioUrls: {} 
+            },
+            'Korea_Adventure5': {
+                title: "Temple Stay Etiquette",
+                image: "https://placehold.co/400x200/00BCD4/white?text=KOREAN+TEMPLE+GREETING",
+                tasks: ["Use a formal greeting to a monk.", "Ask 'Can I take a picture?'", "Say 'Goodbye' respectfully."], audioUrls: {} 
+            },
+
+            // ========================= SPAIN ADVENTURES (5) (PLACEHOLDERS) =========================
+            'Spain_Adventure1': {
+                title: "Madrid Airport Check-in",
+                image: "https://placehold.co/400x200/F44336/white?text=MADRID+CHECKIN+DESK",
+                tasks: ["State 'I'd like to check in for the flight to Barcelona.'", "Ask 'Is the flight on time?'", "Ask for a window seat."], audioUrls: {} 
+            },
+            'Spain_Adventure2': {
+                title: "Ordering Tapas and Drinks",
+                image: "https://placehold.co/400x200/FFEB3B/black?text=TAPAS+BAR+SCENE",
+                tasks: ["Order a specific tapa (e.g., patatas bravas).", "Ask for a glass of red wine.", "Ask for the bill."], audioUrls: {} 
+            },
+            'Spain_Adventure3': {
+                title: "Hotel Problem Solving",
+                image: "https://placehold.co/400x200/03A9F4/white?text=SPANISH+HOTEL+LOBBY",
+                tasks: ["State 'The air conditioning isn't working.'", "Ask 'Can someone fix it now?'", "Thank them for their help."], audioUrls: {} 
+            },
+            'Spain_Adventure4': {
+                title: "Siesta Shopping Schedule",
+                image: "https://placehold.co/400x200/CDDC39/black?text=SIESTA+SHOP+DOOR",
+                tasks: ["Ask 'What time do you open?'", "Ask 'When does the siesta end?'", "Ask for a bag for your purchase."], audioUrls: {} 
+            },
+            'Spain_Adventure5': {
+                title: "Local Greetings and Farewell",
+                image: "https://placehold.co/400x200/E91E63/white?text=LOCAL+FIESTA+GREETING",
+                tasks: ["Greet a new friend casually.", "Ask 'How are you?'", "Say 'See you later!'"], audioUrls: {} 
+            },
+
+            // ========================= GERMANY ADVENTURES (5) (PLACEHOLDERS) =========================
+            'Germany_Adventure1': {
+                title: "Buying a Train Ticket",
+                image: "https://placehold.co/400x200/607D8B/white?text=GERMAN+TRAIN+STATION",
+                tasks: ["Ask for a ticket to Berlin.", "Ask 'Is this the correct platform?'", "Say 'Thank you' formally."], audioUrls: {} 
+            },
+            'Germany_Adventure2': {
+                title: "Biergarten Order",
+                image: "https://placehold.co/400x200/FF9800/white?text=BIERGARTEN+TABLE",
+                tasks: ["Order two large beers.", "Ask for the menu.", "Say 'Prost!' (Cheers)."], audioUrls: {} 
+            },
+            'Germany_Adventure3': {
+                title: "Currency Exchange at a Bank",
+                image: "https://placehold.co/400x200/4CAF50/white?text=GERMAN+BANK+COUNTER",
+                tasks: ["Ask 'I would like to exchange money.'", "Ask 'What is the exchange rate?'", "Ask 'Is there a commission?'"], audioUrls: {} 
+            },
+            'Germany_Adventure4': {
+                title: "Formal Street Address",
+                image: "https://placehold.co/400x200/03A9F4/white?text=CITY+STREET",
+                tasks: ["Use a formal greeting to a stranger.", "Ask for the time.", "Ask 'Excuse me, may I pass?'"], audioUrls: {} 
+            },
+            'Germany_Adventure5': {
+                title: "Castle Tour & History",
+                image: "https://placehold.co/400x200/795548/white?text=CASTLE+ENTRY",
+                tasks: ["Ask 'When was this castle built?'", "Ask 'Where is the exit?'", "Express admiration for the castle."], audioUrls: {} 
+            },
+
+            // ========================= CHINA ADVENTURES (5) (PLACEHOLDERS) =========================
+            'China_Adventure1': {
+                title: "Customs and Arrival",
+                image: "https://placehold.co/400x200/F44336/white?text=BEIJING+AIRPORT",
+                tasks: ["Respond to the Customs officer's greeting.", "State your purpose of visit (tourism).", "Ask 'Where is the taxi stand?'"], audioUrls: {} 
+            },
+            'China_Adventure2': {
+                title: "Tea House Etiquette",
+                image: "https://placehold.co/400x200/9C27B0/white?text=TEA+HOUSE",
+                tasks: ["Ask for a cup of green tea.", "Ask 'Is this tea hot?'", "Say 'Thank you' with a small bow."], audioUrls: {} 
+            },
+            'China_Adventure3': {
+                title: "Hutong Navigation",
+                image: "https://placehold.co/400x200/FFC107/black?text=HUTONG+ALLEY",
+                tasks: ["Ask for directions to the nearest landmark.", "Ask 'Is it far?'", "Ask 'How long does it take?'"], audioUrls: {} 
+            },
+            'China_Adventure4': {
+                title: "Group Meal Etiquette",
+                image: "https://placehold.co/400x200/00BCD4/white?text=DINNER+TABLE",
+                tasks: ["Ask 'Could you pass the rice?'", "Ask for a clean plate.", "Say 'I'm full, thank thank you!'"], audioUrls: {} 
+            },
+            'China_Adventure5': {
+                title: "Bargaining in the Market",
+                image: "https://placehold.co/400x200/FF9800/white?text=ELECTRONICS+MARKET",
+                tasks: ["Ask 'How much does this cost?'", "Try to negotiate the price down.", "Say 'That's fine, I'll take it!'"], audioUrls: {} 
+            },
+        };
+        // --- END ADVENTURE CONTENT ---
+
+        // --- UI UTILITY FUNCTIONS ---
+
+        function showMessage(text, isError = false) {
+            const box = document.getElementById('message-box');
+            box.textContent = text;
+            box.classList.remove('opacity-0', 'bg-red-700', 'bg-green-700');
+            box.classList.add(isError ? 'bg-red-700' : 'bg-green-700', 'opacity-100');
+            setTimeout(() => {
+                box.classList.remove('opacity-100');
+                box.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        window.showView = (viewId) => {
+            const validViews = ['title', 'countries', 'adventures', 'tracker', 'profile', 'settings', 'game'];
+            validViews.forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if (el) { el.classList.add('hidden'); }
+            });
+
+            const viewElement = document.getElementById(`view-${viewId}`);
+            if (viewElement) {
+                viewElement.classList.remove('hidden');
             }
-        });
-    }
 
-    // Run initialization when the DOM is fully loaded
-    document.addEventListener('DOMContentLoaded', initGame);
+            // Specific rendering/setup logic per view
+            if (viewId === 'countries') {
+                renderCountriesView();
+            } else if (viewId === 'adventures') {
+                renderAdventuresView();
+            } else if (viewId === 'tracker') {
+                renderProgressTracker();
+            } else if (viewId === 'profile') {
+                renderProfileView();
+            } else if (viewId === 'settings') {
+                renderSettingsView();
+            }
+        };
 
-    // Initial check to ensure the start screen is visible on page load
-    window.onload = () => {
-        gameScreen.classList.add('hidden');
-        startScreen.classList.remove('hidden');
-        updateScoreDisplay(); 
-    };
-</script>
 
+        // --- FIREBASE INITIALIZATION & AUTH ---
+
+        async function initializeFirebase() {
+            if (!firebaseConfig) {
+                document.getElementById('user-info').textContent = 'Error: Firebase configuration missing.';
+                return;
+            }
+            
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                        userId = auth.currentUser.uid;
+                    } catch (error) {
+                        console.error("Authentication failed:", error);
+                        document.getElementById('user-info').textContent = 'Error: Authentication failed.';
+                        return;
+                    }
+                } else {
+                    userId = user.uid;
+                }
+                
+                isAuthReady = true;
+                document.getElementById('user-info').textContent = `User ID: ${userId.substring(0, 4)}...`;
+                startRealtimeListener();
+            });
+        }
+
+        // --- REAL-TIME DATA LISTENER & HANDLER ---
+
+        function startRealtimeListener() {
+            if (!isAuthReady || !db || !userId) return;
+
+            const docRef = doc(db, progressPath(userId));
+            
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Load data
+                    userData.progress = data.progress || {};
+                    userData.profile = data.profile || { name: 'Traveler', email: '' };
+                    userData.settings = { ...DEFAULT_SETTINGS, ...data.settings }; // Merge with defaults
+                    
+                    // Initialize audio settings
+                    initializeAudio();
+
+                    // Update global info header with name
+                    document.getElementById('user-info').textContent = `Traveler: ${userData.profile.name} | ID: ${userId.substring(0, 4)}...`;
+
+                    recalculateAndRender();
+                } else {
+                    // Initialize if no document exists
+                    userData = { progress: {}, profile: { name: 'Traveler', email: '' }, settings: DEFAULT_SETTINGS };
+                    setDoc(docRef, userData, { merge: true });
+                    recalculateAndRender();
+                }
+            }, (error) => {
+                console.error("Error listening to Firestore:", error);
+                showMessage('Error fetching progress data.', true);
+            });
+        }
+        
+        // --- CORE PROGRESSION LOGIC (UNCHANGED) ---
+        
+        function getProgressInfo() {
+            let completedCount = 0;
+            let currentCountryIndex = 0;
+            
+            // Find the highest completed country
+            for (let i = 0; i < PROGRESS_MAP.length; i++) {
+                const countryId = PROGRESS_MAP[i].id;
+                let countryBadgesCompleted = 0;
+
+                for (let j = 0; j < ADVENTURE_NAMES.length; j++) {
+                    const key = `${countryId}_Adventure${j + 1}`;
+                    if (userData.progress[key]) { 
+                        countryBadgesCompleted++;
+                        completedCount++;
+                    }
+                }
+
+                if (countryBadgesCompleted === ADVENTURE_NAMES.length) {
+                    if (i < PROGRESS_MAP.length - 1) {
+                        currentCountryIndex = i + 1;
+                    } else {
+                        currentCountryIndex = PROGRESS_MAP.length - 1;
+                    }
+                } else {
+                    currentCountryIndex = i;
+                    break;
+                }
+            }
+
+            const currentCountry = PROGRESS_MAP[currentCountryIndex];
+            const nextCountry = PROGRESS_MAP[currentCountryIndex + 1];
+
+            let currentCountryBadgesCompleted = 0;
+            for (let j = 0; j < ADVENTURE_NAMES.length; j++) {
+                const key = `${currentCountry.id}_Adventure${j + 1}`;
+                if (userData.progress[key]) {
+                    currentCountryBadgesCompleted++;
+                }
+            }
+
+            return {
+                currentCountry, 
+                currentCountryIndex,
+                nextCountry,
+                currentCountryBadgesCompleted,
+                totalBadgesCompleted: completedCount
+            };
+        }
+
+        // Helper to check if a country is unlocked
+        function isCountryUnlocked(countryId) {
+            const { currentCountryIndex } = getProgressInfo();
+            const countryIndex = PROGRESS_MAP.findIndex(c => c.id === countryId);
+            return countryIndex <= currentCountryIndex;
+        }
+
+        function recalculateAndRender() {
+            const activeView = document.querySelector('[id^="view-"]:not(.hidden)');
+            if (activeView) {
+                const viewId = activeView.id.replace('view-', '');
+                if (viewId === 'countries') renderCountriesView();
+                if (viewId === 'adventures') renderAdventuresView();
+                if (viewId === 'tracker') renderProgressTracker();
+                if (viewId === 'profile') renderProfileView();
+                if (viewId === 'settings') renderSettingsView();
+            }
+        }
+
+
+        // --- FIREBASE TRANSACTION: COMPLETE ADVENTURE (UNCHANGED) ---
+        
+        window.completeAdventure = async function(countryId, adventureIndex) {
+            if (!isAuthReady || !db || !userId) return;
+
+            const adventureKey = `${countryId}_Adventure${adventureIndex}`;
+            if (userData.progress[adventureKey]) { 
+                showMessage(`Badge already earned for ${countryId} Adventure ${adventureIndex}!`, true);
+                return;
+            }
+
+            const docRef = doc(db, progressPath(userId));
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const docSnap = await transaction.get(docRef);
+                    const data = docSnap.data() || { progress: {}, profile: {} };
+                    let progress = data.progress;
+                    
+                    progress[adventureKey] = true;
+                    
+                    transaction.update(docRef, { progress: progress });
+                });
+                
+                showMessage(`🎉 Badge earned: ${countryId} Adventure ${adventureIndex}!`);
+                
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+                showMessage('Error completing adventure.', true);
+            }
+        }
+
+        // --- PROFILE LOGIC (UNCHANGED) ---
+
+        window.saveProfile = async function() {
+            if (!isAuthReady || !db || !userId) {
+                showMessage('Authentication not ready. Please wait.', true);
+                return;
+            }
+
+            const nameInput = document.getElementById('profile-name-input');
+            const emailInput = document.getElementById('profile-email-input');
+            
+            const newName = nameInput.value.trim() || 'Traveler';
+            const newEmail = emailInput.value.trim();
+
+            if (newName.length < 2) {
+                showMessage('Name must be at least 2 characters.', true);
+                return;
+            }
+
+            const docRef = doc(db, progressPath(userId));
+
+            try {
+                await setDoc(docRef, { 
+                    profile: { 
+                        name: newName, 
+                        email: newEmail 
+                    } 
+                }, { merge: true });
+
+                showMessage('Profile saved successfully!');
+            } catch (e) {
+                console.error("Error saving profile:", e);
+                showMessage('Failed to save profile.', true);
+            }
+        }
+
+        function renderProfileView() {
+            document.getElementById('profile-name-input').value = userData.profile.name || '';
+            document.getElementById('profile-email-input').value = userData.profile.email || '';
+            document.getElementById('profile-user-id').textContent = userId || 'N/A';
+        }
+
+        // --- SETTINGS LOGIC (UNCHANGED) ---
+        
+        async function saveSettings() {
+            if (!isAuthReady || !db || !userId) return;
+            const docRef = doc(db, progressPath(userId));
+            try {
+                 await setDoc(docRef, { settings: userData.settings }, { merge: true });
+            } catch (e) {
+                console.error("Failed to save settings:", e);
+                showMessage('Failed to save settings.', true);
+            }
+        }
+
+        window.toggleMusic = function() {
+            const isPlaying = !userData.settings.isMusicPlaying;
+            userData.settings.isMusicPlaying = isPlaying;
+            
+            if (bgmAudio) {
+                if (isPlaying) {
+                    bgmAudio.play().catch(e => console.error("BGM Play failed, requiring user interaction.", e));
+                } else {
+                    bgmAudio.pause();
+                }
+            }
+            renderSettingsView(); // Update button text immediately
+            saveSettings();
+        }
+
+        window.updateMusicVolume = function(value) {
+            const volume = parseFloat(value) / 100;
+            userData.settings.musicVolume = volume;
+            if (bgmAudio) bgmAudio.volume = volume;
+            document.getElementById('musicVolumeValue').textContent = `${value}%`;
+            saveSettings();
+        }
+        
+        window.updateSfxVolume = function(value) {
+            const volume = parseFloat(value) / 100;
+            userData.settings.sfxVolume = volume;
+            if (sfxAudio) sfxAudio.volume = volume;
+            document.getElementById('sfxVolumeValue').textContent = `${value}%`;
+            saveSettings();
+        }
+        
+        function initializeAudio() {
+            if (bgmAudio) {
+                bgmAudio.volume = userData.settings.musicVolume;
+                if (userData.settings.isMusicPlaying) {
+                    bgmAudio.play().catch(e => console.log("BGM Autoplay prevented. User must click to start."));
+                } else {
+                    bgmAudio.pause();
+                }
+            }
+            if (sfxAudio) sfxAudio.volume = userData.settings.sfxVolume;
+        }
+
+        function renderSettingsView() {
+            const settings = userData.settings;
+            
+            // 1. Music Toggle Button
+            const musicBtn = document.getElementById('musicToggleBtn');
+            if (musicBtn) {
+                if (settings.isMusicPlaying) {
+                    musicBtn.textContent = 'Music On';
+                    musicBtn.classList.replace('bg-gray-500', 'bg-red-600');
+                    musicBtn.classList.replace('hover:bg-gray-600', 'hover:bg-red-700');
+                } else {
+                    musicBtn.textContent = 'Music Off';
+                    musicBtn.classList.replace('bg-red-600', 'bg-gray-500');
+                    musicBtn.classList.replace('hover:bg-red-700', 'hover:bg-gray-600');
+                }
+            }
+
+            // 2. Volume Sliders
+            const musicSlider = document.getElementById('musicVolumeSlider');
+            const sfxSlider = document.getElementById('sfxVolumeSlider');
+            
+            if (musicSlider) musicSlider.value = Math.round(settings.musicVolume * 100);
+            if (sfxSlider) sfxSlider.value = Math.round(settings.sfxVolume * 100);
+
+            document.getElementById('musicVolumeValue').textContent = `${Math.round(settings.musicVolume * 100)}%`;
+            document.getElementById('sfxVolumeValue').textContent = `${Math.round(settings.sfxVolume * 100)}%`;
+        }
+        
+        
+        // --- HOVER AUDIO LOGIC ---
+        let hoverAudioTimeout = null;
+
+        window.stopAudio = function() {
+            if (hoverAudioTimeout) clearTimeout(hoverAudioTimeout);
+            if (sfxAudio) {
+                sfxAudio.pause();
+                sfxAudio.currentTime = 0;
+            }
+        };
+
+        window.playPronunciation = function(audioPath) {
+            if (sfxAudio && audioPath) {
+                sfxAudio.src = audioPath; // Load the specific audio file
+                sfxAudio.currentTime = 0; 
+                sfxAudio.play().catch(e => console.log(`Pronunciation playback failed for ${audioPath}:`, e));
+            }
+        }
+
+        window.handlePhraseHover = function(audioPath) {
+            window.stopAudio(); // Stop any previous audio immediately
+
+            // Set a small delay before playing to require intentional hover
+            hoverAudioTimeout = setTimeout(() => {
+                window.playPronunciation(audioPath);
+            }, 400); // 400ms delay
+        };
+
+
+        // --- GAME SCENARIO LOGIC (UPDATED) ---
+        
+        window.loadGameScenario = function(countryId, adventureIndex) {
+            const adventureKey = `${countryId}_Adventure${adventureIndex}`;
+            const details = ADVENTURE_DETAILS[adventureKey];
+
+            if (!details) {
+                 showMessage(`Error: Content not found for ${adventureKey}`, true);
+                 return;
+            }
+
+            activeScenario = { countryId, adventureIndex };
+
+            document.getElementById('game-title').textContent = details.title;
+            document.getElementById('game-subtitle').textContent = `Country: ${countryId} | Adventure ${adventureIndex}`;
+            
+            // Update image source, adding a fallback for error
+            document.getElementById('scenario-image').src = details.image;
+            document.getElementById('scenario-image').onerror = () => {
+                document.getElementById('scenario-image').src = 'https://placehold.co/400x200/555/white?text=IMAGE+LOAD+ERROR';
+            };
+
+            const scenarioEl = document.getElementById('game-scenario');
+            
+            let tasksHtml = `
+                <p class="text-gray-300 mb-4 font-bold text-center">Select the communication step you are ready to practice.
+                <span class="text-yellow-400 block sm:inline-block">Hover over a phrase to hear the pronunciation.</span></p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            `;
+            
+            details.tasks.forEach((task) => {
+                let phraseData = { japanese: "N/A", romaji: "N/A", audio: null };
+                
+                // Only look up phrases for Japan, since other countries are still placeholders
+                if (countryId === 'Japan' && JAPAN_PHRASE_CONTENT[task]) {
+                    phraseData = JAPAN_PHRASE_CONTENT[task];
+                }
+
+                const hoverEvents = phraseData.audio 
+                    ? `onmouseenter="handlePhraseHover('${phraseData.audio}')" onmouseleave="stopAudio()"` 
+                    : '';
+
+                const buttonClasses = phraseData.audio
+                    ? 'hover:bg-red-700 transition duration-150 cursor-pointer'
+                    : 'opacity-60 cursor-default';
+                
+                tasksHtml += `
+                    <button ${hoverEvents} 
+                        class="phrase-button p-4 bg-gray-800 shadow-md border-b-4 border-red-900 ${buttonClasses}">
+                        
+                        <!-- English Task (No numbering) -->
+                        <p class="text-sm text-gray-300 mb-1">${task}</p>
+                        
+                        ${countryId === 'Japan' 
+                            ? `<p class="text-xl font-bold text-white mt-2">${phraseData.japanese}</p>
+                               <p class="text-xs text-red-300">${phraseData.romaji}</p>` 
+                            : `<p class="text-lg font-bold text-white mt-2">Content Placeholder</p>`
+                        }
+                        
+                        ${phraseData.audio 
+                            ? '<span class="text-xs mt-2 text-yellow-400 font-semibold">🔊 HOVER TO HEAR</span>' 
+                            : '<span class="text-xs mt-2 text-gray-500 font-semibold">Audio N/A</span>'
+                        }
+                    </button>
+                `;
+            });
+
+            tasksHtml += `</div>`; // Close grid container
+
+            scenarioEl.innerHTML = tasksHtml;
+
+            document.getElementById('complete-scenario-btn').onclick = () => {
+                window.stopAudio(); // Ensure audio stops on completion click
+                
+                // Play a confirmation sound (SFX)
+                if (sfxAudio) {
+                    sfxAudio.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"; // Revert to generic SFX sound
+                    sfxAudio.currentTime = 0; 
+                    sfxAudio.play().catch(e => console.log("SFX play failed.", e));
+                }
+                
+                // Call the original function to complete the adventure
+                completeAdventure(countryId, adventureIndex);
+                // Return to the adventure list to see the update
+                showView('adventures'); 
+            };
+
+            showView('game');
+        }
+
+
+        // --- UI RENDERING FUNCTIONS (UNCHANGED) ---
+        
+        window.selectCountry = function(countryId) {
+            if (isCountryUnlocked(countryId)) {
+                currentSelectedCountryId = countryId;
+                showView('adventures');
+            } else {
+                showMessage(`You must complete all adventures in the previous country to unlock ${countryId}.`, true);
+            }
+        }
+
+        function renderCountriesView() {
+            const { currentCountry } = getProgressInfo();
+            const gridEl = document.getElementById('country-grid');
+            let html = '';
+
+            PROGRESS_MAP.forEach(country => {
+                const isUnlocked = isCountryUnlocked(country.id);
+                const isCurrent = country.id === currentCountry.id;
+                
+                const cardClass = isUnlocked ? '' : 'locked';
+                const currentBadge = isCurrent && isUnlocked ? '<span class="absolute top-2 right-2 text-xl">🌟</span>' : '';
+
+                html += `
+                    <div onclick="selectCountry('${country.id}')"
+                         class="country-card p-4 rounded-xl shadow-lg flex flex-col items-center justify-center relative ${cardClass}">
+                        ${currentBadge}
+                        <span class="text-6xl">${country.icon}</span>
+                        <p class="text-xl font-bold mt-3">${country.name}</p>
+                        <p class="text-sm text-gray-500">${isUnlocked ? country.rankName : 'LOCKED'}</p>
+                    </div>
+                `;
+            });
+
+            gridEl.innerHTML = html;
+        }
+
+
+        function renderAdventuresView() {
+            const country = PROGRESS_MAP.find(c => c.id === currentSelectedCountryId);
+            if (!country) return; // Safety check
+            
+            const { currentCountryBadgesCompleted } = getProgressInfo();
+            const adventureListEl = document.getElementById('adventure-list');
+            
+            document.getElementById('current-rank-header').innerHTML = 
+                `Destination: <span class="text-white">${country.name}</span> (${country.rankName} Rank)`;
+            
+            let html = '';
+            
+            for (let i = 0; i < ADVENTURE_NAMES.length; i++) {
+                const adventureNumber = i + 1;
+                const adventureKey = `${country.id}_Adventure${adventureNumber}`;
+                const isCompleted = userData.progress[adventureKey] || false; 
+                
+                // Check if the previous adventure is completed to unlock the current one
+                // Logic: adventure 1 is always unlocked (i===0) OR the previous one (i) is complete.
+                const isUnlocked = i === 0 || userData.progress[`${country.id}_Adventure${i}`] || false;
+                
+                const isReadyToPlay = isUnlocked && !isCompleted;
+                
+                const buttonClasses = isCompleted
+                    ? 'bg-green-600 hover:bg-green-500 cursor-default'
+                    : isReadyToPlay
+                        ? 'bg-red-600 hover:bg-red-700 cursor-pointer'
+                        : 'bg-gray-700 cursor-not-allowed opacity-50';
+                
+                const clickHandler = isCompleted || !isReadyToPlay 
+                    ? '' 
+                    : `onclick="loadGameScenario('${country.id}', ${adventureNumber})"`;
+                
+                const buttonText = isCompleted
+                    ? `Badge Earned: ${ADVENTURE_NAMES[i]} ${country.icon}`
+                    : isReadyToPlay
+                        ? `Start Adventure ${adventureNumber}: ${ADVENTURE_NAMES[i]}`
+                        : 'Locked: Complete previous adventure first';
+
+                
+                html += `
+                    <div class="rank-card p-4 rounded-lg flex items-center justify-between">
+                        <span class="text-lg font-medium text-gray-300">
+                            ${country.id} ${adventureNumber}: ${ADVENTURE_NAMES[i]}
+                        </span>
+                        <button ${clickHandler}
+                            class="px-5 py-2 text-sm font-semibold rounded-lg text-white transition duration-150 ${buttonClasses}"
+                            ${isCompleted || !isReadyToPlay ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
+                    </div>
+                `;
+            }
+            
+            adventureListEl.innerHTML = html;
+        }
+
+        function renderProgressTracker() {
+            const { currentCountry, currentCountryBadgesCompleted, nextCountry } = getProgressInfo();
+            
+            document.getElementById('tracker-rank-name').textContent = `${currentCountry.name} (${currentCountry.rankName})`;
+            document.getElementById('tracker-rank-icon').innerHTML = currentCountry.icon;
+            document.getElementById('tracker-progress').textContent = 
+                `${currentCountryBadgesCompleted} / ${ADVENTURE_NAMES.length} Adventures Completed`;
+            
+            const nextRankName = nextCountry ? `${nextCountry.name} (${nextCountry.rankName})` : 'Master Translator';
+
+            document.getElementById('tracker-next-rank').textContent = nextCountry 
+                ? `Next Rank: ${nextRankName}` 
+                : 'Maximum Rank Achieved!';
+                
+            const continueButton = document.querySelector('#view-tracker button');
+            if (continueButton) {
+                 continueButton.onclick = function() {
+                    currentSelectedCountryId = currentCountry.id; 
+                    showView('adventures');
+                 }
+            }
+
+            const badgeGridEl = document.getElementById('badge-grid');
+            let badgeHtml = '';
+            
+            PROGRESS_MAP.forEach((country, countryIndex) => {
+                ADVENTURE_NAMES.forEach((adventureName, adventureIndex) => {
+                    const adventureKey = `${country.id}_Adventure${adventureIndex + 1}`;
+                    const isCompleted = userData.progress[adventureKey] || false; 
+                    
+                    const countryBadgeIcon = country.icon;
+                    
+                    badgeHtml += `
+                        <div class="badge w-full h-full aspect-square flex flex-col items-center justify-center rounded-lg ${isCompleted ? 'completed bg-green-900/40' : 'badge-placeholder'}">
+                            <span class="text-2xl">${countryBadgeIcon}</span>
+                            <span class="text-xs font-semibold mt-1 ${isCompleted ? 'text-green-300' : 'text-gray-400'}">${country.name} ${adventureIndex + 1}</span>
+                        </div>
+                    `;
+                });
+            });
+            
+            badgeGridEl.innerHTML = badgeHtml;
+        }
+
+
+        // --- START APPLICATION (UNCHANGED) ---
+        window.onload = () => {
+            showView('title'); 
+            initializeFirebase();
+        };
+
+    </script>
 </body>
 </html>
