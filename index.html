@@ -444,8 +444,9 @@
         let userProgress = {}; // Stores all game state: { badges: [], profile: {}, settings: {} }
         
         // --- BACKGROUND MUSIC SETUP ---
-        // Using the Content ID of the uploaded MP3 file.
-        const BACKGROUND_MUSIC_URL = 'uploaded:petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3';
+        // FIX FOR DEPLOYMENT: Changed the music URL from the Canvas-internal ID to the relative path.
+        // User MUST upload this MP3 file to an 'audio' folder in their GitHub repo root.
+        const BACKGROUND_MUSIC_URL = './audio/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3';
         const backgroundMusic = new Audio(BACKGROUND_MUSIC_URL);
         backgroundMusic.loop = true;
         backgroundMusic.volume = 0; // Start muted, volume controlled by settings
@@ -1086,8 +1087,16 @@
 
         // Initialize on load
         window.onload = () => {
-            initFirebase();
+            // FIX: Initialize userProgress with defaults immediately so renderUI() has data even before Firebase loads.
+            userProgress = { 
+                badges: [], 
+                profile: { name: "Traveler", email: "" },
+                settings: { theme: 'dark-mode', musicVolume: 0.0, audioVolume: 1.0, musicMuted: true, audioMuted: false }, 
+            };
+            renderUI(); 
             setupEventListeners();
+            initFirebase();
+            // The Firebase loadUserProgress/onSnapshot will re-render the UI later with saved data.
         };
 
     </script>
