@@ -295,11 +295,21 @@
         body.light-mode .quick-access-btn:hover {
             background-color: #D1D5DB;
         }
+
+        /* --- FIREBASE SECRETS BLUR/VISIBILITY STYLES --- */
+        .blurred {
+            filter: blur(4px);
+            transition: filter 0.3s;
+        }
+        .visible {
+            filter: blur(0);
+        }
     </style>
 </head>
 <body class="dark-mode"> <!-- Changed default to dark-mode based on images -->
     <div id="app" class="text-center p-4">
-        <p id="authStatus" class="text-sm text-gray-400 mb-2"></p>
+        <!-- HIDDEN by default to clean up the main page -->
+        <p id="authStatus" class="text-sm text-gray-400 mb-2 hidden"></p> 
         <div id="gameScreens">
             
             <!-- ============================================== -->
@@ -468,7 +478,7 @@
                              <!-- Audio Mute Toggle -->
                             <label class="switch">
                                 <input type="checkbox" id="audioMuteToggle">
-                                <span class="slider round"></span>
+                            <span class="slider round"></span>
                             </label>
                         </div>
                         <input type="range" id="audioVolume" min="0" max="1" value="1.0" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
@@ -491,7 +501,26 @@
                     <input type="email" id="emailInput" placeholder="Email stay up to date for future releases" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500" style="background-color: var(--background-deep)">
                     <button id="saveProfileButton" class="btn-primary w-full bg-green-600 hover:bg-green-500 shadow-green-700">Save Profile</button>
                 </div>
-                <button class="btn-secondary mt-12" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
+                
+                <!-- NEW: FIREBASE CONFIG DISPLAY SECTION -->
+                <div class="mt-12 pt-6 border-t border-gray-700 max-w-md mx-auto text-left">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-red-500">Deployment & Config Keys</h3>
+                        <button id="toggleConfigView" class="text-gray-400 hover:text-red-400 transition">
+                            <i id="configEyeIcon" class="fas fa-eye-slash text-xl"></i>
+                        </button>
+                    </div>
+                    <div id="firebaseInfo" class="space-y-1 text-sm font-mono p-3 rounded border border-gray-600 blurred">
+                        <!-- Keys will be injected here by JavaScript -->
+                        <p>apiKey: <span id="apiKeyDisplay"></span></p>
+                        <p>authDomain: <span id="authDomainDisplay"></span></p>
+                        <p>projectId: <span id="projectIdDisplay"></span></p>
+                        <p>appId: <span id="appIdDisplay"></span></p>
+                    </div>
+                    <p class="text-xs mt-2 text-gray-500">Deployment Status: <span id="statusMessageDisplay">Loading...</span></p>
+                </div>
+
+                <button class="btn-secondary mt-8" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
             </div>
 
 
@@ -1206,6 +1235,22 @@
             const profile = userProgress.profile || { name: "", email: "" };
             document.getElementById('travelerNameInput').value = profile.name || "";
             document.getElementById('emailInput').value = profile.email || "";
+
+            // Display Firebase Config Details
+            if (Object.keys(firebaseConfig).length > 0) {
+                document.getElementById('statusMessageDisplay').textContent = 'Live Configuration Loaded';
+                document.getElementById('statusMessageDisplay').classList.remove('text-gray-500');
+                document.getElementById('statusMessageDisplay').classList.add('text-green-400');
+                
+                document.getElementById('apiKeyDisplay').textContent = firebaseConfig.apiKey || 'N/A';
+                document.getElementById('authDomainDisplay').textContent = firebaseConfig.authDomain || 'N/A';
+                document.getElementById('projectIdDisplay').textContent = firebaseConfig.projectId || 'N/A';
+                document.getElementById('appIdDisplay').textContent = firebaseConfig.appId || 'N/A';
+            } else {
+                document.getElementById('statusMessageDisplay').textContent = 'Disabled (Local Mode)';
+                document.getElementById('statusMessageDisplay').classList.remove('text-green-400');
+                document.getElementById('statusMessageDisplay').classList.add('text-gray-500');
+            }
         }
 
         document.getElementById('saveProfileButton').addEventListener('click', () => {
@@ -1215,6 +1260,26 @@
              userProgress.profile = { name, email };
              saveUserProgress();
              showFeedback("Profile Saved!", 'correct');
+        });
+        
+        // NEW: Toggle Config Visibility
+        document.getElementById('toggleConfigView').addEventListener('click', () => {
+            const infoEl = document.getElementById('firebaseInfo');
+            const iconEl = document.getElementById('configEyeIcon');
+            
+            const isBlurred = infoEl.classList.contains('blurred');
+            
+            if (isBlurred) {
+                infoEl.classList.remove('blurred');
+                infoEl.classList.add('visible');
+                iconEl.classList.remove('fa-eye-slash');
+                iconEl.classList.add('fa-eye');
+            } else {
+                infoEl.classList.add('blurred');
+                infoEl.classList.remove('visible');
+                iconEl.classList.add('fa-eye-slash');
+                iconEl.classList.remove('fa-eye');
+            }
         });
 
 
