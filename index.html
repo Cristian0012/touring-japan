@@ -136,7 +136,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Disable aggressive Firebase logging (optional, but cleaner)
@@ -192,12 +192,16 @@
             const docSnap = await getDoc(progressRef);
             
             if (!docSnap.exists()) {
-                // If this is a brand new Google user, save their initial profile data
+                // If this is a brand new user (Google or Email/Password), save initial profile data
                 await setDoc(progressRef, {
-                    name: user.displayName || 'New User',
+                    name: user.displayName || document.getElementById('registerName')?.value || 'New User',
                     email: user.email,
                     signedUpOn: new Date().toISOString()
                 }, { merge: true });
+            } else {
+                // Use existing name from Firestore if available
+                const savedData = docSnap.data();
+                user.displayName = savedData.name || user.displayName;
             }
 
             // 2. SUCCESS: Hide Auth UI and show Dashboard
@@ -232,9 +236,8 @@
                 // Immediately update the profile to set the display name
                 await userCredential.user.updateProfile({ displayName: name });
 
-                // Save initial data to Firestore (will be handled by checkAndLoadUser)
-                // The onAuthStateChanged listener will fire next and call checkAndLoadUser
-                showAuthFeedback("Registration successful. Proceeding...", 'success');
+                // We rely on the onAuthStateChanged listener and checkAndLoadUser to handle the UI transition
+                // checkAndLoadUser will ensure the data is saved and the dashboard is displayed.
 
             } catch (error) {
                 const msg = error.code === 'auth/email-already-in-use' ? "Email already exists. Please sign in." : error.message.split('(')[0];
@@ -256,8 +259,8 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // The onAuthStateChanged listener will handle the screen switch
-                showAuthFeedback("Login successful!", 'success');
+                // We rely on the onAuthStateChanged listener and checkAndLoadUser to handle the UI transition
+
             } catch (error) {
                 showAuthFeedback("Login Failed: Invalid email or password.");
                 isAuthProcessing = false;
@@ -275,10 +278,13 @@
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
                 
-                // The onAuthStateChanged listener will handle the screen switch and data sync
-                showAuthFeedback("Google Sign-In successful!", 'success');
+                // We rely on the onAuthStateChanged listener and checkAndLoadUser to handle the UI transition
+
             } catch (error) {
-                showAuthFeedback(`Google Login Failed: ${error.message.split('(')[0]}`);
+                // Suppress the "popup closed by user" error on cancelation
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    showAuthFeedback(`Google Login Failed: ${error.message.split('(')[0]}`);
+                }
                 isAuthProcessing = false;
             } finally {
                 document.getElementById('loadingIndicator').classList.add('hidden');
@@ -289,7 +295,6 @@
             try {
                 await signOut(auth);
                 // onAuthStateChanged handles the screen switch
-                showAuthFeedback("Logged out.", 'success');
                 isAuthProcessing = false;
             } catch (error) {
                 showAuthFeedback(`Logout Failed: ${error.message}`);
@@ -314,7 +319,7 @@
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
-                    // FIX: This calls the Data Gate check when we know a user is authenticated
+                    // This calls the Data Gate check when we know a user is authenticated
                     checkAndLoadUser(); 
                 } else {
                     // Logged Out: SHOW auth, HIDE dashboard
