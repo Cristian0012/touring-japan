@@ -530,8 +530,14 @@
 
         // Global Firebase variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        // FIX: Corrected typo in variable assignment
+        // --- START USER MODIFICATION ZONE ---
+        // REPLACE THE FOLLOWING EMPTY OBJECT WITH YOUR ENTIRE FIREBASE CONFIGURATION OBJECT (copied from Step 1)
+        // EXAMPLE: { apiKey: "AIzaSy...", authDomain: "your-app.firebaseapp.com", projectId: "your-app", ... }
+        const userFirebaseConfig = {}; 
+        // --- END USER MODIFICATION ZONE ---
+        
+        // This handles both the environment config (if available) or the user's manual config
+        const firebaseConfig = Object.keys(userFirebaseConfig).length > 0 ? userFirebaseConfig : (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {});
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         let app;
@@ -651,7 +657,10 @@
         async function initFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
-                    throw new Error("Firebase config is missing.");
+                    // FIX: Changed this to a standard log and default status text
+                    console.warn("Firebase config is missing. Running in local mode without persistent progress saving.");
+                    document.getElementById('authStatus').textContent = `Data Persistence: Disabled (Local Mode)`;
+                    return; // Exit here if config is missing but allow the rest of the game to run
                 }
 
                 app = initializeApp(firebaseConfig);
@@ -676,6 +685,7 @@
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
             } catch (error) {
+                // Only catch real runtime errors after Firebase initialization attempt
                 console.error("Firebase initialization failed:", error);
                 document.getElementById('authStatus').textContent = `Authentication Error: ${error.message}`;
             }
@@ -684,6 +694,9 @@
         const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'gta_progress');
 
         async function loadUserProgress() {
+            // Only attempt to load/save if Firebase is initialized (i.e., if 'db' is defined)
+            if (!db) return; 
+
             const progressRef = getProgressDocRef(userId);
 
             onSnapshot(progressRef, (docSnap) => {
@@ -705,8 +718,8 @@
         }
 
         async function saveUserProgress() {
-            if (!userId) {
-                console.warn("Cannot save progress: User not authenticated.");
+            if (!userId || !db) { // Check for 'db' to ensure Firebase is running
+                console.warn("Cannot save progress: User not authenticated or Firebase disabled.");
                 return;
             }
             const progressRef = getProgressDocRef(userId);
