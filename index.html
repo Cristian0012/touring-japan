@@ -57,6 +57,25 @@
             border: 1px solid #E5E7EB; /* Light border in light mode */
         }
 
+        /* NEW: Full-screen centered login container */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background-color: var(--background-deep); /* Use full background color */
+            min-height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            transition: background-color 0.3s;
+        }
+
 
         /* Custom Button Styling (Primary Action - Red/Green) */
         .btn-primary {
@@ -323,9 +342,36 @@
         <div id="gameScreens">
             
             <!-- ============================================== -->
-            <!-- 1. TITLE PAGE (Initial View) -->
+            <!-- 0. NEW LOGIN SCREEN (Initial Gatekeeper View) -->
             <!-- ============================================== -->
-            <div id="titlePage" class="game-screen">
+            <div id="loginScreen" class="game-screen">
+                <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide hidden">GTA</h1>
+                <h2 class="text-3xl font-light mb-12 hidden" style="color: var(--text-secondary)">Global Translation Adventures</h2>
+
+                <!-- LOGIN/REGISTRATION SECTION (Moved from Profile) -->
+                <div id="authSection" class="max-w-sm mx-auto space-y-4 p-8 rounded-xl shadow-2xl border-4 border-red-500 login-alert" style="background-color: var(--background-deep)">
+                     <h3 class="text-3xl font-bold text-red-400">Traveler Login</h3>
+                     <p id="authMessage" class="text-sm text-gray-400">Sign in or register to begin your journey!</p>
+                     
+                     <input type="email" id="authEmail" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
+                     <input type="password" id="authPassword" placeholder="Password" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
+                     
+                     <div class="grid grid-cols-2 gap-4 pt-2">
+                        <button id="registerButton" class="btn-primary w-full py-3 text-base">Register</button>
+                        <button id="loginButton" class="btn-primary w-full py-3 text-base bg-blue-600 hover:bg-blue-500 shadow-blue-700">Login</button>
+                     </div>
+                     <p id="loadingIndicator" class="text-yellow-400 hidden">Loading data...</p>
+                </div>
+                
+                <p id="anonymousLoginText" class="text-sm text-gray-500 mt-6 cursor-pointer hover:text-gray-400">
+                    <i class="fas fa-user-secret mr-1"></i> Continue as Guest (Progress may be lost)
+                </p>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 1. TITLE PAGE (Now Secondary View) -->
+            <!-- ============================================== -->
+            <div id="titlePage" class="game-screen hidden">
                 <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
                 <h2 class="text-3xl font-light mb-4" style="color: var(--text-secondary)">Global Translation Adventures</h2>
                 
@@ -345,7 +391,7 @@
 
             <!-- ============================================== -->
             <!-- 2. DESTINATION SELECTION SCREEN -->
-            <!-- ============================================== -->
+            <!-- ... (Content is the same) ... -->
             <div id="destinationScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
                     <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
@@ -362,7 +408,8 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- 3. ADVENTURE SELECTION SCREEN (image_4b4fe7.png) -->
+            <!-- 3. ADVENTURE SELECTION SCREEN -->
+            <!-- ... (Content is the same) ... -->
             <div id="adventureScreen" class="game-screen hidden">
                 <div class="flex justify-between items-center mb-6 text-lg">
                     <button class="hover:text-red-500" data-target="destinationScreen" style="color: var(--text-secondary)">
@@ -381,8 +428,8 @@
             </div>
 
             <!-- ============================================== -->
-            <!-- 4. CORE GAMEPLAY SCREEN (image_4ba523.jpg) -->
-            <!-- ============================================== -->
+            <!-- 4. CORE GAMEPLAY SCREEN -->
+            <!-- ... (Content is the same) ... -->
             <div id="gameScene" class="game-screen hidden">
                 <div class="text-left mb-6">
                     <button class="text-lg" data-target="adventureScreen" style="color: var(--text-secondary)">
@@ -422,8 +469,8 @@
             </div>
             
             <!-- ============================================== -->
-            <!-- 5. PROGRESS TRACKER SCREEN (image_4b5326.png) -->
-            <!-- ============================================== -->
+            <!-- 5. PROGRESS TRACKER SCREEN -->
+            <!-- ... (Content is the same) ... -->
             <div id="progressScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
                     <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
@@ -454,7 +501,7 @@
 
             <!-- ============================================== -->
             <!-- 6. SETTINGS SCREEN -->
-            <!-- ============================================== -->
+            <!-- ... (Content is the same) ... -->
             <div id="settingsScreen" class="game-screen hidden">
                 <h2 class="text-4xl font-bold mb-8">Settings</h2>
                 <div class="max-w-xl mx-auto space-y-6">
@@ -504,18 +551,10 @@
             <div id="profileScreen" class="game-screen hidden">
                  <h2 class="text-4xl font-bold mb-8">Traveler Profile</h2>
                 
-                <!-- LOGIN/REGISTRATION SECTION -->
+                <!-- LOGIN/REGISTRATION SECTION (Now only for display/logout) -->
                 <div id="authSection" class="max-w-sm mx-auto space-y-4 p-6 rounded-lg mb-6 border-2 border-red-500 login-alert" style="background-color: var(--background-deep)">
-                     <h3 class="text-2xl font-bold text-red-400">Account Login</h3>
-                     <p id="authMessage" class="text-sm text-gray-400">Sign up or Log in to save progress across devices!</p>
-                     
-                     <input type="email" id="authEmail" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
-                     <input type="password" id="authPassword" placeholder="Password" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
-                     
-                     <div class="grid grid-cols-2 gap-4">
-                        <button id="registerButton" class="btn-primary w-full py-3 text-base">Register</button>
-                        <button id="loginButton" class="btn-primary w-full py-3 text-base bg-blue-600 hover:bg-blue-500 shadow-blue-700">Login</button>
-                     </div>
+                     <h3 class="text-2xl font-bold text-red-400">Account Status</h3>
+                     <p id="authMessage" class="text-sm text-gray-400">Loading...</p>
                      <button id="logoutButton" class="btn-secondary w-full py-3 text-base bg-red-600 hover:bg-red-500 shadow-red-700 hidden">Logout</button>
                 </div>
                 
@@ -724,6 +763,8 @@
                 if (Object.keys(firebaseConfig).length === 0) {
                     console.warn("Firebase config is missing. Running in local mode without persistent progress saving.");
                     document.getElementById('authStatus').textContent = `Data Persistence: Disabled (Local Mode)`;
+                    // Since we're not using Firebase, render the Title Page directly without waiting for a login state
+                    switchScreen('titlePage'); 
                     return;
                 }
 
@@ -732,13 +773,20 @@
                 auth = getAuth(app);
 
                 const authStatusEl = document.getElementById('authStatus');
+                
+                // Show a loading indicator while Firebase determines login status
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('authSection').classList.add('hidden'); // Hide input fields initially
 
                 // State listener handles sign-in, sign-out, and initial load
                 onAuthStateChanged(auth, async (user) => {
+                    document.getElementById('loadingIndicator').classList.add('hidden'); // Hide loading once status is determined
+                    document.getElementById('authSection').classList.remove('hidden'); // Show input fields
+                    
                     if (user) {
-                        // User is signed in (either anonymously or via email/password)
+                        // User is signed in (either via email/password or anonymously if allowed)
                         
-                        // Check if the user ID has changed (which happens after a successful login/register)
+                        // Check if the user ID has changed (which happens after a successful register/login)
                         if (user.uid !== userId && userId !== null) {
                             // User just signed in, transfer anonymous data before loading new data
                             await transferData(userId, user.uid);
@@ -748,15 +796,19 @@
                         authStatusEl.textContent = `Signed in as: ${user.uid.substring(0, 8)}...`;
                         renderAuthUI(user);
                         await loadUserProgress();
+                        
+                        // CRITICAL FIX: If user is signed in, redirect to Title Page
+                        if (document.getElementById('loginScreen').classList.contains('hidden') === false) {
+                            switchScreen('titlePage');
+                        }
+
                     } else {
-                        // No user is currently signed in. If the live app, sign in anonymously.
+                        // No user is currently signed in. 
                         renderAuthUI(null);
                         
-                        if (Object.keys(userFirebaseConfig).length > 0) { 
-                            // Only sign in anonymously if we are using the user's config (live app)
-                            await signInAnonymously(auth);
-                        }
-                        // Note: We don't set userId here; it will be set by the onAuthStateChanged listener when signInAnonymously resolves
+                        // New Logic: IF the game is live (keys present) AND we are not forcing Anonymous sign-in, 
+                        // we do nothing here, letting the user remain on the login screen.
+                        // The login screen will handle registration/login attempts.
                     }
                 });
                 
@@ -766,10 +818,15 @@
                     // and uses the canvas's temporary token.
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
+                
+                // NEW CRITICAL CHANGE: If no user is signed in, do NOT automatically sign in anonymously.
+                // The login screen will handle the explicit login/registration.
 
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
                 document.getElementById('authStatus').textContent = `Authentication Error: ${error.message}`;
+                // Fallback: Show login screen on error
+                switchScreen('loginScreen');
             }
         }
 
@@ -844,100 +901,6 @@
         
         // --- SCREEN NAVIGATION / RENDERING ---
 
-        function renderAuthUI(user) {
-            const authSection = document.getElementById('authSection');
-            const authMessage = document.getElementById('authMessage');
-            const logoutButton = document.getElementById('logoutButton');
-            const registerButton = document.getElementById('registerButton');
-            const loginButton = document.getElementById('loginButton');
-            const authEmail = document.getElementById('authEmail');
-            const authPassword = document.getElementById('authPassword');
-            
-            if (user && user.email) {
-                // User is authenticated (Email/Password)
-                authMessage.textContent = `Logged in as: ${user.email}`;
-                authSection.classList.remove('login-alert', 'border-red-500');
-                authSection.classList.add('border-green-500');
-                registerButton.classList.add('hidden');
-                loginButton.classList.add('hidden');
-                logoutButton.classList.remove('hidden');
-                authEmail.value = user.email;
-                authEmail.disabled = true;
-                authPassword.value = '';
-                authPassword.placeholder = '********';
-
-            } else {
-                // User is anonymous or logged out
-                authMessage.textContent = user ? "Sign up to save progress permanently!" : "Sign up or Log in to save progress across devices!";
-                authSection.classList.add('login-alert', 'border-red-500');
-                authSection.classList.remove('border-green-500');
-                registerButton.classList.remove('hidden');
-                loginButton.classList.remove('hidden');
-                logoutButton.classList.add('hidden');
-                authEmail.disabled = false;
-                authPassword.placeholder = 'Password';
-            }
-        }
-
-        // --- AUTHENTICATION ACTIONS ---
-
-        async function handleRegister() {
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            
-            if (!email || !password) {
-                showFeedback("Email and password required.", 'incorrect');
-                return;
-            }
-            
-            try {
-                // Store the anonymous user's ID before we register/login
-                previousUserId = userId; 
-                
-                await createUserWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged listener handles subsequent steps (data transfer and load)
-                showFeedback("Registration successful! Progress saved.", 'correct');
-            } catch (error) {
-                showFeedback(`Registration Failed: ${error.message}`, 'incorrect');
-                console.error("Registration Error:", error);
-            }
-        }
-
-        async function handleLogin() {
-             const email = document.getElementById('authEmail').value;
-             const password = document.getElementById('authPassword').value;
-            
-             if (!email || !password) {
-                 showFeedback("Email and password required.", 'incorrect');
-                 return;
-             }
-
-             try {
-                 // Store the anonymous user's ID before we register/login
-                 previousUserId = userId;
-                 
-                 await signInWithEmailAndPassword(auth, email, password);
-                 // onAuthStateChanged listener handles subsequent steps (data load)
-                 showFeedback("Login successful! Progress loaded.", 'correct');
-             } catch (error) {
-                 showFeedback(`Login Failed: ${error.message}`, 'incorrect');
-                 console.error("Login Error:", error);
-             }
-        }
-
-        async function handleLogout() {
-             try {
-                 await signOut(auth);
-                 // onAuthStateChanged listener handles signing in as a new anonymous user automatically
-                 showFeedback("Logged out successfully.", 'correct');
-             } catch (error) {
-                 showFeedback(`Logout Failed: ${error.message}`, 'incorrect');
-                 console.error("Logout Error:", error);
-             }
-        }
-        
-        // --- REST OF THE GAME LOGIC (Unchanged) ---
-
         function switchScreen(targetId) {
             const screens = document.querySelectorAll('.game-screen');
             screens.forEach(screen => {
@@ -946,7 +909,7 @@
             document.getElementById(targetId).classList.remove('hidden');
 
             // Control Quick Access Nav visibility
-            if (targetId === 'titlePage') {
+            if (targetId === 'titlePage' || targetId === 'loginScreen') {
                 quickAccessNav.classList.add('hidden');
             } else {
                 quickAccessNav.classList.remove('hidden');
@@ -963,7 +926,117 @@
             }
         }
 
-        // --- GAME LOGIC ---
+        function renderAuthUI(user) {
+            const authSection = document.getElementById('authSection');
+            const authMessage = document.getElementById('authMessage');
+            const logoutButton = document.getElementById('logoutButton');
+            // const registerButton = document.getElementById('registerButton'); // Kept in HTML for login screen
+            // const loginButton = document.getElementById('loginButton'); // Kept in HTML for login screen
+            const anonymousText = document.getElementById('anonymousLoginText');
+            
+            // REMOVING LOGIC: Since we are not allowing Anonymous/Guest login anymore
+            if (document.getElementById('loginScreen').classList.contains('hidden') === false) {
+                if (anonymousText) anonymousText.classList.add('hidden');
+            }
+
+            if (user && user.email) {
+                // User is authenticated (Email/Password)
+                authMessage.textContent = `Welcome back, ${user.email}!`;
+                authSection.classList.remove('login-alert', 'border-red-500');
+                authSection.classList.add('border-green-500');
+                
+                // Login Screen buttons (hide on successful login)
+                if (document.getElementById('loginScreen').classList.contains('hidden') === false) {
+                     // Since user is already logged in, the authSection remains hidden
+                }
+
+            } else {
+                // User is logged out (Forcing them to use Login/Register)
+                authMessage.textContent = "Sign in or register to begin your journey!";
+                authSection.classList.add('login-alert', 'border-red-500');
+                authSection.classList.remove('border-green-500');
+            }
+            
+            // Logic specific to the Profile Screen
+            if (document.getElementById('profileScreen').classList.contains('hidden') === false) {
+                 if (user && user.email) {
+                    // Profile screen for logged-in user
+                    document.getElementById('profileUserId').textContent = user.uid;
+                    logoutButton.classList.remove('hidden');
+                 } else {
+                    // User shouldn't be on this screen if not logged in, but just in case
+                    logoutButton.classList.add('hidden');
+                 }
+            }
+        }
+
+        // --- AUTHENTICATION ACTIONS ---
+
+        async function handleRegister() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            if (!email || !password) {
+                showFeedback("Email and password required.", 'incorrect');
+                return;
+            }
+            
+            try {
+                previousUserId = userId; 
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                
+                await createUserWithEmailAndPassword(auth, email, password);
+                showFeedback("Registration successful! Welcome!", 'correct');
+                // Success: Redirect to title page
+                switchScreen('titlePage'); 
+            } catch (error) {
+                showFeedback(`Registration Failed: ${error.message}`, 'incorrect');
+                console.error("Registration Error:", error);
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        async function handleLogin() {
+             const email = document.getElementById('authEmail').value;
+             const password = document.getElementById('authPassword').value;
+            
+             if (!email || !password) {
+                 showFeedback("Email and password required.", 'incorrect');
+                 return;
+             }
+
+             try {
+                 previousUserId = userId;
+                 document.getElementById('loadingIndicator').classList.remove('hidden');
+
+                 await signInWithEmailAndPassword(auth, email, password);
+                 showFeedback("Login successful! Progress loaded.", 'correct');
+                 // Success: Redirect to title page
+                 switchScreen('titlePage'); 
+             } catch (error) {
+                 showFeedback(`Login Failed: ${error.message}`, 'incorrect');
+                 console.error("Login Error:", error);
+             } finally {
+                 document.getElementById('loadingIndicator').classList.add('hidden');
+             }
+        }
+
+        async function handleLogout() {
+             try {
+                 await signOut(auth);
+                 // No anonymous sign-in anymore, so redirect directly to login
+                 showFeedback("Logged out successfully.", 'correct');
+                 switchScreen('loginScreen'); 
+             } catch (error) {
+                 showFeedback(`Logout Failed: ${error.message}`, 'incorrect');
+                 console.error("Logout Error:", error);
+             }
+        }
+        
+        // Removed handleAnonymousLogin since we are enforcing login.
+        
+        // --- REST OF THE GAME LOGIC (Unchanged) ---
 
         function renderDestinationScreen() {
             const listEl = document.getElementById('destinationList');
@@ -1501,6 +1574,12 @@
         // --- INITIALIZATION AND EVENT LISTENERS ---
 
         function setupEventListeners() {
+            // New Login Screen Buttons
+            document.getElementById('registerButton').addEventListener('click', handleRegister);
+            document.getElementById('loginButton').addEventListener('click', handleLogin);
+            // document.getElementById('anonymousLoginText').addEventListener('click', handleAnonymousLogin); // Removed
+            
+            // Title Page Buttons (Redirects after successful login)
             document.getElementById('startButton').addEventListener('click', () => {
                 attemptMusicPlay(); 
                 switchScreen('destinationScreen');
@@ -1515,9 +1594,7 @@
                 renderAdventureScreen(currentDestinationId);
             });
             
-            // New Authentication Button Handlers
-            document.getElementById('registerButton').addEventListener('click', handleRegister);
-            document.getElementById('loginButton').addEventListener('click', handleLogin);
+            // Logout Button (Moved to Profile screen for display consistency)
             document.getElementById('logoutButton').addEventListener('click', handleLogout);
             
             // Expose game functions to global scope for HTML onclicks in dynamically created elements.
@@ -1553,6 +1630,9 @@
             if (musicVolumeSlider) {
                 musicVolumeSlider.value = userProgress.settings.musicVolume;
             }
+            
+            // CRITICAL CHANGE: Start by rendering the login screen, then check auth status
+            switchScreen('loginScreen'); 
             
             renderUI(); 
             setupEventListeners();
