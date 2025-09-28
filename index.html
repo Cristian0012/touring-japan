@@ -531,9 +531,15 @@
         // Global Firebase variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         // --- START USER MODIFICATION ZONE ---
-        // REPLACE THE FOLLOWING EMPTY OBJECT WITH YOUR ENTIRE FIREBASE CONFIGURATION OBJECT (copied from Step 1)
-        // EXAMPLE: { apiKey: "AIzaSy...", authDomain: "your-app.firebaseapp.com", projectId: "your-app", ... }
-        const userFirebaseConfig = {}; 
+        // The empty {} has been replaced with your actual Firebase configuration:
+        const userFirebaseConfig = {
+            apiKey: "AIzaSyBiHrqtWWI7VhfJhWWy8DonXSUWLXOiJCA",
+            authDomain: "gta-web-app-5abcd.firebaseapp.com",
+            projectId: "gta-web-app-5abcd",
+            storageBucket: "gta-web-app-5abcd.firebasestorage.app",
+            messagingSenderId: "135809506245",
+            appId: "1:135809506245:web:9c7f5848f9a931f53d49ac"
+        }; 
         // --- END USER MODIFICATION ZONE ---
         
         // This handles both the environment config (if available) or the user's manual config
@@ -675,13 +681,20 @@
                         authStatusEl.textContent = `Signed in as: ${user.uid.substring(0, 8)}...`;
                         await loadUserProgress();
                     } else {
-                        if (!initialAuthToken) {
+                        // If we have custom config (meaning it's the live app), sign in anonymously.
+                        // This prevents the custom-token-mismatch error when in the editor.
+                        if (Object.keys(userFirebaseConfig).length > 0) { // <-- NEW CHECK
+                            await signInAnonymously(auth);
+                        } else if (!initialAuthToken) {
+                            // If running in environment but without initial token, fallback to anonymous
                             await signInAnonymously(auth);
                         }
                     }
                 });
 
-                if (initialAuthToken) {
+                // FIX: Only attempt signInWithCustomToken if we are running in the Canvas environment
+                // AND we are NOT using the user's custom config.
+                if (initialAuthToken && Object.keys(userFirebaseConfig).length === 0) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
             } catch (error) {
