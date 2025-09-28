@@ -10,17 +10,30 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* --- Root Variables for Both Modes --- */
         :root {
-            --primary-red: #E03D4D; /* Bright Red for main actions */
-            --background-deep: #1A1A1A; /* Near-black background */
-            --card-dark: #2C2C2C; /* Dark gray for cards/containers */
+            /* Dark Mode Defaults (as before) */
+            --primary-red: #E03D4D;
+            --background-deep: #1A1A1A;
+            --card-dark: #2C2C2C;
             --text-light: #F9FAFB;
             --text-secondary: #AAAAAA;
-            --success-green: #38A169; /* Bright Green for success */
-            --danger-red: #E53E3E; /* Bright Red for incorrect/stop */
+            --success-green: #38A169;
+            --danger-red: #E53E3E;
         }
 
-        /* Default to Dark Mode */
+        /* --- LIGHT MODE Variables --- */
+        body.light-mode {
+            --background-deep: #F3F4F6; /* Light Gray Background */
+            --card-dark: #FFFFFF; /* White Cards */
+            --text-light: #1F2937; /* Dark Text */
+            --text-secondary: #6B7280;
+            --primary-red: #E03D4D; /* Red remains constant */
+            --success-green: #10B981; /* Brighter success green */
+            --danger-red: #EF4444; /* Brighter danger red */
+        }
+        
+        /* --- GLOBAL BASE STYLES --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--background-deep);
@@ -36,8 +49,14 @@
             padding: 2rem;
             background: var(--card-dark);
             border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Lighter shadow for light mode */
+            transition: background 0.3s, box-shadow 0.3s;
         }
+        body.light-mode .game-screen {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid #E5E7EB; /* Light border in light mode */
+        }
+
 
         /* Custom Button Styling (Primary Action - Red/Green) */
         .btn-primary {
@@ -60,7 +79,7 @@
             transform: translateY(3px);
         }
 
-        /* Secondary/Navigation Button Styling (Dark Gray) */
+        /* Secondary/Navigation Button Styling (Dark Gray in dark mode, light gray in light mode) */
         .btn-secondary {
             background-color: #3C3C3C; 
             color: var(--text-light);
@@ -73,12 +92,23 @@
             border: none;
             box-shadow: 0 4px #222222;
         }
+        body.light-mode .btn-secondary {
+            background-color: #E5E7EB; 
+            color: var(--text-light);
+            box-shadow: 0 4px #D1D5DB;
+        }
         .btn-secondary:hover {
             background-color: #4A4A4A;
+        }
+        body.light-mode .btn-secondary:hover {
+            background-color: #D1D5DB;
         }
         .btn-secondary:active {
             box-shadow: 0 1px #222222;
             transform: translateY(3px);
+        }
+        body.light-mode .btn-secondary:active {
+            box-shadow: 0 1px #D1D5DB;
         }
 
         /* Options/Phrase Button Styling */
@@ -99,8 +129,17 @@
             flex-direction: column;
             justify-content: space-between;
         }
+        body.light-mode .option-btn {
+            background-color: #F9FAFB;
+            border: 3px solid #D1D5DB; 
+            color: var(--text-light);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
         .option-btn:hover {
             border-color: #666666;
+        }
+        body.light-mode .option-btn:hover {
+            border-color: #A0AEC0;
         }
         .option-btn .phrase-main {
             font-size: 1.5rem;
@@ -115,18 +154,18 @@
 
         /* Feedback Styles */
         .option-btn.correct {
-            background-color: var(--success-green); 
-            border-color: #276749;
-            color: white;
+            background-color: var(--success-green) !important; 
+            border-color: #276749 !important;
+            color: white !important;
             animation: pulse-green 0.5s 3;
         }
         .option-btn.incorrect {
-            background-color: var(--danger-red);
-            border-color: #9B2C2C;
-            color: white;
+            background-color: var(--danger-red) !important;
+            border-color: #9B2C2C !important;
+            color: white !important;
         }
 
-        /* Destination Card Styling (image_4b4fac.png) */
+        /* Destination Card Styling */
         .dest-card {
             background-color: #222222;
             border-radius: 0.75rem;
@@ -140,9 +179,16 @@
             justify-content: center;
             align-items: center;
         }
+        body.light-mode .dest-card {
+            background-color: #F3F4F6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
         .dest-card:hover:not([disabled]) {
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+        body.light-mode .dest-card:hover:not([disabled]) {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         .dest-card-code {
             font-size: 3.5rem;
@@ -154,7 +200,7 @@
             cursor: not-allowed;
         }
         .dest-card.active-dest {
-            border: 3px solid #E03D4D; /* Highlight active destination */
+            border: 3px solid var(--primary-red);
         }
         
         /* Modal Animation */
@@ -164,12 +210,12 @@
             100% { box-shadow: 0 0 0 0 rgba(56, 161, 105, 0); }
         }
 
-        /* Settings Toggle Switch (Copied from previous theme but adapted to dark background) */
+        /* Settings Toggle Switch (General) */
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 60px; /* Standard width */
+            height: 34px; /* Standard height */
         }
 
         .switch input { 
@@ -237,9 +283,17 @@
             align-items: center;
             justify-content: center;
         }
+        body.light-mode .quick-access-btn {
+            background-color: #E5E7EB;
+            color: #1A1A1A;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
         .quick-access-btn:hover {
             background-color: #666666;
             transform: scale(1.05);
+        }
+        body.light-mode .quick-access-btn:hover {
+            background-color: #D1D5DB;
         }
     </style>
 </head>
@@ -253,12 +307,11 @@
             <!-- ============================================== -->
             <div id="titlePage" class="game-screen">
                 <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
-                <h2 class="text-3xl font-light mb-4">Global Translation Adventures</h2>
-                <!-- Removed Data Persistence line as requested -->
-
+                <h2 class="text-3xl font-light mb-4" style="color: var(--text-secondary)">Global Translation Adventures</h2>
+                
                 <!-- This is the 'Welcome, Traveler!' section -->
-                <h3 class="text-4xl font-bold mb-8">Welcome, Traveler!</h3>
-                <p class="text-gray-400 mb-12 max-w-lg mx-auto">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
+                <h3 class="text-4xl font-bold mb-8" style="color: var(--text-light)">Welcome, Traveler!</h3>
+                <p class="mb-12 max-w-lg mx-auto" style="color: var(--text-secondary)">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
                 
                 <div class="space-y-4 max-w-sm mx-auto">
                     <!-- Main Start Button is Red -->
@@ -275,13 +328,13 @@
             <!-- ============================================== -->
             <div id="destinationScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
-                    <button class="text-gray-400 hover:text-red-500 text-lg" data-target="titlePage">
+                    <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
                         <i class="fas fa-arrow-left mr-2"></i> Back to Title Screen
                     </button>
                 </div>
                 
                 <h2 class="text-4xl font-bold mb-2 text-red-500 text-left">Select Your Destination</h2>
-                <p class="text-gray-400 mb-8 text-left">Master a country's adventures to unlock the next destination and earn a rank up!</p>
+                <p class="mb-8 text-left" style="color: var(--text-secondary)">Master a country's adventures to unlock the next destination and earn a rank up!</p>
                 
                 <div id="destinationList" class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                     <!-- Destination cards will be rendered here by JavaScript -->
@@ -293,7 +346,7 @@
             <!-- ============================================== -->
             <div id="adventureScreen" class="game-screen hidden">
                 <div class="flex justify-between items-center mb-6 text-lg">
-                    <button class="text-gray-400 hover:text-red-500" data-target="destinationScreen">
+                    <button class="hover:text-red-500" data-target="destinationScreen" style="color: var(--text-secondary)">
                          <i class="fas fa-arrow-left mr-2"></i> Back to Country Selection
                     </button>
                     <button id="viewProgressButton" class="text-green-500 hover:text-green-400" data-target="progressScreen">
@@ -313,18 +366,18 @@
             <!-- ============================================== -->
             <div id="gameScene" class="game-screen hidden">
                 <div class="text-left mb-6">
-                    <button class="text-gray-400 hover:text-red-500 text-lg" data-target="adventureScreen">
+                    <button class="text-lg" data-target="adventureScreen" style="color: var(--text-secondary)">
                         <i class="fas fa-arrow-left mr-2"></i> Exit Scenario
                     </button>
                 </div>
 
                 <h3 id="sceneAdventureName" class="text-3xl font-bold mb-1 text-yellow-400 text-left">Tokyo Arrival: Check-In & Transport</h3>
-                <h4 id="sceneHeader" class="text-base mb-6 text-gray-500 text-left">Country: Japan | Adventure 1</h4>
+                <h4 id="sceneHeader" class="text-base mb-6 text-left" style="color: var(--text-secondary)">Country: Japan | Adventure 1</h4>
                 
-                <p id="scenePrompt" class="text-xl font-medium mb-6 text-left">You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?</p>
+                <p id="scenePrompt" class="text-xl font-medium mb-6 text-left" style="color: var(--text-light)">You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?</p>
                 
-                <div id="sceneContainer" class="max-w-4xl mx-auto p-6 bg-black rounded-xl shadow-2xl border-4 border-gray-700">
-                    <img id="sceneImage" src="" alt="Current Scene" class="w-full h-auto rounded-lg mb-6 border-2 border-gray-600">
+                <div id="sceneContainer" class="max-w-4xl mx-auto p-6 rounded-xl shadow-2xl border-4" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
+                    <img id="sceneImage" src="" alt="Current Scene" class="w-full h-auto rounded-lg mb-6 border-2" style="border-color: var(--text-secondary)">
                     
                     <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Phrase options will be injected here -->
@@ -333,7 +386,7 @@
                 <div id="feedbackMessage" class="mt-6 text-2xl font-bold transition-opacity duration-300 opacity-0 min-h-[40px]"></div>
                 
                 <!-- Continue Button shown after correct answer -->
-                <button id="continueButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="nextScene()" style="background-color: var(--primary-red); box-shadow: 0 4px #9B2C2C;">
+                <button id="continueButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="nextScene()" style="background-color: var(--primary-red); box-shadow: 0 4px var(--danger-red);">
                     Continue Touring (1/5 Scenes)
                 </button>
 
@@ -348,28 +401,28 @@
             <!-- ============================================== -->
             <div id="progressScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
-                    <button class="text-gray-400 hover:text-red-500 text-lg" data-target="titlePage">
+                    <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
                         <i class="fas fa-arrow-left mr-2"></i> Back to Title Screen
                     </button>
                 </div>
                 
-                <div class="bg-black p-6 rounded-lg mb-8 shadow-inner border-t-4 border-b-4 border-red-500">
+                <div class="p-6 rounded-lg mb-8 shadow-inner border-t-4 border-b-4 border-red-500" style="background-color: var(--background-deep)">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-4xl font-extrabold" id="rankCountryName">Japan (Traveler)</h3>
+                        <h3 class="text-4xl font-extrabold" id="rankCountryName" style="color: var(--text-light)">Japan (Traveler)</h3>
                         <span class="text-6xl font-black text-red-500" id="rankCountryCode">JP</span>
                     </div>
-                    <p class="text-sm font-light mb-2 text-gray-400">Traveler ID: <span id="progressUserId" class="font-mono text-xs text-yellow-400">Loading...</span></p>
+                    <p class="text-sm font-light mb-2" style="color: var(--text-secondary)">Traveler ID: <span id="progressUserId" class="font-mono text-xs text-yellow-400">Loading...</span></p>
                     <div class="text-lg font-semibold text-green-500 mt-4">
                         <span id="adventuresCompleted">0</span> / 5 Adventures Completed
                     </div>
-                    <div class="text-sm text-gray-500 mt-2">
+                    <div class="text-sm mt-2" style="color: var(--text-secondary)">
                         Next Rank: France (Globetrotter)
                     </div>
                 </div>
                 
-                <h3 class="text-2xl font-bold mb-6 text-left">All 30 Badges Earned</h3>
+                <h3 class="text-2xl font-bold mb-6 text-left" style="color: var(--text-light)">All 30 Badges Earned</h3>
                 
-                <div id="badgeContainer" class="flex flex-wrap justify-start p-4 bg-black rounded-lg max-w-4xl mx-auto border border-gray-700">
+                <div id="badgeContainer" class="flex flex-wrap justify-start p-4 rounded-lg max-w-4xl mx-auto border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                     <!-- 30 Badge boxes will be injected here (image_4b5326.png style) -->
                 </div>
             </div>
@@ -382,8 +435,8 @@
                 <div class="max-w-xl mx-auto space-y-6">
 
                     <!-- Theme Toggle -->
-                    <div class="flex justify-between items-center p-4 bg-black rounded-lg border border-gray-700">
-                        <span class="text-xl font-medium">Light / Dark Mode</span>
+                    <div class="flex justify-between items-center p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
+                        <span class="text-xl font-medium" style="color: var(--text-light)">Light / Dark Mode</span>
                         <label class="switch">
                             <input type="checkbox" id="themeToggle">
                             <span class="slider round"></span>
@@ -391,19 +444,27 @@
                     </div>
 
                     <!-- Background Music Slider -->
-                    <div class="p-4 bg-black rounded-lg border border-gray-700">
+                    <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xl font-medium">Background Music</span>
-                            <button id="musicToggle" class="text-red-400 hover:text-red-300"><i class="fas fa-volume-up"></i></button>
+                            <span class="text-xl font-medium" style="color: var(--text-light)">Background Music</span>
+                            <!-- Music Mute Toggle -->
+                            <label class="switch">
+                                <input type="checkbox" id="musicMuteToggle">
+                                <span class="slider round"></span>
+                            </label>
                         </div>
                         <input type="range" id="musicVolume" min="0" max="1" value="0.5" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
                     </div>
 
                     <!-- Audio Volume Slider -->
-                    <div class="p-4 bg-black rounded-lg border border-gray-700">
+                    <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xl font-medium">Audio Pronunciation Volume</span>
-                            <button id="audioToggle" class="text-red-400 hover:text-red-300"><i class="fas fa-volume-up"></i></button>
+                            <span class="text-xl font-medium" style="color: var(--text-light)">Audio Pronunciation Volume</span>
+                             <!-- Audio Mute Toggle -->
+                            <label class="switch">
+                                <input type="checkbox" id="audioMuteToggle">
+                                <span class="slider round"></span>
+                            </label>
                         </div>
                         <input type="range" id="audioVolume" min="0" max="1" value="1.0" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
                     </div>
@@ -419,10 +480,10 @@
                  <h2 class="text-4xl font-bold mb-8">Traveler Profile</h2>
                 <div class="max-w-sm mx-auto space-y-4">
                     <div class="text-lg font-light mb-4">
-                        <p>User ID: <span id="profileUserId" class="font-mono text-sm text-yellow-400">Loading...</span></p>
+                        <p style="color: var(--text-light)">User ID: <span id="profileUserId" class="font-mono text-sm text-yellow-400">Loading...</span></p>
                     </div>
-                    <input type="text" id="travelerNameInput" placeholder="Traveler Name" class="w-full p-3 rounded bg-black text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500">
-                    <input type="email" id="emailInput" placeholder="Email stay up to date for future releases" class="w-full p-3 rounded bg-black text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500">
+                    <input type="text" id="travelerNameInput" placeholder="Traveler Name" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500" style="background-color: var(--background-deep)">
+                    <input type="email" id="emailInput" placeholder="Email stay up to date for future releases" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500" style="background-color: var(--background-deep)">
                     <button id="saveProfileButton" class="btn-primary w-full bg-green-600 hover:bg-green-500 shadow-green-700">Save Profile</button>
                 </div>
                 <button class="btn-secondary mt-12" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
@@ -431,7 +492,7 @@
 
             <!-- Modal (Matches the dark theme) -->
             <div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
-                <div class="bg-gray-800 p-10 rounded-xl shadow-2xl text-center max-w-md w-11/12 transform transition-transform duration-300 scale-100 text-white border-t-8 border-yellow-500">
+                <div class="p-10 rounded-xl shadow-2xl text-center max-w-md w-11/12 transform transition-transform duration-300 scale-100 border-t-8 border-yellow-500" style="background-color: var(--card-dark); color: var(--text-light)">
                     <i class="fas fa-trophy text-7xl text-yellow-500 mb-6 animate-bounce"></i>
                     <h3 class="text-4xl font-extrabold mb-2 text-red-400">Adventure Complete!</h3>
                     <p class="text-xl font-semibold mb-4">You earned the <span id="modalBadgeName" class="text-yellow-400"></span>!</p>
@@ -1048,20 +1109,22 @@
             const theme = settings.theme || 'dark-mode';
             document.body.className = theme;
             document.getElementById('themeToggle').checked = theme === 'light-mode';
+            
+            // Get Toggles
+            const musicMuteToggle = document.getElementById('musicMuteToggle');
+            const audioMuteToggle = document.getElementById('audioMuteToggle');
 
             // Music Volume/Mute
-            // Use saved volume, or default to 0.2
             document.getElementById('musicVolume').value = settings.musicVolume || 0.2;
-            const musicIcon = settings.musicMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('musicToggle').innerHTML = `<i class="fas ${musicIcon}"></i>`;
-            // ******* USING DEFAULT MUSIC VOLUME 0.2 HERE *******
+            musicMuteToggle.checked = settings.musicMuted || false;
             setBackgroundMusicState(settings.musicVolume || 0.2, settings.musicMuted || false);
 
             // Audio Volume/Mute
             document.getElementById('audioVolume').value = settings.audioVolume || 1.0;
-            const audioIcon = settings.audioMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('audioToggle').innerHTML = `<i class="fas ${audioIcon}"></i>`;
+            audioMuteToggle.checked = settings.audioMuted || false;
         }
+        
+        // --- EVENT HANDLERS FOR SETTINGS ---
 
         document.getElementById('themeToggle').addEventListener('change', (e) => {
             const theme = e.target.checked ? 'light-mode' : 'dark-mode';
@@ -1070,47 +1133,55 @@
             saveUserProgress();
         });
 
+        // Music Mute Toggle Listener
+        document.getElementById('musicMuteToggle').addEventListener('change', (e) => {
+            const isMuted = e.target.checked;
+            userProgress.settings.musicMuted = isMuted;
+            
+            // If muting via toggle, set volume slider to 0 without saving it as the preferred volume
+            if (isMuted) {
+                setBackgroundMusicState(userProgress.settings.musicVolume, true);
+            } else {
+                // If unmuting, restore volume from settings
+                setBackgroundMusicState(userProgress.settings.musicVolume, false);
+            }
+            saveUserProgress();
+        });
+
         document.getElementById('musicVolume').addEventListener('input', (e) => {
             const newVolume = parseFloat(e.target.value);
             userProgress.settings.musicVolume = newVolume;
             userProgress.settings.musicMuted = (newVolume === 0);
             
-            const musicIcon = userProgress.settings.musicMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('musicToggle').innerHTML = `<i class="fas ${musicIcon}"></i>`;
+            // Update toggle state if volume hits 0 or leaves 0
+            document.getElementById('musicMuteToggle').checked = (newVolume === 0);
 
-            setBackgroundMusicState(newVolume, userProgress.settings.musicMuted);
+            setBackgroundMusicState(newVolume, (newVolume === 0));
             saveUserProgress();
         });
 
-        document.getElementById('musicToggle').addEventListener('click', () => {
-            const isMuted = !userProgress.settings.musicMuted;
-            userProgress.settings.musicMuted = isMuted;
+        // Audio Mute Toggle Listener
+        document.getElementById('audioMuteToggle').addEventListener('change', (e) => {
+            const isMuted = e.target.checked;
+            userProgress.settings.audioMuted = isMuted;
 
-            const musicIcon = isMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('musicToggle').innerHTML = `<i class="fas ${musicIcon}"></i>`;
-            
-            setBackgroundMusicState(userProgress.settings.musicVolume, isMuted);
+            // If muting via toggle, set volume slider to 0 without saving it as the preferred volume
+            if (isMuted) {
+                document.getElementById('audioVolume').value = 0;
+            } else {
+                // If unmuting, reset slider to last saved volume (or default 1.0)
+                document.getElementById('audioVolume').value = userProgress.settings.audioVolume || 1.0;
+            }
             saveUserProgress();
         });
-
 
         document.getElementById('audioVolume').addEventListener('input', (e) => {
             const newVolume = parseFloat(e.target.value);
             userProgress.settings.audioVolume = newVolume;
             userProgress.settings.audioMuted = (newVolume === 0);
-
-            const audioIcon = userProgress.settings.audioMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('audioToggle').innerHTML = `<i class="fas ${audioIcon}"></i>`;
-
-            saveUserProgress();
-        });
-
-        document.getElementById('audioToggle').addEventListener('click', () => {
-            const isMuted = !userProgress.settings.audioMuted;
-            userProgress.settings.audioMuted = isMuted;
-
-            const audioIcon = isMuted ? 'fa-volume-off' : 'fa-volume-up';
-            document.getElementById('audioToggle').innerHTML = `<i class="fas ${audioIcon}">`;
+            
+            // Update toggle state if volume hits 0 or leaves 0
+            document.getElementById('audioMuteToggle').checked = (newVolume === 0);
 
             saveUserProgress();
         });
