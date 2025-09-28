@@ -3,649 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA: Global Translation Adventures</title>
-    <!-- Load Tailwind CSS for modern, responsive styling -->
+    <title>Secure Dashboard Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* --- Root Variables for Both Modes --- */
+        /* Modern Design Variables */
         :root {
-            --primary-red: #E03D4D;
-            --background-deep: #1A1A1A;
-            --card-dark: #2C2C2C;
-            --text-light: #F9FAFB;
-            --text-secondary: #AAAAAA;
-            --success-green: #38A169;
-            --danger-red: #E53E3E;
+            --primary: #4f46e5; /* Indigo */
+            --background: #0f172a; /* Slate-900 */
+            --card-bg: #1e293b; /* Slate-800 */
+            --text-color: #f1f5f9; /* Slate-100 */
         }
-
-        /* --- LIGHT MODE Variables --- */
-        body.light-mode {
-            --background-deep: #F3F4F6;
-            --card-dark: #FFFFFF;
-            --text-light: #1F2937;
-            --text-secondary: #6B7280;
-            --primary-red: #E03D4D;
-            --success-green: #10B981;
-            --danger-red: #EF4444;
-        }
-        
-        /* --- GLOBAL BASE STYLES --- */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--background-deep);
-            color: var(--text-light);
+            background-color: var(--background);
+            color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
-        }
-        
-        /* Main Game Screen Card Styling */
-        .game-screen {
-            max-width: 1000px;
-            min-height: 80vh;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: var(--card-dark);
-            border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s, box-shadow 0.3s;
-        }
-        body.light-mode .game-screen {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border: 1px solid #E5E7EB;
-        }
-
-        /* =========================================================
-        LOGIN SCREEN OVERLAY STYLES
-        =========================================================
-        */
-        #loginScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
-            background-color: var(--background-deep);
-            min-height: 100vh;
-            z-index: 1000; 
-            margin: 0;
-            box-shadow: none;
-            transition: background-color 0.3s;
         }
-
-        /* The login *card* itself to center the form */
-        #loginCard {
-            max-width: 400px;
-            width: 90%;
-            padding: 2rem;
+        .card {
+            background-color: var(--card-bg);
             border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            background-color: var(--card-dark);
-            border: 4px solid var(--primary-red);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
-        /* End Login Screen Styles */
-
-
-        /* Custom Button Styling (Primary Action - Red/Green) */
         .btn-primary {
-            background-color: var(--primary-red);
-            color: white;
-            padding: 1rem 2rem;
-            font-size: 1.25rem;
-            font-weight: 700;
-            border-radius: 0.75rem;
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px var(--danger-red); 
+            background-color: var(--primary);
+            transition: background-color 0.2s;
         }
         .btn-primary:hover {
-            filter: brightness(1.1);
+            background-color: #6366f1;
         }
-        .btn-primary:active {
-            box-shadow: 0 1px var(--danger-red);
-            transform: translateY(3px);
-        }
-
-        /* Secondary/Navigation Button Styling */
-        .btn-secondary {
-            background-color: #3C3C3C; 
-            color: var(--text-light);
-            padding: 1rem 2rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            border-radius: 0.75rem;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px #222222;
-        }
-        body.light-mode .btn-secondary {
-            background-color: #E5E7EB; 
-            color: var(--text-light);
-            box-shadow: 0 4px #D1D5DB;
-        }
-        .btn-secondary:hover {
-            background-color: #4A4A4A;
-        }
-        body.light-mode .btn-secondary:hover {
-            background-color: #D1D5DB;
-        }
-        .btn-secondary:active {
-            box-shadow: 0 1px #222222;
-            transform: translateY(3px);
-        }
-        body.light-mode .btn-secondary:active {
-            box-shadow: 0 1px #D1D5DB;
-        }
-
-        /* Options/Phrase Button Styling */
-        .option-btn {
-            background-color: #222222;
-            color: var(--text-light);
-            padding: 1.5rem;
-            min-height: 120px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 0.75rem;
-            cursor: pointer;
-            transition: background-color 0.2s, border 0.2s;
-            border: 3px solid #444444;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        body.light-mode .option-btn {
-            background-color: #F9FAFB;
-            border: 3px solid #D1D5DB; 
-            color: var(--text-light);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .option-btn:hover {
-            border-color: #666666;
-        }
-        body.light-mode .option-btn:hover {
-            border-color: #A0AEC0;
-        }
-        .option-btn .phrase-main {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            line-height: 1.2;
-        }
-        .option-btn .phrase-sub {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Feedback Styles */
-        .option-btn.correct {
-            background-color: var(--success-green) !important; 
-            border-color: #276749 !important;
-            color: white !important;
-            animation: pulse-green 0.5s 3;
-        }
-        .option-btn.incorrect {
-            background-color: var(--danger-red) !important;
-            border-color: #9B2C2C !important;
-            color: white !important;
-        }
-
-        /* Destination Card Styling */
-        .dest-card {
-            background-color: #222222;
-            border-radius: 0.75rem;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        body.light-mode .dest-card {
-            background-color: #F3F4F6;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .dest-card:hover:not([disabled]) {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-        }
-        body.light-mode .dest-card:hover:not([disabled]) {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-        .dest-card-code {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 0.25rem;
-        }
-        .dest-card.locked {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .dest-card.active-dest {
-            border: 3px solid var(--primary-red);
-        }
-        
-        /* Modal Animation */
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(56, 161, 105, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(56, 161, 105, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(56, 161, 105, 0); }
-        }
-
-        /* Settings Toggle Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
+        /* Style for the Google button */
+        #googleLoginButton {
             background-color: white;
-            transition: .4s;
+            color: #1f2937; /* Dark text */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
-        input:checked + .slider {
-            background-color: var(--primary-red);
+        #googleLoginButton:hover {
+            background-color: #f3f4f6;
         }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px var(--primary-red);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-        .slider.round {
-            border-radius: 34px;
-        }
-
-        .slider.round:before {
-            border-radius: 50%;
-        }
-        
-        /* New Floating Nav Style */
-        .quick-access-btn {
-            background-color: #4A4A4A;
-            color: var(--text-light);
-            padding: 1rem;
-            font-size: 1.5rem;
-            border-radius: 50%;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            width: 55px;
-            height: 55px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        body.light-mode .quick-access-btn {
-            background-color: #E5E7EB;
-            color: #1A1A1A;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .quick-access-btn:hover {
-            background-color: #666666;
-            transform: scale(1.05);
-        }
-        body.light-mode .quick-access-btn:hover {
-            background-color: #D1D5DB;
-        }
-
-        /* --- FIREBASE SECRETS BLUR/VISIBILITY STYLES --- */
-        .blurred {
-            filter: blur(4px);
-            transition: filter 0.3s;
-        }
-        .visible {
-            filter: blur(0);
-        }
-        
-        /* Login/Registration Alert */
-        .login-alert {
-            animation: pulse-red 1s infinite;
-        }
-        @keyframes pulse-red {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); }
-            70% { transform: scale(1.01); box-shadow: 0 0 0 5px rgba(229, 62, 62, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+        .text-error {
+            color: #f87171; /* Red-400 */
         }
     </style>
 </head>
-<body class="dark-mode">
-    <div id="app" class="text-center p-4">
-        <p id="authStatus" class="text-sm text-gray-400 mb-2 hidden"></p> 
+<body>
+    <div id="app" class="w-full max-w-7xl p-4">
 
-        <!-- =========================================================
-        0. LOGIN SCREEN (The Authentication Gate) 
-        =========================================================
-        -->
-        <div id="loginScreen" class="hidden"> 
-            <div id="loginCard"> 
-                <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
-                <h2 class="text-3xl font-light mb-8" style="color: var(--text-secondary)">Global Translation Adventures</h2>
+        <!-- ============================================== -->
+        <!-- 1. AUTHENTICATION CONTAINER (Login/Register Gate) -->
+        <!-- Starts Visible, hides on successful login -->
+        <!-- ============================================== -->
+        <div id="authContainer" class="card p-8 mx-auto max-w-lg">
+            <h2 class="text-4xl font-extrabold mb-2 text-center text-white">Secure Access Portal</h2>
+            <p id="authMessage" class="text-sm text-center mb-6 text-gray-400">Sign in to view your private dashboard.</p>
+            <p id="loadingIndicator" class="text-yellow-400 text-center mb-4 hidden">Processing authentication...</p>
 
-                <div id="authSection" class="max-w-sm mx-auto space-y-4">
-                    <!-- Global Message Area for Login/Register Feedback -->
-                    <p id="authMessage" class="text-sm text-gray-400 text-center mb-4">Sign in or register to begin your journey!</p>
-                    <p id="loadingIndicator" class="text-yellow-400 hidden">Loading...</p>
-
-                    <!-- 1. LOGIN VIEW (Default) -->
-                    <div id="loginView" class="space-y-4">
-                        <h3 class="text-3xl font-bold text-red-400">Traveler Login</h3>
-                        
-                        <input type="email" id="authEmailLogin" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
-                        <input type="password" id="authPasswordLogin" placeholder="Password (min 6 characters)" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
-                        
-                        <button id="loginButton" class="btn-primary w-full py-3 text-base bg-blue-600 hover:bg-blue-500 shadow-blue-700">
-                            <i class="fas fa-sign-in-alt mr-2"></i> Log In
-                        </button>
-
-                        <button id="switchToRegisterButton" class="text-sm w-full text-gray-400 hover:text-red-400 pt-2" onclick="toggleAuthView('register')">
-                            New Traveler? Create an Account
-                        </button>
-                    </div>
-
-                    <!-- 2. REGISTER VIEW (Hidden by default) -->
-                    <div id="registerView" class="space-y-4 hidden">
-                        <h3 class="text-3xl font-bold text-red-400">New Traveler Registration</h3>
-
-                        <input type="text" id="registerName" placeholder="Traveler Name" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
-                        <input type="email" id="authEmailRegister" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
-                        <input type="password" id="authPasswordRegister" placeholder="Password (min 6 characters)" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
-                        
-                        <button id="registerButton" class="btn-primary w-full py-3 text-base">
-                            <i class="fas fa-user-plus mr-2"></i> Register
-                        </button>
-
-                        <button id="switchToLoginButton" class="text-sm w-full text-gray-400 hover:text-red-400 pt-2" onclick="toggleAuthView('login')">
-                            Already have an account? Go to Login
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- This guest login is hidden as we are enforcing full Firebase login -->
-            <p id="anonymousLoginText" class="text-sm text-gray-500 mt-6 cursor-pointer hover:text-gray-400 hidden">
-                <i class="fas fa-user-secret mr-1"></i> Continue as Guest (Progress may be lost)
-            </p>
-        </div>
-        
-        <!-- 
-        =========================================================
-        MAIN GAME SCREENS CONTAINER - Hidden until authentication succeeds
-        =========================================================
-        -->
-        <div id="gameScreens" class="hidden"> 
-            
-            <!-- 1. TITLE PAGE -->
-            <div id="titlePage" class="game-screen hidden">
-                <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
-                <h2 class="text-3xl font-light mb-4" style="color: var(--text-secondary)">Global Translation Adventures</h2>
+            <!-- Login/Register Forms Container -->
+            <div id="authForms" class="space-y-4">
                 
-                <h3 class="text-4xl font-bold mb-8" style="color: var(--text-light)">Welcome, Traveler!</h3>
-                <p class="mb-12 max-w-lg mx-auto" style="color: var(--text-secondary)">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
-                
-                <div class="space-y-4 max-w-sm mx-auto">
-                    <button id="startButton" class="btn-primary w-full"><i class="fas fa-play mr-2"></i> Start Your Journey</button>
-                    <button id="profileButton" class="btn-secondary w-full"><i class="fas fa-user-circle mr-2"></i> Profile</button>
-                    <button id="progressButton" class="btn-secondary w-full"><i class="fas fa-chart-line mr-2"></i> Progress Tracker</button>
-                    <button id="settingsButton" class="btn-secondary w-full"><i class="fas fa-cog mr-2"></i> Settings</button>
-                </div>
-            </div>
+                <!-- LOGIN VIEW (Default) -->
+                <div id="loginView">
+                    <h3 class="text-2xl font-bold mb-4 text-white">Sign In</h3>
 
-            <!-- 2. DESTINATION SELECTION SCREEN -->
-            <div id="destinationScreen" class="game-screen hidden">
-                <div class="text-left mb-6">
-                    <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to Title Screen
-                    </button>
-                </div>
-                
-                <h2 class="text-4xl font-bold mb-2 text-red-500 text-left">Select Your Destination</h2>
-                <p class="mb-8 text-left" style="color: var(--text-secondary)">Master a country's adventures to unlock the next destination and earn a rank up!</p>
-                
-                <div id="destinationList" class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <!-- Destinations injected here -->
-                </div>
-            </div>
-
-            <!-- 3. ADVENTURE SELECTION SCREEN -->
-            <div id="adventureScreen" class="game-screen hidden">
-                <div class="flex justify-between items-center mb-6 text-lg">
-                    <button class="hover:text-red-500" data-target="destinationScreen" style="color: var(--text-secondary)">
-                           <i class="fas fa-arrow-left mr-2"></i> Back to Country Selection
-                    </button>
-                    <button id="viewProgressButton" class="text-green-500 hover:text-green-400" data-target="progressScreen">
-                        View Progress Tracker <i class="fas fa-angle-right ml-1"></i>
-                    </button>
-                </div>
-                
-                <h2 id="adventureTitle" class="text-4xl font-bold mb-8 text-yellow-400 text-left">Destination: Japan (Traveler Rank)</h2>
-                
-                <div id="adventureList" class="space-y-4 max-w-4xl mx-auto text-left">
-                    <!-- Adventures injected here -->
-                </div>
-            </div>
-
-            <!-- 4. CORE GAMEPLAY SCREEN -->
-            <div id="gameScene" class="game-screen hidden">
-                <div class="text-left mb-6">
-                    <button class="text-lg" data-target="adventureScreen" style="color: var(--text-secondary)">
-                        <i class="fas fa-arrow-left mr-2"></i> Exit Scenario
-                    </button>
-                </div>
-
-                <h3 id="sceneAdventureName" class="text-3xl font-bold mb-1 text-yellow-400 text-left">Tokyo Arrival: Check-In & Transport</h3>
-                <h4 id="sceneHeader" class="text-base mb-6 text-left" style="color: var(--text-secondary)">Country: Japan | Adventure 1</h4>
-                
-                <p id="scenePrompt" class="text-xl font-medium mb-6 text-left" style="color: var(--text-light)">You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?</p>
-                
-                <div id="sceneContainer" class="max-w-4xl mx-auto p-6 rounded-xl shadow-2xl border-4" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                    <img id="sceneImage" src="" alt="Current Scene" class="w-full h-auto rounded-lg mb-6 border-2" style="border-color: var(--text-secondary)">
+                    <input type="email" id="authEmailLogin" placeholder="Email" class="w-full p-3 mb-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-indigo-400">
+                    <input type="password" id="authPasswordLogin" placeholder="Password (min 6 characters)" class="w-full p-3 mb-4 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-indigo-400">
                     
-                    <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Options injected here -->
+                    <button id="loginButton" class="btn-primary w-full py-3 text-lg font-semibold rounded-lg mb-4">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Log In
+                    </button>
+                    
+                    <div class="flex items-center space-x-2 my-4">
+                        <div class="flex-grow border-t border-slate-700"></div>
+                        <span class="text-sm text-slate-500">OR</span>
+                        <div class="flex-grow border-t border-slate-700"></div>
                     </div>
-                </div>
-                
-                <div id="translationDisplayContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-2 min-h-[50px]">
-                    <!-- Translations injected here -->
-                </div>
 
-                <div id="feedbackMessage" class="mt-6 text-2xl font-bold transition-opacity duration-300 opacity-0 min-h-[40px]"></div>
-                
-                <button id="continueButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="nextScene()" style="background-color: var(--primary-red); box-shadow: 0 4px var(--danger-red);">
-                    Continue Touring (1/5 Scenes)
-                </button>
+                    <button id="googleLoginButton" class="w-full py-3 text-lg font-semibold rounded-lg flex items-center justify-center space-x-3">
+                        <!-- Use Font Awesome icon for Google -->
+                        <i class="fab fa-google text-red-500 text-xl"></i> 
+                        <span>Sign in with Google</span>
+                    </button>
 
-                <button id="completeAdventureButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="completeAdventure()" style="background-color: var(--success-green); box-shadow: 0 4 유사 49;">
-                    COMPLETE ADVENTURE AND EARN BADGE
-                </button>
-            </div>
-            
-            <!-- 5. PROGRESS TRACKER SCREEN -->
-            <div id="progressScreen" class="game-screen hidden">
-                <div class="text-left mb-6">
-                    <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to Title Screen
+                    <button class="text-sm w-full text-slate-400 hover:text-indigo-400 pt-6" onclick="toggleAuthView('register')">
+                        Don't have an account? Register Now
                     </button>
                 </div>
-                
-                <div class="p-6 rounded-lg mb-8 shadow-inner border-t-4 border-b-4 border-red-500" style="background-color: var(--background-deep)">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-4xl font-extrabold" id="rankCountryName" style="color: var(--text-light)">Japan (Traveler)</h3>
-                        <span class="text-6xl font-black text-red-500" id="rankCountryCode">JP</span>
-                    </div>
-                    <p class="text-sm font-light mb-2" style="color: var(--text-secondary)">Traveler ID: <span id="progressUserId" class="font-mono text-xs text-yellow-400">Loading...</span></p>
-                    <div class="text-lg font-semibold text-green-500 mt-4">
-                        <span id="adventuresCompleted">0</span> / 5 Adventures Completed
-                    </div>
-                    <div class="text-sm mt-2" style="color: var(--text-secondary)">
-                        Next Rank: France (Globetrotter)
-                    </div>
-                </div>
-                
-                <h3 class="text-2xl font-bold mb-6 text-left" style="color: var(--text-light)">All 30 Badges Earned</h3>
-                
-                <div id="badgeContainer" class="flex flex-wrap justify-start p-4 rounded-lg max-w-4xl mx-auto border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                    <!-- Badges injected here -->
+
+                <!-- REGISTER VIEW (Hidden) -->
+                <div id="registerView" class="hidden">
+                    <h3 class="text-2xl font-bold mb-4 text-white">Register Account</h3>
+
+                    <input type="text" id="registerName" placeholder="Full Name" class="w-full p-3 mb-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-indigo-400">
+                    <input type="email" id="authEmailRegister" placeholder="Email" class="w-full p-3 mb-3 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-indigo-400">
+                    <input type="password" id="authPasswordRegister" placeholder="Password (min 6 characters)" class="w-full p-3 mb-4 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-indigo-400">
+                    
+                    <button id="registerButton" class="btn-primary w-full py-3 text-lg font-semibold rounded-lg">
+                        <i class="fas fa-user-plus mr-2"></i> Create Account
+                    </button>
+
+                    <button class="text-sm w-full text-slate-400 hover:text-indigo-400 pt-6" onclick="toggleAuthView('login')">
+                        Already registered? Go to Sign In
+                    </button>
                 </div>
             </div>
-
-            <!-- 6. SETTINGS SCREEN -->
-            <div id="settingsScreen" class="game-screen hidden">
-                <h2 class="text-4xl font-bold mb-8">Settings</h2>
-                <div class="max-w-xl mx-auto space-y-6">
-
-                    <div class="flex justify-between items-center p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                        <span class="text-xl font-medium" style="color: var(--text-light)">Light / Dark Mode</span>
-                        <label class="switch">
-                            <input type="checkbox" id="themeToggle">
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-
-                    <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xl font-medium" style="color: var(--text-light)">Background Music</span>
-                            <label class="switch">
-                                <input type="checkbox" id="musicMuteToggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <input type="range" id="musicVolume" min="0" max="1" value="0.5" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
-                    </div>
-
-                    <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xl font-medium" style="color: var(--text-light)">Audio Pronunciation Volume</span>
-                              <label class="switch">
-                                <input type="checkbox" id="audioMuteToggle">
-                            <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <input type="range" id="audioVolume" min="0" max="1" value="1.0" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
-                    </div>
-
-                </div>
-                <button class="btn-secondary mt-12" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
-            </div>
-
-            <!-- 7. PROFILE SCREEN -->
-            <div id="profileScreen" class="game-screen hidden">
-                 <h2 class="text-4xl font-bold mb-8">Traveler Profile</h2>
-                
-                <div id="authProfileSection" class="max-w-sm mx-auto space-y-4 p-6 rounded-lg mb-6 border-2 border-red-500 login-alert" style="background-color: var(--background-deep)">
-                     <h3 class="text-2xl font-bold text-red-400">Account Status</h3>
-                     <p id="profileAuthMessage" class="text-sm text-gray-400">Loading...</p>
-                     <button id="logoutButton" class="btn-primary w-full py-3 text-base bg-red-600 hover:bg-red-500 shadow-red-700 hidden">Logout</button>
-                </div>
-                
-                <div class="max-w-sm mx-auto space-y-4">
-                    <div class="text-lg font-light mb-4">
-                        <p style="color: var(--text-light)">User ID: <span id="profileUserId" class="font-mono text-sm text-yellow-400">Loading...</span></p>
-                    </div>
-                    <input type="text" id="travelerNameInput" placeholder="Traveler Name" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500" style="background-color: var(--background-deep)">
-                    <input type="email" id="emailInput" placeholder="Email stay up to date for future releases" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500 focus:ring-red-500" style="background-color: var(--background-deep)">
-                    <button id="saveProfileButton" class="btn-primary w-full bg-green-600 hover:bg-green-500 shadow-green-700">Save Profile</button>
-                </div>
-                
-                <div class="mt-12 pt-6 border-t border-gray-700 max-w-md mx-auto text-left">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-red-500">Deployment & Config Keys</h3>
-                        <button id="toggleConfigView" class="text-gray-400 hover:text-red-400 transition">
-                            <i id="configEyeIcon" class="fas fa-eye-slash text-xl"></i>
-                        </button>
-                    </div>
-                    <div id="firebaseInfo" class="space-y-1 text-sm font-mono p-3 rounded border border-gray-600 blurred">
-                        <p>apiKey: <span id="apiKeyDisplay"></span></p>
-                        <p>authDomain: <span id="authDomainDisplay"></span></p>
-                        <p>projectId: <span id="projectIdDisplay"></span></p>
-                        <p>appId: <span id="appIdDisplay"></span></p>
-                    </div>
-                    <p class="text-xs mt-2 text-gray-500">Deployment Status: <span id="statusMessageDisplay">Loading...</span></p>
-                </div>
-
-                <button class="btn-secondary mt-8" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
-            </div>
-
-
-            <!-- Modal -->
-            <div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
-                <div class="p-10 rounded-xl shadow-2xl text-center max-w-md w-11/12 transform transition-transform duration-300 scale-100 border-t-8 border-yellow-500" style="background-color: var(--card-dark); color: var(--text-light)">
-                    <i class="fas fa-trophy text-7xl text-yellow-500 mb-6 animate-bounce"></i>
-                    <h3 class="text-4xl font-extrabold mb-2 text-red-400">Adventure Complete!</h3>
-                    <p class="text-xl font-semibold mb-4">You earned the <span id="modalBadgeName" class="text-yellow-400"></span>!</p>
-                    <p id="modalLevelMessage" class="text-lg mb-8 font-light"></p>
-                    <button id="closeBadgeModal" class="btn-primary bg-red-500 hover:bg-red-400 shadow-red-700">Continue</button>
-                </div>
-            </div>
-
         </div>
-    </div>
-    
-    <!-- QUICK ACCESS FLOATING NAV -->
-    <div id="quickAccessNav" class="fixed bottom-4 right-4 space-y-3 flex flex-col hidden z-40">
-        <button id="quickSettingsButton" class="quick-access-btn" data-target="settingsScreen">
-            <i class="fas fa-cog"></i>
-        </button>
-        <button id="quickHomeButton" class="quick-access-btn" data-target="titlePage">
-            <i class="fas fa-home"></i>
-        </button>
-    </div>
 
+        <!-- ============================================== -->
+        <!-- 2. DASHBOARD CONTAINER (The Actual Website) -->
+        <!-- Starts Hidden, shows on successful login -->
+        <!-- ============================================== -->
+        <div id="dashboardContainer" class="card p-10 mx-auto max-w-4xl text-center hidden">
+            <i class="fas fa-rocket text-6xl text-indigo-400 mb-6"></i>
+            <h1 class="text-5xl font-extrabold mb-2 text-white">Access Granted!</h1>
+            <p id="welcomeMessage" class="text-xl text-gray-300 mb-8">Loading profile...</p>
+            
+            <div class="space-y-4 max-w-sm mx-auto">
+                <p class="text-sm text-gray-500">This is your secure, authenticated content area.</p>
+                
+                <button id="logoutButton" class="w-full py-3 text-lg font-semibold rounded-lg bg-red-600 hover:bg-red-700 transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                </button>
+            </div>
+        </div>
+
+    </div>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // Set Firebase Log Level to Debug
-        setLogLevel('Debug');
+        // Disable aggressive Firebase logging (optional, but cleaner)
+        setLogLevel('Error');
 
-        // Global Firebase variables provided by the environment
+        // Global environment variables (Canvas provides these)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        // --- START USER MODIFICATION ZONE ---
-        // Your Firebase configuration should be pasted here before deployment.
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // !!! IMPORTANT: Paste Your Firebase Config Here !!!
         const userFirebaseConfig = {
             "apiKey": "AIzaSyBiHrqtWWI7VhfJhWWy8DonXSUWLXOiJCA",
             "authDomain": "gta-web-app-5abcd.firebaseapp.com",
@@ -653,1109 +154,181 @@
             "storageBucket": "gta-web-app-5abcd.firebasestorage.app",
             "messagingSenderId": "135809506245",
             "appId": "1:135809506245:web:9c7f5848f9a931f53d49ac"
-        }; 
-        // --- END USER MODIFICATION ZONE ---
-        
-        const firebaseConfig = Object.keys(userFirebaseConfig).length > 0 ? userFirebaseConfig : (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {});
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        };
+        // Use the hardcoded config since we're starting fresh
+        const firebaseConfig = userFirebaseConfig;
 
         let app;
         let db;
         let auth;
         let userId = null;
-        let previousUserId = null; // Used to track data transfer
-        let userProgress = {}; // Stores all game state: { badges: [], profile: {}, settings: {} }
-        let isAuthProcessing = false; // Prevents double-clicks/requests
-        
-        // --- AUDIO PLAYERS ---
-        const BACKGROUND_MUSIC_URL = './audio/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3';
-        const backgroundMusic = new Audio(BACKGROUND_MUSIC_URL);
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0; // Start muted, volume controlled by settings
-        
-        let currentAudioPlayer = null; 
+        let isAuthProcessing = false; // Flag to prevent rapid clicking
 
-        // --- GAME DATA STRUCTURE (The Core Content) ---
-        const GAME_DATA = {
-            japan: {
-                name: "Japan",
-                code: "JP",
-                language: "Japanese",
-                locked: false,
-                color: "text-red-500", 
-                adventures: [
-                    {
-                        id: "discovery",
-                        name: "Discovery",
-                        badgeName: "Sakura Badge",
-                        rank: "Traveler",
-                        scenes: [
-                            {
-                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Japan+Airport",
-                                prompt: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
-                                options: [
-                                    { phrase: "これはいくらですか？", romanization: "Kore wa ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
-                                    { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mp3", isCorrect: true },
-                                    { phrase: "トイレはどこですか？", romanization: "Toire wa doko desu ka?", translation: "Where is the toilet?", audio: "taxistand.mp3", isCorrect: false }
-                                ]
-                            },
-                            {
-                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Tokyo+Taxi+Stand",
-                                prompt: "You're at the taxi stand. Tell the driver you need to go to the hotel.",
-                                options: [
-                                    { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mp3", isCorrect: false },
-                                    { phrase: "タクシー乗り場は？", romanization: "Takushii noriba wa?", translation: "Where is the taxi stand?", audio: "taxistand.mp3", isCorrect: false },
-                                    { phrase: "ホテルまでお願いします。", romanization: "Hoteru made onegaishimasu.", translation: "Please take me to my hotel.", audio: "hoteru.mp3", isCorrect: true }
-                                ]
-                            },
-                            {
-                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Hotel+Reception",
-                                prompt: "You've arrived! Tell the front desk you are here to check in.",
-                                options: [
-                                    { phrase: "いくらですか？", romanization: "Ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
-                                    { phrase: "チェックインをお願いします。", romanization: "Chekkuin o onegaishimasu.", translation: "I am here to check in.", audio: "checkin.mp3", isCorrect: true },
-                                    { phrase: "予約があります。", romanization: "Yoyaku ga arimasu.", translation: "I have a reservation.", audio: "reservation.mp3", isCorrect: false }
-                                ]
-                            },
-                            {
-                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Hotel+Concierge",
-                                prompt: "You are finally in your room, but you're starving. Tell the concierge you are hungry.",
-                                options: [
-                                    { phrase: "レストランは？", romanization: "Resutoran wa?", translation: "Where is the restaurant?", audio: "restaurant.mp3", isCorrect: false },
-                                    { phrase: "お腹が空きました。", romanization: "Onaka ga sukimashita.", translation: "I am hungry.", audio: "hungry.mp3", isCorrect: true },
-                                    { phrase: "チェックをお願いします。", romanization: "Chekku o onegaishimasu.", translation: "Check, please.", audio: "checkplease.mp3", isCorrect: false }
-                                ]
-                            },
-                            {
-                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Ramen+Shop",
-                                prompt: "You found a ramen shop! Order a bowl of ramen.",
-                                options: [
-                                    { phrase: "ラーメンをお願いします。", romanization: "Raamen o onegaishimasu.", translation: "Ramen, please.", audio: "ramen.mp3", isCorrect: true },
-                                    { phrase: "元気ですか？", romanization: "Genki desu ka?", translation: "How are you?", audio: "genki.mp3", isCorrect: false },
-                                    { phrase: "いくらですか？", romanization: "Ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false }
-                                ]
-                            },
-                        ]
-                    },
-                    { id: "exploration", name: "Exploration", badgeName: "Fuji Badge", rank: "Explorer", scenes: [] },
-                    { id: "challenge", name: "Challenge", badgeName: "Samurai Badge", rank: "Challenger", scenes: [] },
-                    { id: "expedition", name: "Expedition", badgeName: "Ninja Badge", rank: "Expeditionist", scenes: [] },
-                    { id: "summit", name: "Summit", badgeName: "Mastery Badge", rank: "Master", scenes: [] },
-                ]
-            },
-            italy: { name: "Italy", code: "IT", language: "Italian", locked: true, color: "text-green-500", adventures: [] },
-            france: { name: "France", code: "FR", language: "French", locked: true, color: "text-blue-500", adventures: [] },
-            mexico: { name: "Mexico", code: "MX", language: "Spanish", locked: true, color: "text-yellow-500", adventures: [] },
-            germany: { name: "Germany", code: "DE", language: "German", locked: true, color: "text-indigo-500", adventures: [] },
-            korean: { name: "Korean", code: "KR", language: "Korean", locked: true, color: "text-pink-500", adventures: [] },
-        };
-        
-        const audioPath = (filename) => `./audio/${filename}`; 
-        
-        let currentDestinationId = 'japan';
-        let currentAdventureIndex = 0;
-        let currentSceneIndex = 0;
-        let correctOption = null;
-        let isProcessing = false;
-        
-        // --- UI Elements ---
-        const quickAccessNav = document.getElementById('quickAccessNav');
-
-        // --- FIREBASE AND AUTHENTICATION SETUP ---
-
-        /**
-         * Function to display non-game related feedback, specifically on the Login/Profile screens.
-         * @param {string} message - The message to display.
-         * @param {string} type - 'success' or 'error'.
-         */
+        // --- UI Feedback Helper ---
         function showAuthFeedback(message, type = 'error') {
             const authMessageEl = document.getElementById('authMessage');
-            if (!authMessageEl) return;
-            
             authMessageEl.textContent = message;
+            authMessageEl.classList.remove('text-gray-400', 'text-green-400', 'text-error');
+            authMessageEl.classList.add(type === 'success' ? 'text-green-400' : 'text-error');
             
-            // Reset colors
-            authMessageEl.classList.remove('text-gray-400', 'text-green-400', 'text-red-400', 'font-bold');
-            
-            if (type === 'success') {
-                authMessageEl.classList.add('text-green-400', 'font-bold');
-            } else {
-                authMessageEl.classList.add('text-red-400', 'font-bold');
-            }
-            
-            // Revert message to default after 5 seconds
             setTimeout(() => {
-                authMessageEl.textContent = "Sign in or register to begin your journey!";
-                authMessageEl.classList.remove('text-green-400', 'text-red-400', 'font-bold');
+                authMessageEl.textContent = "Sign in to view your private dashboard.";
+                authMessageEl.classList.remove('text-green-400', 'text-error');
                 authMessageEl.classList.add('text-gray-400');
             }, 5000);
         }
 
-        async function initFirebase() {
-            try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.warn("Firebase config is missing. Running in local mode without persistent progress saving.");
-                    document.getElementById('authStatus').textContent = `Data Persistence: Disabled (Local Mode)`;
-                    // If no firebase, skip login screen and start the game
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('gameScreens').classList.remove('hidden');
-                    switchScreen('titlePage'); 
-                    return;
-                }
-
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                const authStatusEl = document.getElementById('authStatus');
-                
-                document.getElementById('loadingIndicator').classList.remove('hidden');
-                
-                // State listener handles sign-in, sign-out, and initial load
-                onAuthStateChanged(auth, async (user) => {
-                    document.getElementById('loadingIndicator').classList.add('hidden'); 
-                    
-                    if (user) {
-                        // User is signed in (Email/Password or Anonymous)
-                        
-                        if (user.uid !== userId && userId !== null) {
-                            // User just signed in, transfer anonymous data if necessary
-                            await transferData(userId, user.uid);
-                        }
-
-                        userId = user.uid;
-                        authStatusEl.textContent = `Signed in as: ${user.email || user.uid.substring(0, 8) + '...'}`;
-                        
-                        renderAuthUI(user);
-                        
-                        // Wait for progress to load before forcing the screen switch on a refresh
-                        await loadUserProgress(true); // Pass true to indicate this is a fresh auth load
-                        
-                    } else {
-                        // No user is currently signed in. Force them to the login screen.
-                        userId = null;
-                        renderAuthUI(null);
-                        
-                        // CRITICAL FIX: Ensure the login screen is visible and game screens are hidden
-                        document.getElementById('loginScreen').classList.remove('hidden');
-                        document.getElementById('gameScreens').classList.add('hidden');
-                    }
-                });
-                
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                document.getElementById('authStatus').textContent = `Authentication Error: ${error.message}`;
-                // Fallback: Show login screen on error
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('gameScreens').classList.add('hidden');
-            }
-        }
-
-        const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'gta_progress');
-
-        /**
-         * Loads user progress and handles the final transition to the game screen if necessary.
-         * @param {boolean} isInitialLoad - True if called from onAuthStateChanged (i.e., page refresh/initial load).
-         */
-        async function loadUserProgress(isInitialLoad = false) {
-            if (!db || !userId) return; 
-
-            const progressRef = getProgressDocRef(userId);
-
-            // Use getDoc() instead of onSnapshot for login/register to prevent race condition
-            if (isAuthProcessing) {
-                // If we are actively logging in or registering, we must wait for a one-time fetch
-                // to avoid issues with the live listener.
-                try {
-                    const docSnap = await getDoc(progressRef);
-                    if (docSnap.exists()) {
-                        userProgress = docSnap.data();
-                    } else {
-                        // Handle initial save if document doesn't exist (only happens if the save in handleRegister/Login failed)
-                        userProgress = {
-                            badges: [],
-                            profile: { name: "Traveler", email: auth.currentUser.email || "" },
-                            settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
-                        };
-                        await saveUserProgress();
-                    }
-                    renderUI();
-
-                    // FINAL GATE CHECK: Successful login/register
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('gameScreens').classList.remove('hidden');
-                    switchScreen('titlePage');
-                    isAuthProcessing = false; // Reset flag after successful entry
-                    
-                    // Now establish the live listener for continuous updates (for game play)
-                    onSnapshot(progressRef, (liveDocSnap) => {
-                         if (liveDocSnap.exists()) {
-                            userProgress = liveDocSnap.data();
-                        }
-                        renderUI();
-                    });
-
-                } catch (error) {
-                    console.error("Error fetching progress after login:", error);
-                    isAuthProcessing = false;
-                }
-            } 
-            
-            // This is the code block for initial load / page refresh / live updates (onSnapshot)
-            else if (isInitialLoad && !isAuthProcessing) {
-                 // Set up the live listener for all other cases (page refresh, ongoing play)
-                 onSnapshot(progressRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        userProgress = docSnap.data();
-                    } else {
-                        // Default progress for brand new users (shouldn't happen here if login worked)
-                        userProgress = {
-                            badges: [],
-                            profile: { name: "Traveler", email: auth.currentUser?.email || "" },
-                            settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
-                        };
-                        saveUserProgress(); 
-                    }
-                    renderUI();
-                    
-                    // Only switch screens on the very first load/refresh
-                    if (isInitialLoad && document.getElementById('loginScreen').classList.contains('hidden') === false) {
-                         document.getElementById('loginScreen').classList.add('hidden');
-                         document.getElementById('gameScreens').classList.remove('hidden');
-                         switchScreen('titlePage');
-                    }
-                 });
-            }
-        }
-
-        async function saveUserProgress() {
-            if (!userId || !db) {
-                console.warn("Cannot save progress: User not authenticated or Firebase disabled.");
-                return;
-            }
-            const progressRef = getProgressDocRef(userId);
-            try {
-                await setDoc(progressRef, userProgress, { merge: true });
-            } catch (error) {
-                console.error("Error saving progress:", error);
-            }
-        }
-
-        async function transferData(oldUid, newUid) {
-            if (!db) return;
-
-            const oldProgressRef = getProgressDocRef(oldUid);
-            const newProgressRef = getProgressDocRef(newUid);
-
-            try {
-                const oldDocSnap = await new Promise(resolve => {
-                    const unsubscribe = onSnapshot(oldProgressRef, (doc) => {
-                        unsubscribe(); 
-                        resolve(doc);
-                    });
-                });
-
-                if (oldDocSnap.exists()) {
-                    const oldData = oldDocSnap.data();
-                    
-                    await setDoc(newProgressRef, oldData, { merge: true });
-                    
-                    await deleteDoc(oldProgressRef);
-                    console.log(`Data transferred from old user ${oldUid} to authenticated user ${newUid}.`);
-                }
-            } catch (error) {
-                console.error("Error transferring data:", error);
-            }
-        }
+        // --- Firestore Setup and Data Gate ---
+        const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'user_data');
         
-        // --- SCREEN NAVIGATION / RENDERING ---
+        // This function acts as the Data Gate and performs the screen switch
+        async function checkAndLoadUser() {
+            if (!auth.currentUser || !db) return;
 
-        /**
-         * Toggles visibility between the Login and Register views on the authentication screen.
-         * @param {string} viewName - 'login' or 'register'.
-         */
-        function toggleAuthView(viewName) {
-            const loginView = document.getElementById('loginView');
-            const registerView = document.getElementById('registerView');
-            const authMessageEl = document.getElementById('authMessage');
-
-            if (viewName === 'register') {
-                loginView.classList.add('hidden');
-                registerView.classList.remove('hidden');
-                authMessageEl.textContent = "Create your Traveler profile below!";
-            } else { // default to 'login'
-                registerView.classList.add('hidden');
-                loginView.classList.remove('hidden');
-                authMessageEl.textContent = "Sign in or register to begin your journey!";
+            const user = auth.currentUser;
+            const progressRef = getProgressDocRef(user.uid);
+            
+            // 1. Fetch data (simplified for this demo: profile info)
+            const docSnap = await getDoc(progressRef);
+            
+            if (!docSnap.exists()) {
+                // If this is a brand new Google user, save their initial profile data
+                await setDoc(progressRef, {
+                    name: user.displayName || 'New User',
+                    email: user.email,
+                    signedUpOn: new Date().toISOString()
+                }, { merge: true });
             }
-            // Clear inputs when switching
-            document.getElementById('authEmailLogin').value = '';
-            document.getElementById('authPasswordLogin').value = '';
-            document.getElementById('authEmailRegister').value = '';
-            document.getElementById('authPasswordRegister').value = '';
-            document.getElementById('registerName').value = '';
+
+            // 2. SUCCESS: Hide Auth UI and show Dashboard
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${user.displayName || user.email}!`;
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('dashboardContainer').classList.remove('hidden');
+            isAuthProcessing = false; // Release the lock
         }
 
-        function switchScreen(targetId) {
-            const screens = document.querySelectorAll('.game-screen');
-            screens.forEach(screen => {
-                screen.classList.add('hidden');
-            });
 
-            // Logic to switch between the full login overlay and the game container
-            if (targetId !== 'loginScreen') {
-                document.getElementById('gameScreens').classList.remove('hidden');
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById(targetId).classList.remove('hidden');
-            } else {
-                document.getElementById('gameScreens').classList.add('hidden');
-                document.getElementById('loginScreen').classList.remove('hidden');
-                // Ensure default view is Login when returning to login screen
-                toggleAuthView('login');
-            }
+        // --- Authentication Handlers ---
 
-
-            // Control Quick Access Nav visibility
-            if (targetId === 'titlePage' || targetId === 'loginScreen') {
-                quickAccessNav.classList.add('hidden');
-            } else {
-                quickAccessNav.classList.remove('hidden');
-            }
-
-            if (targetId === 'destinationScreen') {
-                renderDestinationScreen();
-            } else if (targetId === 'progressScreen') {
-                renderProgressTracker();
-            } else if (targetId === 'settingsScreen') {
-                applySettings(); 
-            } else if (targetId === 'profileScreen') {
-                 renderProfileScreen();
-            }
-        }
-
-        function renderAuthUI(user) {
-            // Logic for the profile screen
-            const profileAuthMessage = document.getElementById('profileAuthMessage');
-            const authProfileSection = document.getElementById('authProfileSection');
-            const logoutButton = document.getElementById('logoutButton');
-
-            if (user && user.email) {
-                // Logged in with email/password
-                const userEmail = user.email;
-                
-                // Update profile screen
-                if (profileAuthMessage) profileAuthMessage.textContent = `Logged in as ${userEmail}`;
-                if (authProfileSection) {
-                    authProfileSection.classList.remove('login-alert', 'border-red-500');
-                    authProfileSection.classList.add('border-green-500');
-                }
-                if (logoutButton) logoutButton.classList.remove('hidden');
-
-            } else {
-                // Logged out
-                
-                // Update profile screen
-                if (profileAuthMessage) profileAuthMessage.textContent = "You are currently logged out.";
-                if (authProfileSection) {
-                    authProfileSection.classList.add('login-alert', 'border-red-500');
-                    authProfileSection.classList.remove('border-green-500');
-                }
-                if (logoutButton) logoutButton.classList.add('hidden');
-            }
-        }
-
-        // --- AUTHENTICATION ACTIONS ---
-
-        async function handleRegister() {
+        async function handleEmailRegister() {
             if (isAuthProcessing) return;
             isAuthProcessing = true;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
 
             const name = document.getElementById('registerName').value.trim();
             const email = document.getElementById('authEmailRegister').value.trim();
             const password = document.getElementById('authPasswordRegister').value;
             
-            if (!name) {
-                showAuthFeedback("Traveler Name is required.");
+            if (!name || !email || password.length < 6) {
+                showAuthFeedback("Name, valid email, and 6+ character password required.");
                 isAuthProcessing = false;
-                return;
-            }
-            if (!email || !password) {
-                showAuthFeedback("Email and password fields cannot be empty.");
-                isAuthProcessing = false;
-                return;
-            }
-            
-            // Firebase requires a minimum 6-character password
-            if (password.length < 6) {
-                showAuthFeedback("Password must be at least 6 characters long.");
-                isAuthProcessing = false;
+                document.getElementById('loadingIndicator').classList.add('hidden');
                 return;
             }
             
             try {
-                previousUserId = userId; 
-                document.getElementById('loadingIndicator').classList.remove('hidden');
-                
-                // 1. Create the user
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 
-                // 2. Set initial progress data including the name
-                const newUserProgress = {
-                    badges: [],
-                    profile: { name: name, email: email }, 
-                    settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
-                };
-                userProgress = newUserProgress; // Update local state immediately
-                await saveUserProgress(); // Save the new profile/progress data
+                // Immediately update the profile to set the display name
+                await userCredential.user.updateProfile({ displayName: name });
 
-                // Success message shown. Data will now be fetched by loadUserProgress 
-                // which will then trigger the screen switch using isAuthProcessing flag.
-                showAuthFeedback("Registration successful! Entering game...", 'success');
+                // Save initial data to Firestore (will be handled by checkAndLoadUser)
+                // The onAuthStateChanged listener will fire next and call checkAndLoadUser
+                showAuthFeedback("Registration successful. Proceeding...", 'success');
 
             } catch (error) {
-                console.error("Registration Error:", error);
+                const msg = error.code === 'auth/email-already-in-use' ? "Email already exists. Please sign in." : error.message.split('(')[0];
+                showAuthFeedback(`Registration Failed: ${msg}`);
+                if (error.code === 'auth/email-already-in-use') toggleAuthView('login');
                 isAuthProcessing = false;
-                
-                let errorMessage = error.message.replace('Firebase:', '').trim().split('(')[0] || "An unknown registration error occurred.";
-
-                // Check for the specific error code for email already in use
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = "This email is already registered. Please log in.";
-                    showAuthFeedback(errorMessage, 'error');
-                    // CRITICAL FIX: Switch to login view automatically
-                    toggleAuthView('login');
-                } else {
-                    showAuthFeedback(`Registration Failed: ${errorMessage}`);
-                }
             } finally {
                 document.getElementById('loadingIndicator').classList.add('hidden');
             }
         }
 
-        async function handleLogin() {
+        async function handleEmailLogin() {
             if (isAuthProcessing) return;
             isAuthProcessing = true;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
 
             const email = document.getElementById('authEmailLogin').value.trim();
             const password = document.getElementById('authPasswordLogin').value;
-            
-            if (!email || !password) {
-                 showAuthFeedback("Email and password required.", 'error');
-                 isAuthProcessing = false;
-                 return;
-            }
 
             try {
-                 previousUserId = userId;
-                 document.getElementById('loadingIndicator').classList.remove('hidden');
-
-                 await signInWithEmailAndPassword(auth, email, password);
-                 
-                 // Success message shown. Data will now be fetched by loadUserProgress 
-                 // which will then trigger the screen switch using isAuthProcessing flag.
-                 showAuthFeedback("Login successful! Entering game...", 'success');
+                await signInWithEmailAndPassword(auth, email, password);
+                // The onAuthStateChanged listener will handle the screen switch
+                showAuthFeedback("Login successful!", 'success');
             } catch (error) {
-                 console.error("Login Error:", error);
-                 isAuthProcessing = false;
-                 // Refined error message for login failures (invalid credentials)
-                 const errorMessage = "Invalid email or password. Please try again.";
-                 showAuthFeedback(`Login Failed: ${errorMessage}`, 'error');
+                showAuthFeedback("Login Failed: Invalid email or password.");
+                isAuthProcessing = false;
             } finally {
-                 document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        async function handleGoogleLogin() {
+            if (isAuthProcessing) return;
+            isAuthProcessing = true;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                
+                // The onAuthStateChanged listener will handle the screen switch and data sync
+                showAuthFeedback("Google Sign-In successful!", 'success');
+            } catch (error) {
+                showAuthFeedback(`Google Login Failed: ${error.message.split('(')[0]}`);
+                isAuthProcessing = false;
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
             }
         }
 
         async function handleLogout() {
-             try {
-                 await signOut(auth);
-                 // onAuthStateChanged handles the redirect to 'loginScreen'
-                 showFeedback("Logged out successfully.", 'correct');
-             } catch (error) {
-                 showFeedback(`Logout Failed: ${error.message}`, 'incorrect');
-                 console.error("Logout Error:", error);
-             }
-        }
-        
-        // --- REST OF THE GAME LOGIC (Unchanged functions) ---
-
-        function renderDestinationScreen() {
-            const listEl = document.getElementById('destinationList');
-            listEl.innerHTML = '';
-            
-            Object.entries(GAME_DATA).forEach(([id, dest]) => {
-                const isCompleted = dest.adventures.length > 0 && dest.adventures.every(a => userProgress.badges.includes(`${id}-${a.id}`));
-                const isLocked = dest.locked && id !== 'japan'; 
-
-                const button = document.createElement('button');
-                button.dataset.dest = id;
-                button.classList = `dest-card text-white ${dest.color}`;
-
-                const code = `<div class="dest-card-code ${dest.color}">${dest.code}</div>`;
-                const name = `<div class="text-xl font-bold">${dest.name}</div>`;
-                let status = '';
-
-                if (isLocked) {
-                    button.classList.add('locked');
-                    button.disabled = true;
-                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">LOCKED</div>`;
-                } else {
-                    button.classList.add('active-dest');
-                    button.onclick = () => renderAdventureScreen(id);
-                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">Traveler</div>`; 
-                }
-
-                button.innerHTML = `${code}${name}${status}`;
-                listEl.appendChild(button);
-            });
+            try {
+                await signOut(auth);
+                // onAuthStateChanged handles the screen switch
+                showAuthFeedback("Logged out.", 'success');
+                isAuthProcessing = false;
+            } catch (error) {
+                showAuthFeedback(`Logout Failed: ${error.message}`);
+            }
         }
 
-        function renderAdventureScreen(destId) {
-            currentDestinationId = destId;
-            const destData = GAME_DATA[destId];
-            const currentRank = destData.adventures[0] ? destData.adventures[0].rank : "Traveler"; 
 
-            document.getElementById('adventureTitle').innerHTML = 
-                `<span class="text-yellow-400">Destination: ${destData.name}</span> (${currentRank} Rank)`;
-
-            const listEl = document.getElementById('adventureList');
-            listEl.innerHTML = '';
-            
-            let previousAdventureCompleted = true;
-
-            destData.adventures.forEach((adventure, index) => {
-                const adventureId = `${destId}-${adventure.id}`;
-                const isCompleted = userProgress.badges.includes(adventureId);
-                const isLocked = !previousAdventureCompleted && !isCompleted;
-                
-                const listItem = document.createElement('div');
-                listItem.classList = 'p-4 flex justify-between items-center rounded-lg';
-                
-                if (isCompleted) {
-                    listItem.classList.add('bg-green-800', 'text-white', 'border', 'border-green-600');
-                    listItem.innerHTML = `
-                        <div class="font-bold">${adventure.name}</div>
-                        <div class="text-sm font-semibold text-green-300">
-                            <i class="fas fa-check-circle mr-1"></i> Completed
-                        </div>
-                    `;
-                } else if (isLocked) {
-                    listItem.classList.add('bg-gray-700', 'text-gray-400');
-                    listItem.innerHTML = `
-                        <div class="font-bold">${adventure.name}</div>
-                        <div class="text-sm">Locked: Complete previous adventure first</div>
-                    `;
-                } else {
-                    const hasContent = adventure.scenes && adventure.scenes.length > 0;
-                    
-                    listItem.classList.add('bg-gray-800', 'text-white', 'border', 'border-gray-700');
-                    
-                    if (hasContent) {
-                        listItem.innerHTML = `
-                            <div class="font-bold">${adventure.name}</div>
-                            <button class="btn-primary py-2 px-4 text-base shadow-none" onclick="startAdventure(${index})">
-                                Start Adventure
-                            </button>
-                        `;
-                    } else {
-                        listItem.innerHTML = `
-                            <div class="font-bold">${adventure.name}</div>
-                            <button class="btn-secondary py-2 px-4 text-base shadow-none bg-yellow-600 hover:bg-yellow-700 text-white" onclick="startAdventure(${index})">
-                                Under Construction
-                            </button>
-                        `;
-                    }
-                }
-                
-                if (!isCompleted) {
-                    previousAdventureCompleted = false; 
-                }
-
-                listEl.appendChild(listItem);
-            });
-            switchScreen('adventureScreen');
-        }
-
-        function startAdventure(adventureIndex) {
-            currentAdventureIndex = adventureIndex;
-            const adventure = GAME_DATA[currentDestinationId].adventures[currentAdventureIndex];
-            
-            if (!adventure.scenes || adventure.scenes.length === 0) {
-                 document.getElementById('modalBadgeName').textContent = adventure.name;
-                 document.getElementById('modalLevelMessage').textContent = "This adventure is currently under construction. Please check back soon!";
-                 
-                 const modalButton = document.getElementById('closeBadgeModal');
-                 modalButton.textContent = "Close";
-                 modalButton.classList.remove('bg-red-500', 'shadow-red-700');
-                 modalButton.classList.add('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
-
-                 document.getElementById('badgeModal').classList.remove('hidden');
+        // --- Initialization ---
+        window.onload = () => {
+            // 1. Initialize Firebase services
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            } catch (error) {
+                 showAuthFeedback("Firebase Initialization Failed. Check your config keys.", 'error');
+                 console.error("Firebase Init Error:", error);
                  return;
             }
-
-            currentSceneIndex = 0;
-            switchScreen('gameScene');
-            renderScene();
-        }
-        
-        function renderScene() {
-            const dest = GAME_DATA[currentDestinationId];
-            const adventure = dest.adventures[currentAdventureIndex];
-            const scene = adventure.scenes[currentSceneIndex];
             
-            document.getElementById('sceneAdventureName').textContent = `${adventure.name} Scenario`;
-            document.getElementById('sceneHeader').textContent = `Country: ${dest.name} | Adventure ${currentAdventureIndex + 1}`;
-            document.getElementById('sceneImage').src = scene.image;
-            document.getElementById('sceneImage').onerror = () => document.getElementById('sceneImage').src = 'https://placehold.co/600x400/222222/F9FAFB?text=Image+Not+Found';
-            document.getElementById('scenePrompt').textContent = scene.prompt;
-            
-            document.getElementById('continueButton').classList.add('hidden');
-            document.getElementById('completeAdventureButton').classList.add('hidden');
-            
-            const optionsEl = document.getElementById('optionsContainer');
-            optionsEl.innerHTML = '';
-
-            const translationDisplayEl = document.getElementById('translationDisplayContainer');
-            translationDisplayEl.innerHTML = ''; 
-            
-            scene.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.classList = 'option-btn';
-                
-                button.innerHTML = `
-                    <div class="phrase-main">${option.phrase}</div>
-                    <div class="phrase-sub">${option.romanization}</div>
-                `;
-                button.dataset.index = index;
-                button.dataset.isCorrect = option.isCorrect; 
-                button.dataset.translation = option.translation; 
-                
-                button.addEventListener('mouseenter', () => playAudio(audioPath(option.audio)));
-
-                button.addEventListener('click', (e) => checkAnswer(e.currentTarget, option.isCorrect));
-
-                optionsEl.appendChild(button);
-
-                const translationEl = document.createElement('div');
-                translationEl.classList.add('text-center', 'text-lg', 'font-bold', 'opacity-0', 'transition-opacity', 'duration-500');
-                translationEl.dataset.index = index; 
-                translationEl.id = `translation-${index}`;
-                translationDisplayEl.appendChild(translationEl);
-            });
-            correctOption = scene.options.find(opt => opt.isCorrect);
-            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
-            isProcessing = false;
-        }
-        
-        function nextScene() {
-             const dest = GAME_DATA[currentDestinationId];
-             const adventure = dest.adventures[currentAdventureIndex];
-
-             currentSceneIndex++;
-             if (currentSceneIndex < adventure.scenes.length) {
-                 document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
-                 renderScene();
-             } else {
-                 document.getElementById('continueButton').classList.add('hidden');
-                 document.getElementById('completeAdventureButton').classList.remove('hidden');
-             }
-        }
-
-        function playAudio(path) {
-            const audioSettings = userProgress.settings || { audioVolume: 1.0, audioMuted: false };
-            if (audioSettings.audioMuted) return;
-
-            if (currentAudioPlayer && !currentAudioPlayer.paused) {
-                currentAudioPlayer.pause();
-                currentAudioPlayer.currentTime = 0;
-            }
-
-            const audio = new Audio(path);
-            audio.volume = audioSettings.audioVolume;
-            currentAudioPlayer = audio; 
-
-            audio.play().catch(e => console.warn("Audio playback failed (file not found or user gesture required):", e));
-        }
-        
-        function setBackgroundMusicState(volume, isMuted) {
-            backgroundMusic.volume = isMuted ? 0 : volume;
-            if (backgroundMusic.paused) {
-                if (!isMuted) {
-                    backgroundMusic.play().catch(e => console.log("Music auto-play prevented by browser. User must interact first.", e));
-                }
-            } else {
-                if (isMuted) {
-                    backgroundMusic.volume = 0;
+            // 2. Set up the CRITICAL Auth Listener (The App Router)
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    // FIX: This calls the Data Gate check when we know a user is authenticated
+                    checkAndLoadUser(); 
                 } else {
-                     backgroundMusic.volume = volume;
+                    // Logged Out: SHOW auth, HIDE dashboard
+                    document.getElementById('authContainer').classList.remove('hidden');
+                    document.getElementById('dashboardContainer').classList.add('hidden');
                 }
-            }
-        }
-
-        function attemptMusicPlay() {
-            const settings = userProgress.settings || { musicVolume: 0.0, musicMuted: true };
-            if (settings.musicMuted || !backgroundMusic.paused) return; 
-
-            backgroundMusic.volume = settings.musicVolume;
-            backgroundMusic.play()
-                .then(() => {
-                    console.log("Background music started successfully.");
-                })
-                .catch(e => {
-                    setTimeout(() => {
-                         backgroundMusic.play().catch(e => console.warn("Music play failed after retry.", e));
-                    }, 500);
-                });
-        }
-
-        function showFeedback(message, type) {
-            const feedbackEl = document.getElementById('feedbackMessage');
-            feedbackEl.textContent = message;
-            feedbackEl.classList.remove('text-green-400', 'text-red-400', 'opacity-0');
-            feedbackEl.classList.add(type === 'correct' ? 'text-green-400' : 'text-red-400');
-            
-            setTimeout(() => feedbackEl.classList.remove('opacity-0'), 10);
-            setTimeout(() => feedbackEl.classList.add('opacity-0'), 1500);
-        }
-        
-        function revealTranslation(button) {
-            const index = button.dataset.index;
-            const translation = button.dataset.translation;
-            const translationEl = document.getElementById(`translation-${index}`);
-            
-            if (translationEl) {
-                translationEl.textContent = translation;
-                translationEl.classList.remove('opacity-0');
-                translationEl.classList.add('text-yellow-400'); 
-            }
-        }
-
-        function revealAllTranslations() {
-            document.querySelectorAll('.option-btn').forEach(button => {
-                revealTranslation(button);
-            });
-        }
-
-        function checkAnswer(button, isCorrect) {
-            if (isProcessing) return;
-            isProcessing = true;
-            
-            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
-            
-            if (isCorrect) {
-                button.classList.add('correct');
-                revealAllTranslations();
-
-                showFeedback("Correct! You successfully communicated the phrase.", 'correct');
-                
-                const dest = GAME_DATA[currentDestinationId];
-                const adventure = dest.adventures[currentAdventureIndex];
-                
-                if (currentSceneIndex < adventure.scenes.length - 1) {
-                    document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
-                    document.getElementById('continueButton').classList.remove('hidden');
-                } else {
-                    document.getElementById('completeAdventureButton').classList.remove('hidden');
-                }
-                
-                isProcessing = false;
-
-            } else {
-                button.classList.add('incorrect');
-                revealTranslation(button); 
-
-                showFeedback("Incorrect. Try again!", 'incorrect');
-                
-                setTimeout(() => {
-                    button.classList.remove('incorrect');
-                    
-                    document.getElementById(`translation-${button.dataset.index}`).classList.add('opacity-0');
-                    
-                    document.querySelectorAll('.option-btn').forEach(btn => {
-                        if (btn !== button) btn.disabled = false;
-                    });
-                    
-                    isProcessing = false;
-                }, 1500);
-            }
-        }
-
-        function completeAdventure() {
-            const dest = GAME_DATA[currentDestinationId];
-            const adventure = dest.adventures[currentAdventureIndex];
-            const badgeId = `${currentDestinationId}-${adventure.id}`;
-            let levelUp = false;
-
-            if (!userProgress.badges.includes(badgeId)) {
-                userProgress.badges.push(badgeId);
-                const currentBadgeCount = userProgress.badges.length;
-                
-                if (currentBadgeCount % 5 === 0) {
-                    levelUp = true;
-                }
-                saveUserProgress();
-            }
-            
-            document.getElementById('modalBadgeName').textContent = adventure.badgeName;
-            document.getElementById('modalLevelMessage').textContent = levelUp 
-                ? `Congratulations! You leveled up to Level ${Math.floor(userProgress.badges.length / 5) + 1}!` 
-                : `You now have ${userProgress.badges.length} of 30 mastery badges.`;
-            
-            const modalButton = document.getElementById('closeBadgeModal');
-            modalButton.textContent = "Continue";
-            modalButton.classList.remove('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
-            modalButton.classList.add('bg-red-500', 'hover:bg-red-400', 'shadow-red-700');
-
-
-            document.getElementById('badgeModal').classList.remove('hidden');
-            document.getElementById('continueButton').classList.add('hidden');
-            document.getElementById('completeAdventureButton').classList.add('hidden');
-        }
-
-        function renderProgressTracker() {
-            const totalBadges = 30;
-            const currentBadges = userProgress.badges.length;
-            const currentLevel = Math.floor(currentBadges / 5) + 1;
-            
-            document.getElementById('progressUserId').textContent = userId;
-            const dest = GAME_DATA[currentDestinationId];
-            document.getElementById('rankCountryName').textContent = `${dest.name} (Traveler)`; 
-            document.getElementById('rankCountryCode').textContent = dest.code;
-            document.getElementById('adventuresCompleted').textContent = userProgress.badges.filter(b => b.startsWith(currentDestinationId)).length;
-
-
-            const badgeContainer = document.getElementById('badgeContainer');
-            badgeContainer.innerHTML = '';
-            
-            let badgeIndex = 0;
-            Object.entries(GAME_DATA).forEach(([countryId, country]) => {
-                country.adventures.forEach((adventure, advIndex) => {
-                    const badgeBox = document.createElement('div');
-                    badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2';
-                    
-                    const badgeId = `${countryId}-${adventure.id}`;
-                    const isEarned = userProgress.badges.includes(badgeId);
-                    
-                    if (isEarned) {
-                         badgeBox.classList.add('bg-green-600', 'border-green-400', 'text-white', 'cursor-pointer');
-                    } else {
-                         badgeBox.classList.remove('active-dest');
-                         badgeBox.classList.add('bg-gray-700', 'border-gray-500', 'text-gray-400');
-                    }
-
-                    badgeBox.innerHTML = `
-                        <div class="text-2xl font-black ${isEarned ? 'text-white' : 'text-gray-500'}">${country.code}</div>
-                        <div class="text-xs mt-1 ${isEarned ? 'text-white' : 'text-gray-400'}">${country.name} ${advIndex + 1}</div>
-                    `;
-                    badgeContainer.appendChild(badgeBox);
-                    badgeIndex++;
-                });
-            });
-            while (badgeIndex < totalBadges) {
-                const badgeBox = document.createElement('div');
-                badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2 bg-gray-900 border-gray-800 opacity-30';
-                badgeContainer.appendChild(badgeBox);
-                badgeIndex++;
-            }
-        }
-        
-        function renderProfileScreen() {
-            document.getElementById('profileUserId').textContent = userId;
-            const profile = userProgress.profile || { name: "", email: "" };
-            document.getElementById('travelerNameInput').value = profile.name || "";
-            document.getElementById('emailInput').value = profile.email || "";
-
-            const user = auth.currentUser;
-            renderAuthUI(user);
-            
-            if (Object.keys(firebaseConfig).length > 0) {
-                document.getElementById('statusMessageDisplay').textContent = 'Live Configuration Loaded';
-                document.getElementById('statusMessageDisplay').classList.remove('text-gray-500');
-                document.getElementById('statusMessageDisplay').classList.add('text-green-400');
-                
-                document.getElementById('apiKeyDisplay').textContent = firebaseConfig.apiKey || 'N/A';
-                document.getElementById('authDomainDisplay').textContent = firebaseConfig.authDomain || 'N/A';
-                document.getElementById('projectIdDisplay').textContent = firebaseConfig.projectId || 'N/A';
-                document.getElementById('appIdDisplay').textContent = firebaseConfig.appId || 'N/A';
-            } else {
-                document.getElementById('statusMessageDisplay').textContent = 'Disabled (Local Mode)';
-                document.getElementById('statusMessageDisplay').classList.remove('text-green-400');
-                document.getElementById('statusMessageDisplay').classList.add('text-gray-500');
-            }
-        }
-
-        document.getElementById('saveProfileButton').addEventListener('click', () => {
-             const name = document.getElementById('travelerNameInput').value.trim();
-             const email = document.getElementById('emailInput').value.trim();
-
-             userProgress.profile = { name, email };
-             saveUserProgress();
-             showFeedback("Profile Saved!", 'correct');
-        });
-        
-        document.getElementById('toggleConfigView').addEventListener('click', () => {
-            const infoEl = document.getElementById('firebaseInfo');
-            const iconEl = document.getElementById('configEyeIcon');
-            
-            const isBlurred = infoEl.classList.contains('blurred');
-            
-            if (isBlurred) {
-                infoEl.classList.remove('blurred');
-                infoEl.classList.add('visible');
-                iconEl.classList.remove('fa-eye-slash');
-                iconEl.classList.add('fa-eye');
-            } else {
-                infoEl.classList.add('blurred');
-                infoEl.classList.remove('visible');
-                iconEl.classList.add('fa-eye-slash');
-                iconEl.classList.remove('fa-eye');
-            }
-        });
-
-        function applySettings() {
-            const settings = userProgress.settings || {};
-            
-            const theme = settings.theme || 'dark-mode';
-            document.body.className = theme;
-            document.getElementById('themeToggle').checked = theme === 'light-mode';
-            
-            const musicMuteToggle = document.getElementById('musicMuteToggle');
-            const audioMuteToggle = document.getElementById('audioMuteToggle');
-
-            document.getElementById('musicVolume').value = settings.musicVolume || 0.2;
-            musicMuteToggle.checked = settings.musicMuted || false;
-            setBackgroundMusicState(settings.musicVolume || 0.2, settings.musicMuted || false);
-
-            document.getElementById('audioVolume').value = settings.audioVolume || 1.0;
-            audioMuteToggle.checked = settings.audioMuted || false;
-        }
-        
-        // --- EVENT HANDLERS FOR SETTINGS ---
-
-        document.getElementById('themeToggle').addEventListener('change', (e) => {
-            const theme = e.target.checked ? 'light-mode' : 'dark-mode';
-            document.body.className = theme;
-            userProgress.settings.theme = theme;
-            saveUserProgress();
-        });
-
-        document.getElementById('musicMuteToggle').addEventListener('change', (e) => {
-            const isMuted = e.target.checked;
-            userProgress.settings.musicMuted = isMuted;
-            
-            if (isMuted) {
-                setBackgroundMusicState(userProgress.settings.musicVolume, true);
-            } else {
-                setBackgroundMusicState(userProgress.settings.musicVolume, false);
-            }
-            saveUserProgress();
-        });
-
-        document.getElementById('musicVolume').addEventListener('input', (e) => {
-            const newVolume = parseFloat(e.target.value);
-            userProgress.settings.musicVolume = newVolume;
-            userProgress.settings.musicMuted = (newVolume === 0);
-            
-            document.getElementById('musicMuteToggle').checked = (newVolume === 0);
-
-            setBackgroundMusicState(newVolume, (newVolume === 0));
-            saveUserProgress();
-        });
-
-        document.getElementById('audioMuteToggle').addEventListener('change', (e) => {
-            const isMuted = e.target.checked;
-            userProgress.settings.audioMuted = isMuted;
-
-            if (isMuted) {
-                document.getElementById('audioVolume').value = 0;
-            } else {
-                document.getElementById('audioVolume').value = userProgress.settings.audioVolume || 1.0;
-            }
-            saveUserProgress();
-        });
-
-        document.getElementById('audioVolume').addEventListener('input', (e) => {
-            const newVolume = parseFloat(e.target.value);
-            userProgress.settings.audioVolume = newVolume;
-            userProgress.settings.audioMuted = (newVolume === 0);
-            
-            document.getElementById('audioMuteToggle').checked = (newVolume === 0);
-
-            saveUserProgress();
-        });
-
-
-        // --- INITIALIZATION AND EVENT LISTENERS ---
-
-        function setupEventListeners() {
-            // Updated event listeners for new Login/Register inputs
-            document.getElementById('registerButton').addEventListener('click', handleRegister);
-            document.getElementById('loginButton').addEventListener('click', handleLogin);
-            
-            // Expose public function for HTML onclick
-            window.toggleAuthView = toggleAuthView;
-
-            document.getElementById('startButton').addEventListener('click', () => {
-                attemptMusicPlay(); 
-                switchScreen('destinationScreen');
             });
 
-            document.getElementById('profileButton').addEventListener('click', () => switchScreen('profileScreen'));
-            document.getElementById('progressButton').addEventListener('click', () => switchScreen('progressScreen'));
-            document.getElementById('settingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
-            
-            document.getElementById('closeBadgeModal').addEventListener('click', () => {
-                document.getElementById('badgeModal').classList.add('hidden');
-                document.getElementById('closeBadgeModal').textContent = "Continue"; 
-                document.getElementById('closeBadgeModal').classList.remove('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
-                document.getElementById('closeBadgeModal').classList.add('bg-red-500', 'hover:bg-red-400', 'shadow-red-700');
-
-                renderAdventureScreen(currentDestinationId);
-            });
-            
+            // 3. Set up button listeners
+            document.getElementById('loginButton').addEventListener('click', handleEmailLogin);
+            document.getElementById('registerButton').addEventListener('click', handleEmailRegister);
+            document.getElementById('googleLoginButton').addEventListener('click', handleGoogleLogin);
             document.getElementById('logoutButton').addEventListener('click', handleLogout);
-            
-            // Expose game functions to global scope
-            window.startAdventure = startAdventure;
-            window.nextScene = nextScene;
-            window.completeAdventure = completeAdventure;
-
-            document.querySelectorAll('button[data-target]').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const target = e.currentTarget.dataset.target;
-                    switchScreen(target);
-                });
-            });
-            
-            document.getElementById('quickSettingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
-            document.getElementById('quickHomeButton').addEventListener('click', () => switchScreen('titlePage'));
-        }
-
-        function renderUI() {
-            renderDestinationScreen();
-            renderProgressTracker();
-            applySettings();
-        }
-
-        window.onload = () => {
-            // Initialize dummy progress state before Firebase loads
-            userProgress = { 
-                badges: [], 
-                profile: { name: "Traveler", email: "" },
-                settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
-            };
-            
-            // 1. Show the login screen immediately
-            document.getElementById('loginScreen').classList.remove('hidden');
-            
-            // 2. Setup event handlers
-            setupEventListeners();
-            
-            // 3. Initialize Firebase (this starts the onAuthStateChanged listener)
-            initFirebase();
-            
-            renderUI(); 
         };
-
     </script>
 </body>
 </html>
