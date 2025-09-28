@@ -304,6 +304,16 @@
         .visible {
             filter: blur(0);
         }
+        
+        /* Login/Registration Alert */
+        .login-alert {
+            animation: pulse-red 1s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); }
+            70% { transform: scale(1.01); box-shadow: 0 0 0 5px rgba(229, 62, 62, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+        }
     </style>
 </head>
 <body class="dark-mode"> <!-- Changed default to dark-mode based on images -->
@@ -493,6 +503,22 @@
             <!-- ============================================== -->
             <div id="profileScreen" class="game-screen hidden">
                  <h2 class="text-4xl font-bold mb-8">Traveler Profile</h2>
+                
+                <!-- LOGIN/REGISTRATION SECTION -->
+                <div id="authSection" class="max-w-sm mx-auto space-y-4 p-6 rounded-lg mb-6 border-2 border-red-500 login-alert" style="background-color: var(--background-deep)">
+                     <h3 class="text-2xl font-bold text-red-400">Account Login</h3>
+                     <p id="authMessage" class="text-sm text-gray-400">Sign up or Log in to save progress across devices!</p>
+                     
+                     <input type="email" id="authEmail" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
+                     <input type="password" id="authPassword" placeholder="Password" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
+                     
+                     <div class="grid grid-cols-2 gap-4">
+                        <button id="registerButton" class="btn-primary w-full py-3 text-base">Register</button>
+                        <button id="loginButton" class="btn-primary w-full py-3 text-base bg-blue-600 hover:bg-blue-500 shadow-blue-700">Login</button>
+                     </div>
+                     <button id="logoutButton" class="btn-secondary w-full py-3 text-base bg-red-600 hover:bg-red-500 shadow-red-700 hidden">Logout</button>
+                </div>
+                
                 <div class="max-w-sm mx-auto space-y-4">
                     <div class="text-lg font-light mb-4">
                         <p style="color: var(--text-light)">User ID: <span id="profileUserId" class="font-mono text-sm text-yellow-400">Loading...</span></p>
@@ -556,8 +582,8 @@
     <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Set Firebase Log Level to Debug
@@ -585,7 +611,7 @@
         let db;
         let auth;
         let userId = null;
-        let userName = "Traveler";
+        let previousUserId = null; // Used to track data transfer
         let userProgress = {}; // Stores all game state: { badges: [], profile: {}, settings: {} }
         
         // --- AUDIO PLAYERS ---
@@ -608,7 +634,7 @@
                 color: "text-red-500", // Tailwind class for text color
                 adventures: [
                     {
-                        id: "discovery", // Updated ID to match image_4b4fe7.png
+                        id: "discovery",
                         name: "Discovery",
                         badgeName: "Sakura Badge",
                         rank: "Traveler",
@@ -691,15 +717,14 @@
         // --- UI Elements ---
         const quickAccessNav = document.getElementById('quickAccessNav');
 
-        // --- FIREBASE AND AUTHENTICATION SETUP (No changes needed here) ---
+        // --- FIREBASE AND AUTHENTICATION SETUP ---
 
         async function initFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
-                    // FIX: Changed this to a standard log and default status text
                     console.warn("Firebase config is missing. Running in local mode without persistent progress saving.");
                     document.getElementById('authStatus').textContent = `Data Persistence: Disabled (Local Mode)`;
-                    return; // Exit here if config is missing but allow the rest of the game to run
+                    return;
                 }
 
                 app = initializeApp(firebaseConfig);
@@ -708,30 +733,41 @@
 
                 const authStatusEl = document.getElementById('authStatus');
 
+                // State listener handles sign-in, sign-out, and initial load
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        // User is signed in (either anonymously or via email/password)
+                        
+                        // Check if the user ID has changed (which happens after a successful login/register)
+                        if (user.uid !== userId && userId !== null) {
+                            // User just signed in, transfer anonymous data before loading new data
+                            await transferData(userId, user.uid);
+                        }
+
                         userId = user.uid;
                         authStatusEl.textContent = `Signed in as: ${user.uid.substring(0, 8)}...`;
+                        renderAuthUI(user);
                         await loadUserProgress();
                     } else {
-                        // If we have custom config (meaning it's the live app), sign in anonymously.
-                        // This prevents the custom-token-mismatch error when in the editor.
-                        if (Object.keys(userFirebaseConfig).length > 0) { // <-- NEW CHECK
-                            await signInAnonymously(auth);
-                        } else if (!initialAuthToken) {
-                            // If running in environment but without initial token, fallback to anonymous
+                        // No user is currently signed in. If the live app, sign in anonymously.
+                        renderAuthUI(null);
+                        
+                        if (Object.keys(userFirebaseConfig).length > 0) { 
+                            // Only sign in anonymously if we are using the user's config (live app)
                             await signInAnonymously(auth);
                         }
+                        // Note: We don't set userId here; it will be set by the onAuthStateChanged listener when signInAnonymously resolves
                     }
                 });
-
-                // FIX: Only attempt signInWithCustomToken if we are running in the Canvas environment
-                // AND we are NOT using the user's custom config.
+                
+                // This logic is primarily for the Canvas editor and is safe to keep separate
                 if (initialAuthToken && Object.keys(userFirebaseConfig).length === 0) {
+                    // This block executes ONLY in the Canvas environment without custom keys
+                    // and uses the canvas's temporary token.
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
+
             } catch (error) {
-                // Only catch real runtime errors after Firebase initialization attempt
                 console.error("Firebase initialization failed:", error);
                 document.getElementById('authStatus').textContent = `Authentication Error: ${error.message}`;
             }
@@ -740,8 +776,7 @@
         const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'gta_progress');
 
         async function loadUserProgress() {
-            // Only attempt to load/save if Firebase is initialized (i.e., if 'db' is defined)
-            if (!db) return; 
+            if (!db || !userId) return; 
 
             const progressRef = getProgressDocRef(userId);
 
@@ -749,10 +784,10 @@
                 if (docSnap.exists()) {
                     userProgress = docSnap.data();
                 } else {
+                    // Default progress for brand new users
                     userProgress = {
-                        badges: [], // e.g., ["japan-discovery"]
+                        badges: [],
                         profile: { name: "Traveler", email: "" },
-                        // FIX: Initial music volume set to 0.2 (20%) from old code 
                         settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
                     };
                     saveUserProgress(); 
@@ -764,7 +799,7 @@
         }
 
         async function saveUserProgress() {
-            if (!userId || !db) { // Check for 'db' to ensure Firebase is running
+            if (!userId || !db) {
                 console.warn("Cannot save progress: User not authenticated or Firebase disabled.");
                 return;
             }
@@ -775,8 +810,133 @@
                 console.error("Error saving progress:", error);
             }
         }
+
+        // NEW: Function to transfer data from the old (anonymous) account to the new (email) account
+        async function transferData(oldUid, newUid) {
+            if (!db) return;
+
+            const oldProgressRef = getProgressDocRef(oldUid);
+            const newProgressRef = getProgressDocRef(newUid);
+
+            try {
+                // 1. Get the current progress data from the anonymous account
+                const oldDocSnap = await new Promise(resolve => {
+                    const unsubscribe = onSnapshot(oldProgressRef, (doc) => {
+                        unsubscribe(); // Stop listening after first snapshot
+                        resolve(doc);
+                    });
+                });
+
+                if (oldDocSnap.exists()) {
+                    const oldData = oldDocSnap.data();
+                    
+                    // 2. Overwrite the new user's progress with the old anonymous progress
+                    await setDoc(newProgressRef, oldData, { merge: true });
+                    
+                    // 3. (Optional but recommended) Delete the old anonymous progress document
+                    await deleteDoc(oldProgressRef);
+                    console.log(`Data transferred from anonymous user ${oldUid} to authenticated user ${newUid}.`);
+                }
+            } catch (error) {
+                console.error("Error transferring data:", error);
+            }
+        }
         
-        // --- SCREEN NAVIGATION ---
+        // --- SCREEN NAVIGATION / RENDERING ---
+
+        function renderAuthUI(user) {
+            const authSection = document.getElementById('authSection');
+            const authMessage = document.getElementById('authMessage');
+            const logoutButton = document.getElementById('logoutButton');
+            const registerButton = document.getElementById('registerButton');
+            const loginButton = document.getElementById('loginButton');
+            const authEmail = document.getElementById('authEmail');
+            const authPassword = document.getElementById('authPassword');
+            
+            if (user && user.email) {
+                // User is authenticated (Email/Password)
+                authMessage.textContent = `Logged in as: ${user.email}`;
+                authSection.classList.remove('login-alert', 'border-red-500');
+                authSection.classList.add('border-green-500');
+                registerButton.classList.add('hidden');
+                loginButton.classList.add('hidden');
+                logoutButton.classList.remove('hidden');
+                authEmail.value = user.email;
+                authEmail.disabled = true;
+                authPassword.value = '';
+                authPassword.placeholder = '********';
+
+            } else {
+                // User is anonymous or logged out
+                authMessage.textContent = user ? "Sign up to save progress permanently!" : "Sign up or Log in to save progress across devices!";
+                authSection.classList.add('login-alert', 'border-red-500');
+                authSection.classList.remove('border-green-500');
+                registerButton.classList.remove('hidden');
+                loginButton.classList.remove('hidden');
+                logoutButton.classList.add('hidden');
+                authEmail.disabled = false;
+                authPassword.placeholder = 'Password';
+            }
+        }
+
+        // --- AUTHENTICATION ACTIONS ---
+
+        async function handleRegister() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            if (!email || !password) {
+                showFeedback("Email and password required.", 'incorrect');
+                return;
+            }
+            
+            try {
+                // Store the anonymous user's ID before we register/login
+                previousUserId = userId; 
+                
+                await createUserWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged listener handles subsequent steps (data transfer and load)
+                showFeedback("Registration successful! Progress saved.", 'correct');
+            } catch (error) {
+                showFeedback(`Registration Failed: ${error.message}`, 'incorrect');
+                console.error("Registration Error:", error);
+            }
+        }
+
+        async function handleLogin() {
+             const email = document.getElementById('authEmail').value;
+             const password = document.getElementById('authPassword').value;
+            
+             if (!email || !password) {
+                 showFeedback("Email and password required.", 'incorrect');
+                 return;
+             }
+
+             try {
+                 // Store the anonymous user's ID before we register/login
+                 previousUserId = userId;
+                 
+                 await signInWithEmailAndPassword(auth, email, password);
+                 // onAuthStateChanged listener handles subsequent steps (data load)
+                 showFeedback("Login successful! Progress loaded.", 'correct');
+             } catch (error) {
+                 showFeedback(`Login Failed: ${error.message}`, 'incorrect');
+                 console.error("Login Error:", error);
+             }
+        }
+
+        async function handleLogout() {
+             try {
+                 await signOut(auth);
+                 // onAuthStateChanged listener handles signing in as a new anonymous user automatically
+                 showFeedback("Logged out successfully.", 'correct');
+             } catch (error) {
+                 showFeedback(`Logout Failed: ${error.message}`, 'incorrect');
+                 console.error("Logout Error:", error);
+             }
+        }
+        
+        // --- REST OF THE GAME LOGIC (Unchanged) ---
 
         function switchScreen(targetId) {
             const screens = document.querySelectorAll('.game-screen');
@@ -1023,17 +1183,15 @@
             audio.play().catch(e => console.warn("Audio playback failed (file not found or user gesture required):", e));
         }
         
-        // --- BACKGROUND MUSIC CONTROL ---
+        // --- BACKGROUND MUSIC CONTROL (Unchanged) ---
         function setBackgroundMusicState(volume, isMuted) {
             backgroundMusic.volume = isMuted ? 0 : volume;
             if (backgroundMusic.paused) {
-                // Attempt to play only if unmuted, handling the browser's required user gesture
                 if (!isMuted) {
                     backgroundMusic.play().catch(e => console.log("Music auto-play prevented by browser. User must interact first.", e));
                 }
             } else {
                 if (isMuted) {
-                    // Mute immediately if already playing
                     backgroundMusic.volume = 0;
                 } else {
                      backgroundMusic.volume = volume;
@@ -1041,11 +1199,9 @@
             }
         }
 
-        // FIX 2: Function to attempt playing music after a user interaction, with a retry mechanism
         function attemptMusicPlay() {
             const settings = userProgress.settings || { musicVolume: 0.0, musicMuted: true };
-            // ******* USING DEFAULT MUSIC VOLUME 0.2 HERE *******
-            if (settings.musicMuted || !backgroundMusic.paused) return; // Don't play if muted or already playing
+            if (settings.musicMuted || !backgroundMusic.paused) return; 
 
             backgroundMusic.volume = settings.musicVolume;
             backgroundMusic.play()
@@ -1053,8 +1209,6 @@
                     console.log("Background music started successfully.");
                 })
                 .catch(e => {
-                    console.warn("Music play blocked, retrying in 500ms. Error:", e);
-                    // Retry once after a short delay, which often works after a page change
                     setTimeout(() => {
                          backgroundMusic.play().catch(e => console.warn("Music play failed after retry.", e));
                     }, 500);
@@ -1071,7 +1225,6 @@
             setTimeout(() => feedbackEl.classList.add('opacity-0'), 1500);
         }
         
-        // NEW helper function to reveal the English translation on a specific button
         function revealTranslation(button) {
             const index = button.dataset.index;
             const translation = button.dataset.translation;
@@ -1079,12 +1232,11 @@
             
             if (translationEl) {
                 translationEl.textContent = translation;
-                translationEl.classList.remove('opacity-0'); // Make visible
+                translationEl.classList.remove('opacity-0');
                 translationEl.classList.add('text-yellow-400'); 
             }
         }
 
-        // NEW helper function to reveal translations on all cards
         function revealAllTranslations() {
             document.querySelectorAll('.option-btn').forEach(button => {
                 revealTranslation(button);
@@ -1098,13 +1250,11 @@
             document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
             
             if (isCorrect) {
-                // Correct Answer Logic
                 button.classList.add('correct');
-                revealAllTranslations(); // REVEAL ALL TRANSLATIONS ON CORRECT GUESS
+                revealAllTranslations();
 
                 showFeedback("Correct! You successfully communicated the phrase.", 'correct');
                 
-                // Show continue button
                 const dest = GAME_DATA[currentDestinationId];
                 const adventure = dest.adventures[currentAdventureIndex];
                 
@@ -1112,32 +1262,28 @@
                     document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
                     document.getElementById('continueButton').classList.remove('hidden');
                 } else {
-                    // It's the last scene
                     document.getElementById('completeAdventureButton').classList.remove('hidden');
                 }
                 
                 isProcessing = false;
 
             } else {
-                // Incorrect Answer Logic
                 button.classList.add('incorrect');
-                revealTranslation(button); // ONLY REVEAL THE TRANSLATION OF THE INCORRECT CARD
+                revealTranslation(button); 
 
                 showFeedback("Incorrect. Try again!", 'incorrect');
                 
                 setTimeout(() => {
                     button.classList.remove('incorrect');
                     
-                    // HIDE THE INCORRECT TRANSLATION HINT AFTER THE PAUSE
                     document.getElementById(`translation-${button.dataset.index}`).classList.add('opacity-0');
                     
-                    // Re-enable other buttons, leaving the incorrect one disabled for the scene
                     document.querySelectorAll('.option-btn').forEach(btn => {
                         if (btn !== button) btn.disabled = false;
                     });
                     
                     isProcessing = false;
-                }, 1500); // Wait 1.5 seconds before allowing re-attempt
+                }, 1500);
             }
         }
 
@@ -1153,18 +1299,15 @@
                 
                 if (currentBadgeCount % 5 === 0) {
                     levelUp = true;
-                    // Logic to unlock the next country would go here based on badge count
                 }
                 saveUserProgress();
             }
             
-            // Show Badge Modal
             document.getElementById('modalBadgeName').textContent = adventure.badgeName;
             document.getElementById('modalLevelMessage').textContent = levelUp 
                 ? `Congratulations! You leveled up to Level ${Math.floor(userProgress.badges.length / 5) + 1}!` 
                 : `You now have ${userProgress.badges.length} of 30 mastery badges.`;
             
-            // Reset modal button for the badge modal
             const modalButton = document.getElementById('closeBadgeModal');
             modalButton.textContent = "Continue";
             modalButton.classList.remove('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
@@ -1172,22 +1315,20 @@
 
 
             document.getElementById('badgeModal').classList.remove('hidden');
-            // Hide scene buttons just in case
             document.getElementById('continueButton').classList.add('hidden');
             document.getElementById('completeAdventureButton').classList.add('hidden');
         }
 
-        // --- PROGRESS TRACKER LOGIC ---
-
+        // --- PROGRESS TRACKER LOGIC / PROFILE RENDER (Unchanged) ---
         function renderProgressTracker() {
             const totalBadges = 30;
             const currentBadges = userProgress.badges.length;
             const currentLevel = Math.floor(currentBadges / 5) + 1;
             
             document.getElementById('progressUserId').textContent = userId;
-            // Rank Display
-            document.getElementById('rankCountryName').textContent = `${GAME_DATA[currentDestinationId].name} (Traveler)`; // Placeholder rank
-            document.getElementById('rankCountryCode').textContent = GAME_DATA[currentDestinationId].code;
+            const dest = GAME_DATA[currentDestinationId];
+            document.getElementById('rankCountryName').textContent = `${dest.name} (Traveler)`; 
+            document.getElementById('rankCountryCode').textContent = dest.code;
             document.getElementById('adventuresCompleted').textContent = userProgress.badges.filter(b => b.startsWith(currentDestinationId)).length;
 
 
@@ -1195,11 +1336,10 @@
             badgeContainer.innerHTML = '';
             
             let badgeIndex = 0;
-            // Iterate through all countries to build the badge grid (image_4b5326.png)
             Object.entries(GAME_DATA).forEach(([countryId, country]) => {
                 country.adventures.forEach((adventure, advIndex) => {
                     const badgeBox = document.createElement('div');
-                    badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2'; // Smaller card for badges
+                    badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2';
                     
                     const badgeId = `${countryId}-${adventure.id}`;
                     const isEarned = userProgress.badges.includes(badgeId);
@@ -1219,7 +1359,6 @@
                     badgeIndex++;
                 });
             });
-            // Fill remaining slots if necessary (only Japan has 5 adventures currently)
             while (badgeIndex < totalBadges) {
                 const badgeBox = document.createElement('div');
                 badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2 bg-gray-900 border-gray-800 opacity-30';
@@ -1228,14 +1367,16 @@
             }
         }
         
-        // --- PROFILE LOGIC ---
-        
         function renderProfileScreen() {
             document.getElementById('profileUserId').textContent = userId;
             const profile = userProgress.profile || { name: "", email: "" };
             document.getElementById('travelerNameInput').value = profile.name || "";
             document.getElementById('emailInput').value = profile.email || "";
 
+            // Update Auth Section based on current user
+            const user = auth.currentUser;
+            renderAuthUI(user);
+            
             // Display Firebase Config Details
             if (Object.keys(firebaseConfig).length > 0) {
                 document.getElementById('statusMessageDisplay').textContent = 'Live Configuration Loaded';
@@ -1262,7 +1403,6 @@
              showFeedback("Profile Saved!", 'correct');
         });
         
-        // NEW: Toggle Config Visibility
         document.getElementById('toggleConfigView').addEventListener('click', () => {
             const infoEl = document.getElementById('firebaseInfo');
             const iconEl = document.getElementById('configEyeIcon');
@@ -1283,31 +1423,27 @@
         });
 
 
-        // --- SETTINGS LOGIC ---
+        // --- SETTINGS LOGIC (Unchanged) ---
 
         function applySettings() {
             const settings = userProgress.settings || {};
             
-            // Theme
             const theme = settings.theme || 'dark-mode';
             document.body.className = theme;
             document.getElementById('themeToggle').checked = theme === 'light-mode';
             
-            // Get Toggles
             const musicMuteToggle = document.getElementById('musicMuteToggle');
             const audioMuteToggle = document.getElementById('audioMuteToggle');
 
-            // Music Volume/Mute
             document.getElementById('musicVolume').value = settings.musicVolume || 0.2;
             musicMuteToggle.checked = settings.musicMuted || false;
             setBackgroundMusicState(settings.musicVolume || 0.2, settings.musicMuted || false);
 
-            // Audio Volume/Mute
             document.getElementById('audioVolume').value = settings.audioVolume || 1.0;
             audioMuteToggle.checked = settings.audioMuted || false;
         }
         
-        // --- EVENT HANDLERS FOR SETTINGS ---
+        // --- EVENT HANDLERS FOR SETTINGS (Unchanged) ---
 
         document.getElementById('themeToggle').addEventListener('change', (e) => {
             const theme = e.target.checked ? 'light-mode' : 'dark-mode';
@@ -1316,16 +1452,13 @@
             saveUserProgress();
         });
 
-        // Music Mute Toggle Listener
         document.getElementById('musicMuteToggle').addEventListener('change', (e) => {
             const isMuted = e.target.checked;
             userProgress.settings.musicMuted = isMuted;
             
-            // If muting via toggle, set volume slider to 0 without saving it as the preferred volume
             if (isMuted) {
                 setBackgroundMusicState(userProgress.settings.musicVolume, true);
             } else {
-                // If unmuting, restore volume from settings
                 setBackgroundMusicState(userProgress.settings.musicVolume, false);
             }
             saveUserProgress();
@@ -1336,23 +1469,19 @@
             userProgress.settings.musicVolume = newVolume;
             userProgress.settings.musicMuted = (newVolume === 0);
             
-            // Update toggle state if volume hits 0 or leaves 0
             document.getElementById('musicMuteToggle').checked = (newVolume === 0);
 
             setBackgroundMusicState(newVolume, (newVolume === 0));
             saveUserProgress();
         });
 
-        // Audio Mute Toggle Listener
         document.getElementById('audioMuteToggle').addEventListener('change', (e) => {
             const isMuted = e.target.checked;
             userProgress.settings.audioMuted = isMuted;
 
-            // If muting via toggle, set volume slider to 0 without saving it as the preferred volume
             if (isMuted) {
                 document.getElementById('audioVolume').value = 0;
             } else {
-                // If unmuting, reset slider to last saved volume (or default 1.0)
                 document.getElementById('audioVolume').value = userProgress.settings.audioVolume || 1.0;
             }
             saveUserProgress();
@@ -1363,7 +1492,6 @@
             userProgress.settings.audioVolume = newVolume;
             userProgress.settings.audioMuted = (newVolume === 0);
             
-            // Update toggle state if volume hits 0 or leaves 0
             document.getElementById('audioMuteToggle').checked = (newVolume === 0);
 
             saveUserProgress();
@@ -1373,35 +1501,30 @@
         // --- INITIALIZATION AND EVENT LISTENERS ---
 
         function setupEventListeners() {
-            // General button listeners for screen switching
-            
-            // ************ MODIFIED LISTENER ************
             document.getElementById('startButton').addEventListener('click', () => {
-                // Now calls attemptMusicPlay() which handles retry logic for deployment
                 attemptMusicPlay(); 
                 switchScreen('destinationScreen');
             });
-            // *******************************************
 
             document.getElementById('profileButton').addEventListener('click', () => switchScreen('profileScreen'));
             document.getElementById('progressButton').addEventListener('click', () => switchScreen('progressScreen'));
             document.getElementById('settingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
             
-            // ************ CRITICAL FIX HERE ************
             document.getElementById('closeBadgeModal').addEventListener('click', () => {
                 document.getElementById('badgeModal').classList.add('hidden');
-                // IMPORTANT: When closing the modal, we must explicitly re-render the adventure screen
-                // to force the UI to check the updated userProgress.badges and unlock the next level.
                 renderAdventureScreen(currentDestinationId);
             });
-            // *******************************************
+            
+            // New Authentication Button Handlers
+            document.getElementById('registerButton').addEventListener('click', handleRegister);
+            document.getElementById('loginButton').addEventListener('click', handleLogin);
+            document.getElementById('logoutButton').addEventListener('click', handleLogout);
             
             // Expose game functions to global scope for HTML onclicks in dynamically created elements.
             window.startAdventure = startAdventure;
             window.nextScene = nextScene;
             window.completeAdventure = completeAdventure;
 
-            // Handle all 'Back' buttons and View Progress button
             document.querySelectorAll('button[data-target]').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const target = e.currentTarget.dataset.target;
@@ -1409,7 +1532,6 @@
                 });
             });
             
-            // Handle quick access navigation
             document.getElementById('quickSettingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
             document.getElementById('quickHomeButton').addEventListener('click', () => switchScreen('titlePage'));
         }
@@ -1420,16 +1542,13 @@
             applySettings();
         }
 
-        // Initialize on load
         window.onload = () => {
-            // FIX 1: Initial music volume set to 0.2 (20%) and not muted
             userProgress = { 
                 badges: [], 
                 profile: { name: "Traveler", email: "" },
                 settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
             };
             
-            // FIX 2: Ensure the music volume slider is initially set to 0.2 for the UI
             const musicVolumeSlider = document.getElementById('musicVolume');
             if (musicVolumeSlider) {
                 musicVolumeSlider.value = userProgress.settings.musicVolume;
@@ -1438,7 +1557,6 @@
             renderUI(); 
             setupEventListeners();
             initFirebase();
-            // The Firebase loadUserProgress/onSnapshot will re-render the UI later with saved data.
         };
 
     </script>
