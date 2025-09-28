@@ -829,10 +829,13 @@
                         renderAuthUI(user);
                         await loadUserProgress();
                         
-                        // CRITICAL FIX: If user is signed in, immediately hide login and show game
-                        document.getElementById('loginScreen').classList.add('hidden');
-                        document.getElementById('gameScreens').classList.remove('hidden');
-                        switchScreen('titlePage');
+                        // FIX: Only perform the screen switch here if we are currently looking at the login screen.
+                        // This handles page refreshes where the user is already authenticated.
+                        if (!document.getElementById('loginScreen').classList.contains('hidden')) {
+                            document.getElementById('loginScreen').classList.add('hidden');
+                            document.getElementById('gameScreens').classList.remove('hidden');
+                            switchScreen('titlePage');
+                        }
 
                     } else {
                         // No user is currently signed in. Force them to the login screen.
@@ -1053,8 +1056,9 @@
                 userProgress = newUserProgress; // Update local state immediately
                 await saveUserProgress(); // Save the new profile/progress data
 
-                // onAuthStateChanged handles the redirect
-                showAuthFeedback("Registration successful! Logging in...", 'success');
+                // CRITICAL FIX: Direct navigation after successful registration
+                showAuthFeedback("Registration successful! Entering game...", 'success');
+                switchScreen('titlePage'); 
 
             } catch (error) {
                 console.error("Registration Error:", error);
@@ -1090,12 +1094,14 @@
 
                  await signInWithEmailAndPassword(auth, email, password);
                  
-                 // onAuthStateChanged handles the redirect
-                 showAuthFeedback("Login successful! Progress loaded.", 'success');
+                 // CRITICAL FIX: Direct navigation after successful login
+                 showAuthFeedback("Login successful! Entering game...", 'success');
+                 switchScreen('titlePage'); 
              } catch (error) {
                  console.error("Login Error:", error);
-                 const errorMessage = error.message.replace('Firebase:', '').trim().split('(')[0] || "Invalid email or password.";
-                 showAuthFeedback(`Login Failed: ${errorMessage}`);
+                 // Refined error message for login failures (invalid credentials)
+                 const errorMessage = "Invalid email or password. Please try again.";
+                 showAuthFeedback(`Login Failed: ${errorMessage}`, 'error');
              } finally {
                  document.getElementById('loadingIndicator').classList.add('hidden');
              }
