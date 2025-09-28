@@ -379,9 +379,15 @@
                     <img id="sceneImage" src="" alt="Current Scene" class="w-full h-auto rounded-lg mb-6 border-2" style="border-color: var(--text-secondary)">
                     
                     <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Phrase options will be injected here -->
+                        <!-- Phrase cards will be injected here -->
                     </div>
                 </div>
+                
+                <!-- NEW CONTAINER FOR TRANSLATIONS BELOW THE CARDS -->
+                <div id="translationDisplayContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-2 min-h-[50px]">
+                    <!-- Translation text fields will be injected here by renderScene() -->
+                </div>
+
                 <div id="feedbackMessage" class="mt-6 text-2xl font-bold transition-opacity duration-300 opacity-0 min-h-[40px]"></div>
                 
                 <!-- Continue Button shown after correct answer -->
@@ -531,7 +537,7 @@
         // Global Firebase variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         // --- START USER MODIFICATION ZONE ---
-        // The empty {} has been replaced with your actual Firebase configuration:
+        // Your Firebase configuration should be pasted here before deployment.
         const userFirebaseConfig = {}; 
         // --- END USER MODIFICATION ZONE ---
         
@@ -556,7 +562,7 @@
         let currentAudioPlayer = null; 
 
         // --- GAME DATA STRUCTURE (The Core Content) ---
-        // Updated to use the user's requested 6 countries: Japan, Italy, France, Mexico, Germany, Korean.
+        // Refactored Japanese data to separate Romanization and Translation for UX goal.
         const GAME_DATA = {
             japan: {
                 name: "Japan",
@@ -571,61 +577,59 @@
                         badgeName: "Sakura Badge",
                         rank: "Traveler",
                         scenes: [
-                            // Scene 1: direction to baggage (Correct: 荷物はどこですか？ - nimotsu.mp3)
+                            // Scene 1: direction to baggage (Correct: 荷物はどこですか？)
                             {
                                 image: "https://i.imgur.com/TzGpTBn.jpeg",
                                 prompt: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
-                                // Updated options to include romanization/translation like image_4ba523.jpg
                                 options: [
-                                    { phrase: "これはいくらですか？", subPhrase: "Kore wa ikura desu ka? / How much is this?", audio: "ikura.mp3", isCorrect: false },
-                                    { phrase: "荷物はどこですか？", subPhrase: "Nimotsu wa doko desu ka? / Where is the baggage?", audio: "nimotsu.mp3", isCorrect: true },
-                                    { phrase: "トイレはどこですか？", subPhrase: "Toire wa doko desu ka? / Where is the toilet?", audio: "taxistand.mp3", isCorrect: false } // Reusing taxi audio for demo
+                                    { phrase: "これはいくらですか？", romanization: "Kore wa ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
+                                    { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mp3", isCorrect: true },
+                                    { phrase: "トイレはどこですか？", romanization: "Toire wa doko desu ka?", translation: "Where is the toilet?", audio: "taxistand.mp3", isCorrect: false }
                                 ]
                             },
-                            // Scene 2: direction to hotel (Correct: ホテルまでお願いします - hoteru.mp3)
+                            // Scene 2: direction to hotel (Correct: ホテルまでお願いします)
                             {
                                 image: "https://i.imgur.com/dYv5NiI.jpeg",
                                 prompt: "You're at the taxi stand. Tell the driver you need to go to the hotel.",
                                 options: [
-                                    { phrase: "荷物はどこですか？", subPhrase: "Nimotsu wa doko desu ka?", audio: "nimotsu.mp3", isCorrect: false },
-                                    { phrase: "タクシー乗り場は？", subPhrase: "Takushii noriba wa?", audio: "taxistand.mp3", isCorrect: false },
-                                    { phrase: "ホテルまでお願いします。", subPhrase: "Hoteru made onegaishimasu. / To the hotel, please.", audio: "hoteru.mp3", isCorrect: true }
+                                    { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mp3", isCorrect: false },
+                                    { phrase: "タクシー乗り場は？", romanization: "Takushii noriba wa?", translation: "Where is the taxi stand?", audio: "taxistand.mp3", isCorrect: false },
+                                    { phrase: "ホテルまでお願いします。", romanization: "Hoteru made onegaishimasu.", translation: "Please take me to my hotel.", audio: "hoteru.mp3", isCorrect: true }
                                 ]
                             },
-                            // Scene 3: check in (Correct: チェックインをお願いします - checkin.mp3)
+                            // Scene 3: check in (Correct: チェックインをお願いします)
                             {
                                 image: "https://i.imgur.com/7O21k67.jpeg",
                                 prompt: "You've arrived! Tell the front desk you are here to check in.",
                                 options: [
-                                    { phrase: "いくらですか？", subPhrase: "Ikura desu ka?", audio: "ikura.mp3", isCorrect: false },
-                                    { phrase: "チェックインをお願いします。", subPhrase: "Chekkuin o onegaishimasu. / Check-in please.", audio: "checkin.mp3", isCorrect: true },
-                                    { phrase: "予約があります。", subPhrase: "Yoyaku ga arimasu. / I have a reservation.", audio: "reservation.mp3", isCorrect: false }
+                                    { phrase: "いくらですか？", romanization: "Ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
+                                    { phrase: "チェックインをお願いします。", romanization: "Chekkuin o onegaishimasu.", translation: "I am here to check in.", audio: "checkin.mp3", isCorrect: true },
+                                    { phrase: "予約があります。", romanization: "Yoyaku ga arimasu.", translation: "I have a reservation.", audio: "reservation.mp3", isCorrect: false }
                                 ]
                             },
-                            // Scene 4: I am hungry (Correct: お腹が空きました - hungry.mp3)
+                            // Scene 4: I am hungry (Correct: お腹が空きました)
                             {
-                                image: "https://i.imgur.com/W1oNh8L.jpeg", // <-- UPDATED IMAGE URL HERE
+                                image: "https://i.imgur.com/W1oNh8L.jpeg",
                                 prompt: "You are finally in your room, but you're starving. Tell the concierge you are hungry.",
                                 options: [
-                                    { phrase: "レストランは？", subPhrase: "Resutoran wa?", audio: "restaurant.mp3", isCorrect: false },
-                                    { phrase: "お腹が空きました。", subPhrase: "Onaka ga sukimashita. / I am hungry.", audio: "hungry.mp3", isCorrect: true },
-                                    { phrase: "チェックをお願いします。", subPhrase: "Chekku o onegaishimasu.", audio: "checkplease.mp3", isCorrect: false }
+                                    { phrase: "レストランは？", romanization: "Resutoran wa?", translation: "Where is the restaurant?", audio: "restaurant.mp3", isCorrect: false },
+                                    { phrase: "お腹が空きました。", romanization: "Onaka ga sukimashita.", translation: "I am hungry.", audio: "hungry.mp3", isCorrect: true },
+                                    { phrase: "チェックをお願いします。", romanization: "Chekku o onegaishimasu.", translation: "Check, please.", audio: "checkplease.mp3", isCorrect: false }
                                 ]
                             },
-                            // Scene 5: I want ramen (Correct: ラーメンをお願いします - ramen.mp3)
+                            // Scene 5: I want ramen (Correct: ラーメンをお願いします)
                             {
                                 image: "https://i.imgur.com/xHASNyg.jpeg",
                                 prompt: "You found a ramen shop! Order a bowl of ramen.",
                                 options: [
-                                    { phrase: "ラーメンをお願いします。", subPhrase: "Raamen o onegaishimasu. / Ramen, please.", audio: "ramen.mp3", isCorrect: true },
-                                    { phrase: "元気ですか？", subPhrase: "Genki desu ka?", audio: "genki.mp3", isCorrect: false },
-                                    { phrase: "いくらですか？", subPhrase: "Ikura desu ka?", audio: "ikura.mp3", isCorrect: false }
+                                    { phrase: "ラーメンをお願いします。", romanization: "Raamen o onegaishimasu.", translation: "Ramen, please.", audio: "ramen.mp3", isCorrect: true },
+                                    { phrase: "元気ですか？", romanization: "Genki desu ka?", translation: "How are you?", audio: "genki.mp3", isCorrect: false },
+                                    { phrase: "いくらですか？", romanization: "Ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false }
                                 ]
                             },
                         ]
                     },
                     // Placeholder for remaining 4 adventures
-                    // SCENES ARE EMPTY, SO THEY SHOULD TRIGGER THE 'UNDER CONSTRUCTION' MESSAGE.
                     { id: "exploration", name: "Exploration", badgeName: "Fuji Badge", rank: "Explorer", scenes: [] },
                     { id: "challenge", name: "Challenge", badgeName: "Samurai Badge", rank: "Challenger", scenes: [] },
                     { id: "expedition", name: "Expedition", badgeName: "Ninja Badge", rank: "Expeditionist", scenes: [] },
@@ -912,16 +916,23 @@
             
             const optionsEl = document.getElementById('optionsContainer');
             optionsEl.innerHTML = '';
+
+            const translationDisplayEl = document.getElementById('translationDisplayContainer');
+            translationDisplayEl.innerHTML = ''; // CLEAR PREVIOUS TRANSLATIONS
             
             scene.options.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.classList = 'option-btn';
-                // HTML structure to match image_4ba523.jpg
+                
+                // --- PHRASE CARD CONTENT: PHRASE AND ROMANIZATION ONLY ---
                 button.innerHTML = `
                     <div class="phrase-main">${option.phrase}</div>
-                    <div class="phrase-sub">${option.subPhrase}</div>
+                    <div class="phrase-sub">${option.romanization}</div>
                 `;
+                // Store data needed for checkAnswer in the button's dataset
                 button.dataset.index = index;
+                button.dataset.isCorrect = option.isCorrect; // Store correctness
+                button.dataset.translation = option.translation; // Store translation to reveal later
                 
                 // Hover for Audio Pronunciation
                 button.addEventListener('mouseenter', () => playAudio(audioPath(option.audio)));
@@ -930,6 +941,13 @@
                 button.addEventListener('click', (e) => checkAnswer(e.currentTarget, option.isCorrect));
 
                 optionsEl.appendChild(button);
+
+                // --- CREATE SEPARATE TRANSLATION DISPLAY ELEMENT BELOW ---
+                const translationEl = document.createElement('div');
+                translationEl.classList.add('text-center', 'text-lg', 'font-bold', 'opacity-0', 'transition-opacity', 'duration-500');
+                translationEl.dataset.index = index; // Link to the button by index
+                translationEl.id = `translation-${index}`;
+                translationDisplayEl.appendChild(translationEl);
             });
             correctOption = scene.options.find(opt => opt.isCorrect);
             document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
@@ -1016,18 +1034,38 @@
             setTimeout(() => feedbackEl.classList.remove('opacity-0'), 10);
             setTimeout(() => feedbackEl.classList.add('opacity-0'), 1500);
         }
+        
+        // NEW helper function to reveal the English translation on a specific button
+        function revealTranslation(button) {
+            const index = button.dataset.index;
+            const translation = button.dataset.translation;
+            const translationEl = document.getElementById(`translation-${index}`);
+            
+            if (translationEl) {
+                translationEl.textContent = translation;
+                translationEl.classList.remove('opacity-0'); // Make visible
+                translationEl.classList.add('text-yellow-400'); 
+            }
+        }
+
+        // NEW helper function to reveal translations on all cards
+        function revealAllTranslations() {
+            document.querySelectorAll('.option-btn').forEach(button => {
+                revealTranslation(button);
+            });
+        }
 
         function checkAnswer(button, isCorrect) {
             if (isProcessing) return;
             isProcessing = true;
-
+            
             document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
             
             if (isCorrect) {
-                // Highlight correct answer
+                // Correct Answer Logic
                 button.classList.add('correct');
-                
-                // Show feedback message (matches image_4ba523.jpg text)
+                revealAllTranslations(); // REVEAL ALL TRANSLATIONS ON CORRECT GUESS
+
                 showFeedback("Correct! You successfully communicated the phrase.", 'correct');
                 
                 // Show continue button
@@ -1045,15 +1083,25 @@
                 isProcessing = false;
 
             } else {
-                // Highlight incorrect answer
+                // Incorrect Answer Logic
                 button.classList.add('incorrect');
+                revealTranslation(button); // ONLY REVEAL THE TRANSLATION OF THE INCORRECT CARD
+
                 showFeedback("Incorrect. Try again!", 'incorrect');
                 
                 setTimeout(() => {
                     button.classList.remove('incorrect');
-                    document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = false);
+                    
+                    // HIDE THE INCORRECT TRANSLATION HINT AFTER THE PAUSE
+                    document.getElementById(`translation-${button.dataset.index}`).classList.add('opacity-0');
+                    
+                    // Re-enable other buttons, leaving the incorrect one disabled for the scene
+                    document.querySelectorAll('.option-btn').forEach(btn => {
+                        if (btn !== button) btn.disabled = false;
+                    });
+                    
                     isProcessing = false;
-                }, 1500);
+                }, 1500); // Wait 1.5 seconds before allowing re-attempt
             }
         }
 
