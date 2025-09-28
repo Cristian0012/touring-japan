@@ -356,7 +356,6 @@
 
         <!-- =========================================================
         0. LOGIN SCREEN (The Authentication Gate) 
-        This is fixed and acts as the initial, non-overlapping screen.
         =========================================================
         -->
         <div id="loginScreen" class="hidden"> 
@@ -666,6 +665,7 @@
         let userId = null;
         let previousUserId = null; // Used to track data transfer
         let userProgress = {}; // Stores all game state: { badges: [], profile: {}, settings: {} }
+        let isAuthProcessing = false; // Prevents double-clicks/requests
         
         // --- AUDIO PLAYERS ---
         const BACKGROUND_MUSIC_URL = './audio/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3';
@@ -827,16 +827,10 @@
                         authStatusEl.textContent = `Signed in as: ${user.email || user.uid.substring(0, 8) + '...'}`;
                         
                         renderAuthUI(user);
-                        await loadUserProgress();
                         
-                        // FIX: Only perform the screen switch here if we are currently looking at the login screen.
-                        // This handles page refreshes where the user is already authenticated.
-                        if (!document.getElementById('loginScreen').classList.contains('hidden')) {
-                            document.getElementById('loginScreen').classList.add('hidden');
-                            document.getElementById('gameScreens').classList.remove('hidden');
-                            switchScreen('titlePage');
-                        }
-
+                        // Wait for progress to load before forcing the screen switch on a refresh
+                        await loadUserProgress(true); // Pass true to indicate this is a fresh auth load
+                        
                     } else {
                         // No user is currently signed in. Force them to the login screen.
                         userId = null;
@@ -859,27 +853,79 @@
 
         const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'gta_progress');
 
-        async function loadUserProgress() {
+        /**
+         * Loads user progress and handles the final transition to the game screen if necessary.
+         * @param {boolean} isInitialLoad - True if called from onAuthStateChanged (i.e., page refresh/initial load).
+         */
+        async function loadUserProgress(isInitialLoad = false) {
             if (!db || !userId) return; 
 
             const progressRef = getProgressDocRef(userId);
 
-            onSnapshot(progressRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    userProgress = docSnap.data();
-                } else {
-                    // Default progress for brand new users
-                    userProgress = {
-                        badges: [],
-                        profile: { name: "Traveler", email: "" },
-                        settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
-                    };
-                    saveUserProgress(); 
+            // Use getDoc() instead of onSnapshot for login/register to prevent race condition
+            if (isAuthProcessing) {
+                // If we are actively logging in or registering, we must wait for a one-time fetch
+                // to avoid issues with the live listener.
+                try {
+                    const docSnap = await getDoc(progressRef);
+                    if (docSnap.exists()) {
+                        userProgress = docSnap.data();
+                    } else {
+                        // Handle initial save if document doesn't exist (only happens if the save in handleRegister/Login failed)
+                        userProgress = {
+                            badges: [],
+                            profile: { name: "Traveler", email: auth.currentUser.email || "" },
+                            settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
+                        };
+                        await saveUserProgress();
+                    }
+                    renderUI();
+
+                    // FINAL GATE CHECK: Successful login/register
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('gameScreens').classList.remove('hidden');
+                    switchScreen('titlePage');
+                    isAuthProcessing = false; // Reset flag after successful entry
+                    
+                    // Now establish the live listener for continuous updates (for game play)
+                    onSnapshot(progressRef, (liveDocSnap) => {
+                         if (liveDocSnap.exists()) {
+                            userProgress = liveDocSnap.data();
+                        }
+                        renderUI();
+                    });
+
+                } catch (error) {
+                    console.error("Error fetching progress after login:", error);
+                    isAuthProcessing = false;
                 }
-                renderUI();
-            }, (error) => {
-                console.error("Error listening to progress:", error);
-            });
+            } 
+            
+            // This is the code block for initial load / page refresh / live updates (onSnapshot)
+            else if (isInitialLoad && !isAuthProcessing) {
+                 // Set up the live listener for all other cases (page refresh, ongoing play)
+                 onSnapshot(progressRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        userProgress = docSnap.data();
+                    } else {
+                        // Default progress for brand new users (shouldn't happen here if login worked)
+                        userProgress = {
+                            badges: [],
+                            profile: { name: "Traveler", email: auth.currentUser?.email || "" },
+                            settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
+                        };
+                        saveUserProgress(); 
+                    }
+                    renderUI();
+                    
+                    // Only switch screens on the very first load/refresh
+                    if (isInitialLoad && document.getElementById('loginScreen').classList.contains('hidden') === false) {
+                         document.getElementById('loginScreen').classList.add('hidden');
+                         document.getElementById('gameScreens').classList.remove('hidden');
+                         switchScreen('titlePage');
+                    }
+                 });
+            }
         }
 
         async function saveUserProgress() {
@@ -1021,22 +1067,28 @@
         // --- AUTHENTICATION ACTIONS ---
 
         async function handleRegister() {
+            if (isAuthProcessing) return;
+            isAuthProcessing = true;
+
             const name = document.getElementById('registerName').value.trim();
             const email = document.getElementById('authEmailRegister').value.trim();
             const password = document.getElementById('authPasswordRegister').value;
             
             if (!name) {
                 showAuthFeedback("Traveler Name is required.");
+                isAuthProcessing = false;
                 return;
             }
             if (!email || !password) {
                 showAuthFeedback("Email and password fields cannot be empty.");
+                isAuthProcessing = false;
                 return;
             }
             
             // Firebase requires a minimum 6-character password
             if (password.length < 6) {
                 showAuthFeedback("Password must be at least 6 characters long.");
+                isAuthProcessing = false;
                 return;
             }
             
@@ -1056,12 +1108,13 @@
                 userProgress = newUserProgress; // Update local state immediately
                 await saveUserProgress(); // Save the new profile/progress data
 
-                // CRITICAL FIX: Direct navigation after successful registration
+                // Success message shown. Data will now be fetched by loadUserProgress 
+                // which will then trigger the screen switch using isAuthProcessing flag.
                 showAuthFeedback("Registration successful! Entering game...", 'success');
-                switchScreen('titlePage'); 
 
             } catch (error) {
                 console.error("Registration Error:", error);
+                isAuthProcessing = false;
                 
                 let errorMessage = error.message.replace('Firebase:', '').trim().split('(')[0] || "An unknown registration error occurred.";
 
@@ -1080,31 +1133,36 @@
         }
 
         async function handleLogin() {
-             const email = document.getElementById('authEmailLogin').value.trim();
-             const password = document.getElementById('authPasswordLogin').value;
-            
-             if (!email || !password) {
-                 showAuthFeedback("Email and password required.", 'error');
-                 return;
-             }
+            if (isAuthProcessing) return;
+            isAuthProcessing = true;
 
-             try {
+            const email = document.getElementById('authEmailLogin').value.trim();
+            const password = document.getElementById('authPasswordLogin').value;
+            
+            if (!email || !password) {
+                 showAuthFeedback("Email and password required.", 'error');
+                 isAuthProcessing = false;
+                 return;
+            }
+
+            try {
                  previousUserId = userId;
                  document.getElementById('loadingIndicator').classList.remove('hidden');
 
                  await signInWithEmailAndPassword(auth, email, password);
                  
-                 // CRITICAL FIX: Direct navigation after successful login
+                 // Success message shown. Data will now be fetched by loadUserProgress 
+                 // which will then trigger the screen switch using isAuthProcessing flag.
                  showAuthFeedback("Login successful! Entering game...", 'success');
-                 switchScreen('titlePage'); 
-             } catch (error) {
+            } catch (error) {
                  console.error("Login Error:", error);
+                 isAuthProcessing = false;
                  // Refined error message for login failures (invalid credentials)
                  const errorMessage = "Invalid email or password. Please try again.";
                  showAuthFeedback(`Login Failed: ${errorMessage}`, 'error');
-             } finally {
+            } finally {
                  document.getElementById('loadingIndicator').classList.add('hidden');
-             }
+            }
         }
 
         async function handleLogout() {
