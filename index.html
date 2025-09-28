@@ -12,7 +12,6 @@
     <style>
         /* --- Root Variables for Both Modes --- */
         :root {
-            /* Dark Mode Defaults (as before) */
             --primary-red: #E03D4D;
             --background-deep: #1A1A1A;
             --card-dark: #2C2C2C;
@@ -24,13 +23,13 @@
 
         /* --- LIGHT MODE Variables --- */
         body.light-mode {
-            --background-deep: #F3F4F6; /* Light Gray Background */
-            --card-dark: #FFFFFF; /* White Cards */
-            --text-light: #1F2937; /* Dark Text */
+            --background-deep: #F3F4F6;
+            --card-dark: #FFFFFF;
+            --text-light: #1F2937;
             --text-secondary: #6B7280;
-            --primary-red: #E03D4D; /* Red remains constant */
-            --success-green: #10B981; /* Brighter success green */
-            --danger-red: #EF4444; /* Brighter danger red */
+            --primary-red: #E03D4D;
+            --success-green: #10B981;
+            --danger-red: #EF4444;
         }
         
         /* --- GLOBAL BASE STYLES --- */
@@ -49,15 +48,18 @@
             padding: 2rem;
             background: var(--card-dark);
             border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Lighter shadow for light mode */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             transition: background 0.3s, box-shadow 0.3s;
         }
         body.light-mode .game-screen {
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border: 1px solid #E5E7EB; /* Light border in light mode */
+            border: 1px solid #E5E7EB;
         }
 
-        /* NEW: Full-screen centered login container */
+        /* =========================================================
+        LOGIN SCREEN OVERLAY STYLES
+        =========================================================
+        */
         #loginScreen {
             position: fixed;
             top: 0;
@@ -65,16 +67,29 @@
             right: 0;
             bottom: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 1rem;
-            background-color: var(--background-deep); /* Use full background color */
+            background-color: var(--background-deep);
             min-height: 100vh;
+            z-index: 1000; 
             margin: 0;
-            border-radius: 0;
             box-shadow: none;
             transition: background-color 0.3s;
         }
+
+        /* The login *card* itself to center the form */
+        #loginCard {
+            max-width: 400px;
+            width: 90%;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            background-color: var(--card-dark);
+            border: 4px solid var(--primary-red);
+        }
+        /* End Login Screen Styles */
 
 
         /* Custom Button Styling (Primary Action - Red/Green) */
@@ -98,7 +113,7 @@
             transform: translateY(3px);
         }
 
-        /* Secondary/Navigation Button Styling (Dark Gray in dark mode, light gray in light mode) */
+        /* Secondary/Navigation Button Styling */
         .btn-secondary {
             background-color: #3C3C3C; 
             color: var(--text-light);
@@ -141,7 +156,7 @@
             border-radius: 0.75rem;
             cursor: pointer;
             transition: background-color 0.2s, border 0.2s;
-            border: 3px solid #444444; /* Initial dark border */
+            border: 3px solid #444444;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             display: flex;
@@ -229,12 +244,12 @@
             100% { box-shadow: 0 0 0 0 rgba(56, 161, 105, 0); }
         }
 
-        /* Settings Toggle Switch (General) */
+        /* Settings Toggle Switch */
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px; /* Standard width */
-            height: 34px; /* Standard height */
+            width: 60px;
+            height: 34px;
         }
 
         .switch input { 
@@ -331,67 +346,93 @@
         @keyframes pulse-red {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); }
             70% { transform: scale(1.01); box-shadow: 0 0 0 5px rgba(229, 62, 62, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
         }
     </style>
 </head>
-<body class="dark-mode"> <!-- Changed default to dark-mode based on images -->
+<body class="dark-mode">
     <div id="app" class="text-center p-4">
-        <!-- HIDDEN by default to clean up the main page -->
         <p id="authStatus" class="text-sm text-gray-400 mb-2 hidden"></p> 
-        <div id="gameScreens">
-            
-            <!-- ============================================== -->
-            <!-- 0. NEW LOGIN SCREEN (Initial Gatekeeper View) -->
-            <!-- ============================================== -->
-            <div id="loginScreen" class="game-screen">
-                <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide hidden">GTA</h1>
-                <h2 class="text-3xl font-light mb-12 hidden" style="color: var(--text-secondary)">Global Translation Adventures</h2>
 
-                <!-- LOGIN/REGISTRATION SECTION (Moved from Profile) -->
-                <div id="authSection" class="max-w-sm mx-auto space-y-4 p-8 rounded-xl shadow-2xl border-4 border-red-500 login-alert" style="background-color: var(--background-deep)">
-                     <h3 class="text-3xl font-bold text-red-400">Traveler Login</h3>
-                     <p id="authMessage" class="text-sm text-gray-400">Sign in or register to begin your journey!</p>
-                     
-                     <input type="email" id="authEmail" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
-                     <input type="password" id="authPassword" placeholder="Password" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--card-dark)">
-                     
-                     <div class="grid grid-cols-2 gap-4 pt-2">
-                        <button id="registerButton" class="btn-primary w-full py-3 text-base">Register</button>
-                        <button id="loginButton" class="btn-primary w-full py-3 text-base bg-blue-600 hover:bg-blue-500 shadow-blue-700">Login</button>
-                     </div>
-                     <p id="loadingIndicator" class="text-yellow-400 hidden">Loading data...</p>
+        <!-- =========================================================
+        0. LOGIN SCREEN (The Authentication Gate) 
+        This is fixed and acts as the initial, non-overlapping screen.
+        =========================================================
+        -->
+        <div id="loginScreen" class="hidden"> 
+            <div id="loginCard"> 
+                <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
+                <h2 class="text-3xl font-light mb-8" style="color: var(--text-secondary)">Global Translation Adventures</h2>
+
+                <div id="authSection" class="max-w-sm mx-auto space-y-4">
+                    <!-- Global Message Area for Login/Register Feedback -->
+                    <p id="authMessage" class="text-sm text-gray-400 text-center mb-4">Sign in or register to begin your journey!</p>
+                    <p id="loadingIndicator" class="text-yellow-400 hidden">Loading...</p>
+
+                    <!-- 1. LOGIN VIEW (Default) -->
+                    <div id="loginView" class="space-y-4">
+                        <h3 class="text-3xl font-bold text-red-400">Traveler Login</h3>
+                        
+                        <input type="email" id="authEmailLogin" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
+                        <input type="password" id="authPasswordLogin" placeholder="Password (min 6 characters)" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
+                        
+                        <button id="loginButton" class="btn-primary w-full py-3 text-base bg-blue-600 hover:bg-blue-500 shadow-blue-700">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Log In
+                        </button>
+
+                        <button id="switchToRegisterButton" class="text-sm w-full text-gray-400 hover:text-red-400 pt-2" onclick="toggleAuthView('register')">
+                            New Traveler? Create an Account
+                        </button>
+                    </div>
+
+                    <!-- 2. REGISTER VIEW (Hidden by default) -->
+                    <div id="registerView" class="space-y-4 hidden">
+                        <h3 class="text-3xl font-bold text-red-400">New Traveler Registration</h3>
+
+                        <input type="text" id="registerName" placeholder="Traveler Name" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
+                        <input type="email" id="authEmailRegister" placeholder="Email" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
+                        <input type="password" id="authPasswordRegister" placeholder="Password (min 6 characters)" class="w-full p-3 rounded text-white placeholder-gray-400 border border-gray-700 focus:border-red-500" style="background-color: var(--background-deep)">
+                        
+                        <button id="registerButton" class="btn-primary w-full py-3 text-base">
+                            <i class="fas fa-user-plus mr-2"></i> Register
+                        </button>
+
+                        <button id="switchToLoginButton" class="text-sm w-full text-gray-400 hover:text-red-400 pt-2" onclick="toggleAuthView('login')">
+                            Already have an account? Go to Login
+                        </button>
+                    </div>
                 </div>
-                
-                <p id="anonymousLoginText" class="text-sm text-gray-500 mt-6 cursor-pointer hover:text-gray-400">
-                    <i class="fas fa-user-secret mr-1"></i> Continue as Guest (Progress may be lost)
-                </p>
             </div>
-
-            <!-- ============================================== -->
-            <!-- 1. TITLE PAGE (Now Secondary View) -->
-            <!-- ============================================== -->
+            <!-- This guest login is hidden as we are enforcing full Firebase login -->
+            <p id="anonymousLoginText" class="text-sm text-gray-500 mt-6 cursor-pointer hover:text-gray-400 hidden">
+                <i class="fas fa-user-secret mr-1"></i> Continue as Guest (Progress may be lost)
+            </p>
+        </div>
+        
+        <!-- 
+        =========================================================
+        MAIN GAME SCREENS CONTAINER - Hidden until authentication succeeds
+        =========================================================
+        -->
+        <div id="gameScreens" class="hidden"> 
+            
+            <!-- 1. TITLE PAGE -->
             <div id="titlePage" class="game-screen hidden">
                 <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
                 <h2 class="text-3xl font-light mb-4" style="color: var(--text-secondary)">Global Translation Adventures</h2>
                 
-                <!-- This is the 'Welcome, Traveler!' section -->
                 <h3 class="text-4xl font-bold mb-8" style="color: var(--text-light)">Welcome, Traveler!</h3>
                 <p class="mb-12 max-w-lg mx-auto" style="color: var(--text-secondary)">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
                 
                 <div class="space-y-4 max-w-sm mx-auto">
-                    <!-- Main Start Button is Red -->
                     <button id="startButton" class="btn-primary w-full"><i class="fas fa-play mr-2"></i> Start Your Journey</button>
-                    <!-- Other buttons are Secondary/Dark -->
                     <button id="profileButton" class="btn-secondary w-full"><i class="fas fa-user-circle mr-2"></i> Profile</button>
                     <button id="progressButton" class="btn-secondary w-full"><i class="fas fa-chart-line mr-2"></i> Progress Tracker</button>
                     <button id="settingsButton" class="btn-secondary w-full"><i class="fas fa-cog mr-2"></i> Settings</button>
                 </div>
             </div>
 
-            <!-- ============================================== -->
             <!-- 2. DESTINATION SELECTION SCREEN -->
-            <!-- ... (Content is the same) ... -->
             <div id="destinationScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
                     <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
@@ -403,17 +444,15 @@
                 <p class="mb-8 text-left" style="color: var(--text-secondary)">Master a country's adventures to unlock the next destination and earn a rank up!</p>
                 
                 <div id="destinationList" class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <!-- Destination cards will be rendered here by JavaScript -->
+                    <!-- Destinations injected here -->
                 </div>
             </div>
 
-            <!-- ============================================== -->
             <!-- 3. ADVENTURE SELECTION SCREEN -->
-            <!-- ... (Content is the same) ... -->
             <div id="adventureScreen" class="game-screen hidden">
                 <div class="flex justify-between items-center mb-6 text-lg">
                     <button class="hover:text-red-500" data-target="destinationScreen" style="color: var(--text-secondary)">
-                         <i class="fas fa-arrow-left mr-2"></i> Back to Country Selection
+                           <i class="fas fa-arrow-left mr-2"></i> Back to Country Selection
                     </button>
                     <button id="viewProgressButton" class="text-green-500 hover:text-green-400" data-target="progressScreen">
                         View Progress Tracker <i class="fas fa-angle-right ml-1"></i>
@@ -423,13 +462,11 @@
                 <h2 id="adventureTitle" class="text-4xl font-bold mb-8 text-yellow-400 text-left">Destination: Japan (Traveler Rank)</h2>
                 
                 <div id="adventureList" class="space-y-4 max-w-4xl mx-auto text-left">
-                    <!-- Adventure list items will be rendered here by JavaScript -->
+                    <!-- Adventures injected here -->
                 </div>
             </div>
 
-            <!-- ============================================== -->
             <!-- 4. CORE GAMEPLAY SCREEN -->
-            <!-- ... (Content is the same) ... -->
             <div id="gameScene" class="game-screen hidden">
                 <div class="text-left mb-6">
                     <button class="text-lg" data-target="adventureScreen" style="color: var(--text-secondary)">
@@ -446,31 +483,26 @@
                     <img id="sceneImage" src="" alt="Current Scene" class="w-full h-auto rounded-lg mb-6 border-2" style="border-color: var(--text-secondary)">
                     
                     <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Phrase cards will be injected here -->
+                        <!-- Options injected here -->
                     </div>
                 </div>
                 
-                <!-- NEW CONTAINER FOR TRANSLATIONS BELOW THE CARDS -->
                 <div id="translationDisplayContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-2 min-h-[50px]">
-                    <!-- Translation text fields will be injected here by renderScene() -->
+                    <!-- Translations injected here -->
                 </div>
 
                 <div id="feedbackMessage" class="mt-6 text-2xl font-bold transition-opacity duration-300 opacity-0 min-h-[40px]"></div>
                 
-                <!-- Continue Button shown after correct answer -->
                 <button id="continueButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="nextScene()" style="background-color: var(--primary-red); box-shadow: 0 4px var(--danger-red);">
                     Continue Touring (1/5 Scenes)
                 </button>
 
-                <!-- This button matches the 'COMPLETE ADVENTURE AND EARN BADGE' style (image_4ba5a0.png) -->
-                <button id="completeAdventureButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="completeAdventure()" style="background-color: var(--success-green); box-shadow: 0 4px #276749;">
+                <button id="completeAdventureButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="completeAdventure()" style="background-color: var(--success-green); box-shadow: 0 4 유사 49;">
                     COMPLETE ADVENTURE AND EARN BADGE
                 </button>
             </div>
             
-            <!-- ============================================== -->
             <!-- 5. PROGRESS TRACKER SCREEN -->
-            <!-- ... (Content is the same) ... -->
             <div id="progressScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
                     <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
@@ -495,18 +527,15 @@
                 <h3 class="text-2xl font-bold mb-6 text-left" style="color: var(--text-light)">All 30 Badges Earned</h3>
                 
                 <div id="badgeContainer" class="flex flex-wrap justify-start p-4 rounded-lg max-w-4xl mx-auto border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                    <!-- 30 Badge boxes will be injected here (image_4b5326.png style) -->
+                    <!-- Badges injected here -->
                 </div>
             </div>
 
-            <!-- ============================================== -->
             <!-- 6. SETTINGS SCREEN -->
-            <!-- ... (Content is the same) ... -->
             <div id="settingsScreen" class="game-screen hidden">
                 <h2 class="text-4xl font-bold mb-8">Settings</h2>
                 <div class="max-w-xl mx-auto space-y-6">
 
-                    <!-- Theme Toggle -->
                     <div class="flex justify-between items-center p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <span class="text-xl font-medium" style="color: var(--text-light)">Light / Dark Mode</span>
                         <label class="switch">
@@ -515,11 +544,9 @@
                         </label>
                     </div>
 
-                    <!-- Background Music Slider -->
                     <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xl font-medium" style="color: var(--text-light)">Background Music</span>
-                            <!-- Music Mute Toggle -->
                             <label class="switch">
                                 <input type="checkbox" id="musicMuteToggle">
                                 <span class="slider round"></span>
@@ -528,12 +555,10 @@
                         <input type="range" id="musicVolume" min="0" max="1" value="0.5" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
                     </div>
 
-                    <!-- Audio Volume Slider -->
                     <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xl font-medium" style="color: var(--text-light)">Audio Pronunciation Volume</span>
-                             <!-- Audio Mute Toggle -->
-                            <label class="switch">
+                              <label class="switch">
                                 <input type="checkbox" id="audioMuteToggle">
                             <span class="slider round"></span>
                             </label>
@@ -545,17 +570,14 @@
                 <button class="btn-secondary mt-12" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
             </div>
 
-             <!-- ============================================== -->
             <!-- 7. PROFILE SCREEN -->
-            <!-- ============================================== -->
             <div id="profileScreen" class="game-screen hidden">
                  <h2 class="text-4xl font-bold mb-8">Traveler Profile</h2>
                 
-                <!-- LOGIN/REGISTRATION SECTION (Now only for display/logout) -->
-                <div id="authSection" class="max-w-sm mx-auto space-y-4 p-6 rounded-lg mb-6 border-2 border-red-500 login-alert" style="background-color: var(--background-deep)">
+                <div id="authProfileSection" class="max-w-sm mx-auto space-y-4 p-6 rounded-lg mb-6 border-2 border-red-500 login-alert" style="background-color: var(--background-deep)">
                      <h3 class="text-2xl font-bold text-red-400">Account Status</h3>
-                     <p id="authMessage" class="text-sm text-gray-400">Loading...</p>
-                     <button id="logoutButton" class="btn-secondary w-full py-3 text-base bg-red-600 hover:bg-red-500 shadow-red-700 hidden">Logout</button>
+                     <p id="profileAuthMessage" class="text-sm text-gray-400">Loading...</p>
+                     <button id="logoutButton" class="btn-primary w-full py-3 text-base bg-red-600 hover:bg-red-500 shadow-red-700 hidden">Logout</button>
                 </div>
                 
                 <div class="max-w-sm mx-auto space-y-4">
@@ -567,7 +589,6 @@
                     <button id="saveProfileButton" class="btn-primary w-full bg-green-600 hover:bg-green-500 shadow-green-700">Save Profile</button>
                 </div>
                 
-                <!-- NEW: FIREBASE CONFIG DISPLAY SECTION -->
                 <div class="mt-12 pt-6 border-t border-gray-700 max-w-md mx-auto text-left">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-red-500">Deployment & Config Keys</h3>
@@ -576,7 +597,6 @@
                         </button>
                     </div>
                     <div id="firebaseInfo" class="space-y-1 text-sm font-mono p-3 rounded border border-gray-600 blurred">
-                        <!-- Keys will be injected here by JavaScript -->
                         <p>apiKey: <span id="apiKeyDisplay"></span></p>
                         <p>authDomain: <span id="authDomainDisplay"></span></p>
                         <p>projectId: <span id="projectIdDisplay"></span></p>
@@ -589,7 +609,7 @@
             </div>
 
 
-            <!-- Modal (Matches the dark theme) -->
+            <!-- Modal -->
             <div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
                 <div class="p-10 rounded-xl shadow-2xl text-center max-w-md w-11/12 transform transition-transform duration-300 scale-100 border-t-8 border-yellow-500" style="background-color: var(--card-dark); color: var(--text-light)">
                     <i class="fas fa-trophy text-7xl text-yellow-500 mb-6 animate-bounce"></i>
@@ -603,26 +623,21 @@
         </div>
     </div>
     
-    <!-- ============================================== -->
     <!-- QUICK ACCESS FLOATING NAV -->
-    <!-- ============================================== -->
     <div id="quickAccessNav" class="fixed bottom-4 right-4 space-y-3 flex flex-col hidden z-40">
-        <!-- Settings Toggle -->
         <button id="quickSettingsButton" class="quick-access-btn" data-target="settingsScreen">
             <i class="fas fa-cog"></i>
         </button>
-        <!-- Home Button -->
         <button id="quickHomeButton" class="quick-access-btn" data-target="titlePage">
             <i class="fas fa-home"></i>
         </button>
     </div>
 
     
-    <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Set Firebase Log Level to Debug
@@ -642,7 +657,6 @@
         }; 
         // --- END USER MODIFICATION ZONE ---
         
-        // This handles both the environment config (if available) or the user's manual config
         const firebaseConfig = Object.keys(userFirebaseConfig).length > 0 ? userFirebaseConfig : (typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {});
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -659,18 +673,16 @@
         backgroundMusic.loop = true;
         backgroundMusic.volume = 0; // Start muted, volume controlled by settings
         
-        // FIX 1: Global variable to track the currently playing phrase audio
         let currentAudioPlayer = null; 
 
         // --- GAME DATA STRUCTURE (The Core Content) ---
-        // Refactored Japanese data to separate Romanization and Translation for UX goal.
         const GAME_DATA = {
             japan: {
                 name: "Japan",
                 code: "JP",
                 language: "Japanese",
                 locked: false,
-                color: "text-red-500", // Tailwind class for text color
+                color: "text-red-500", 
                 adventures: [
                     {
                         id: "discovery",
@@ -678,9 +690,8 @@
                         badgeName: "Sakura Badge",
                         rank: "Traveler",
                         scenes: [
-                            // Scene 1: direction to baggage (Correct: 荷物はどこですか？)
                             {
-                                image: "https://i.imgur.com/TzGpTBn.jpeg",
+                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Japan+Airport",
                                 prompt: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
                                 options: [
                                     { phrase: "これはいくらですか？", romanization: "Kore wa ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
@@ -688,9 +699,8 @@
                                     { phrase: "トイレはどこですか？", romanization: "Toire wa doko desu ka?", translation: "Where is the toilet?", audio: "taxistand.mp3", isCorrect: false }
                                 ]
                             },
-                            // Scene 2: direction to hotel (Correct: ホテルまでお願いします)
                             {
-                                image: "https://i.imgur.com/dYv5NiI.jpeg",
+                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Tokyo+Taxi+Stand",
                                 prompt: "You're at the taxi stand. Tell the driver you need to go to the hotel.",
                                 options: [
                                     { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mp3", isCorrect: false },
@@ -698,9 +708,8 @@
                                     { phrase: "ホテルまでお願いします。", romanization: "Hoteru made onegaishimasu.", translation: "Please take me to my hotel.", audio: "hoteru.mp3", isCorrect: true }
                                 ]
                             },
-                            // Scene 3: check in (Correct: チェックインをお願いします)
                             {
-                                image: "https://i.imgur.com/7O21k67.jpeg",
+                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Hotel+Reception",
                                 prompt: "You've arrived! Tell the front desk you are here to check in.",
                                 options: [
                                     { phrase: "いくらですか？", romanization: "Ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
@@ -708,9 +717,8 @@
                                     { phrase: "予約があります。", romanization: "Yoyaku ga arimasu.", translation: "I have a reservation.", audio: "reservation.mp3", isCorrect: false }
                                 ]
                             },
-                            // Scene 4: I am hungry (Correct: お腹が空きました)
                             {
-                                image: "https://i.imgur.com/W1oNh8L.jpeg",
+                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Hotel+Concierge",
                                 prompt: "You are finally in your room, but you're starving. Tell the concierge you are hungry.",
                                 options: [
                                     { phrase: "レストランは？", romanization: "Resutoran wa?", translation: "Where is the restaurant?", audio: "restaurant.mp3", isCorrect: false },
@@ -718,9 +726,8 @@
                                     { phrase: "チェックをお願いします。", romanization: "Chekku o onegaishimasu.", translation: "Check, please.", audio: "checkplease.mp3", isCorrect: false }
                                 ]
                             },
-                            // Scene 5: I want ramen (Correct: ラーメンをお願いします)
                             {
-                                image: "https://i.imgur.com/xHASNyg.jpeg",
+                                image: "https://placehold.co/600x400/222222/F9FAFB?text=Ramen+Shop",
                                 prompt: "You found a ramen shop! Order a bowl of ramen.",
                                 options: [
                                     { phrase: "ラーメンをお願いします。", romanization: "Raamen o onegaishimasu.", translation: "Ramen, please.", audio: "ramen.mp3", isCorrect: true },
@@ -730,14 +737,12 @@
                             },
                         ]
                     },
-                    // Placeholder for remaining 4 adventures
                     { id: "exploration", name: "Exploration", badgeName: "Fuji Badge", rank: "Explorer", scenes: [] },
                     { id: "challenge", name: "Challenge", badgeName: "Samurai Badge", rank: "Challenger", scenes: [] },
                     { id: "expedition", name: "Expedition", badgeName: "Ninja Badge", rank: "Expeditionist", scenes: [] },
                     { id: "summit", name: "Summit", badgeName: "Mastery Badge", rank: "Master", scenes: [] },
                 ]
             },
-            // Start of user's requested countries
             italy: { name: "Italy", code: "IT", language: "Italian", locked: true, color: "text-green-500", adventures: [] },
             france: { name: "France", code: "FR", language: "French", locked: true, color: "text-blue-500", adventures: [] },
             mexico: { name: "Mexico", code: "MX", language: "Spanish", locked: true, color: "text-yellow-500", adventures: [] },
@@ -758,12 +763,42 @@
 
         // --- FIREBASE AND AUTHENTICATION SETUP ---
 
+        /**
+         * Function to display non-game related feedback, specifically on the Login/Profile screens.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error'.
+         */
+        function showAuthFeedback(message, type = 'error') {
+            const authMessageEl = document.getElementById('authMessage');
+            if (!authMessageEl) return;
+            
+            authMessageEl.textContent = message;
+            
+            // Reset colors
+            authMessageEl.classList.remove('text-gray-400', 'text-green-400', 'text-red-400', 'font-bold');
+            
+            if (type === 'success') {
+                authMessageEl.classList.add('text-green-400', 'font-bold');
+            } else {
+                authMessageEl.classList.add('text-red-400', 'font-bold');
+            }
+            
+            // Revert message to default after 5 seconds
+            setTimeout(() => {
+                authMessageEl.textContent = "Sign in or register to begin your journey!";
+                authMessageEl.classList.remove('text-green-400', 'text-red-400', 'font-bold');
+                authMessageEl.classList.add('text-gray-400');
+            }, 5000);
+        }
+
         async function initFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
                     console.warn("Firebase config is missing. Running in local mode without persistent progress saving.");
                     document.getElementById('authStatus').textContent = `Data Persistence: Disabled (Local Mode)`;
-                    // Since we're not using Firebase, render the Title Page directly without waiting for a login state
+                    // If no firebase, skip login screen and start the game
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('gameScreens').classList.remove('hidden');
                     switchScreen('titlePage'); 
                     return;
                 }
@@ -774,59 +809,48 @@
 
                 const authStatusEl = document.getElementById('authStatus');
                 
-                // Show a loading indicator while Firebase determines login status
                 document.getElementById('loadingIndicator').classList.remove('hidden');
-                document.getElementById('authSection').classList.add('hidden'); // Hide input fields initially
-
+                
                 // State listener handles sign-in, sign-out, and initial load
                 onAuthStateChanged(auth, async (user) => {
-                    document.getElementById('loadingIndicator').classList.add('hidden'); // Hide loading once status is determined
-                    document.getElementById('authSection').classList.remove('hidden'); // Show input fields
+                    document.getElementById('loadingIndicator').classList.add('hidden'); 
                     
                     if (user) {
-                        // User is signed in (either via email/password or anonymously if allowed)
+                        // User is signed in (Email/Password or Anonymous)
                         
-                        // Check if the user ID has changed (which happens after a successful register/login)
                         if (user.uid !== userId && userId !== null) {
-                            // User just signed in, transfer anonymous data before loading new data
+                            // User just signed in, transfer anonymous data if necessary
                             await transferData(userId, user.uid);
                         }
 
                         userId = user.uid;
-                        authStatusEl.textContent = `Signed in as: ${user.uid.substring(0, 8)}...`;
+                        authStatusEl.textContent = `Signed in as: ${user.email || user.uid.substring(0, 8) + '...'}`;
+                        
                         renderAuthUI(user);
                         await loadUserProgress();
                         
-                        // CRITICAL FIX: If user is signed in, redirect to Title Page
-                        if (document.getElementById('loginScreen').classList.contains('hidden') === false) {
-                            switchScreen('titlePage');
-                        }
+                        // CRITICAL FIX: If user is signed in, immediately hide login and show game
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('gameScreens').classList.remove('hidden');
+                        switchScreen('titlePage');
 
                     } else {
-                        // No user is currently signed in. 
+                        // No user is currently signed in. Force them to the login screen.
+                        userId = null;
                         renderAuthUI(null);
                         
-                        // New Logic: IF the game is live (keys present) AND we are not forcing Anonymous sign-in, 
-                        // we do nothing here, letting the user remain on the login screen.
-                        // The login screen will handle registration/login attempts.
+                        // CRITICAL FIX: Ensure the login screen is visible and game screens are hidden
+                        document.getElementById('loginScreen').classList.remove('hidden');
+                        document.getElementById('gameScreens').classList.add('hidden');
                     }
                 });
                 
-                // This logic is primarily for the Canvas editor and is safe to keep separate
-                if (initialAuthToken && Object.keys(userFirebaseConfig).length === 0) {
-                    // This block executes ONLY in the Canvas environment without custom keys
-                    // and uses the canvas's temporary token.
-                    await signInWithCustomToken(auth, initialAuthToken);
-                }
-                
-                // NEW CRITICAL CHANGE: If no user is signed in, do NOT automatically sign in anonymously.
-                // The login screen will handle the explicit login/registration.
-
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
                 document.getElementById('authStatus').textContent = `Authentication Error: ${error.message}`;
                 // Fallback: Show login screen on error
-                switchScreen('loginScreen');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('gameScreens').classList.add('hidden');
             }
         }
 
@@ -868,7 +892,6 @@
             }
         }
 
-        // NEW: Function to transfer data from the old (anonymous) account to the new (email) account
         async function transferData(oldUid, newUid) {
             if (!db) return;
 
@@ -876,10 +899,9 @@
             const newProgressRef = getProgressDocRef(newUid);
 
             try {
-                // 1. Get the current progress data from the anonymous account
                 const oldDocSnap = await new Promise(resolve => {
                     const unsubscribe = onSnapshot(oldProgressRef, (doc) => {
-                        unsubscribe(); // Stop listening after first snapshot
+                        unsubscribe(); 
                         resolve(doc);
                     });
                 });
@@ -887,12 +909,10 @@
                 if (oldDocSnap.exists()) {
                     const oldData = oldDocSnap.data();
                     
-                    // 2. Overwrite the new user's progress with the old anonymous progress
                     await setDoc(newProgressRef, oldData, { merge: true });
                     
-                    // 3. (Optional but recommended) Delete the old anonymous progress document
                     await deleteDoc(oldProgressRef);
-                    console.log(`Data transferred from anonymous user ${oldUid} to authenticated user ${newUid}.`);
+                    console.log(`Data transferred from old user ${oldUid} to authenticated user ${newUid}.`);
                 }
             } catch (error) {
                 console.error("Error transferring data:", error);
@@ -901,12 +921,50 @@
         
         // --- SCREEN NAVIGATION / RENDERING ---
 
+        /**
+         * Toggles visibility between the Login and Register views on the authentication screen.
+         * @param {string} viewName - 'login' or 'register'.
+         */
+        function toggleAuthView(viewName) {
+            const loginView = document.getElementById('loginView');
+            const registerView = document.getElementById('registerView');
+            const authMessageEl = document.getElementById('authMessage');
+
+            if (viewName === 'register') {
+                loginView.classList.add('hidden');
+                registerView.classList.remove('hidden');
+                authMessageEl.textContent = "Create your Traveler profile below!";
+            } else { // default to 'login'
+                registerView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                authMessageEl.textContent = "Sign in or register to begin your journey!";
+            }
+            // Clear inputs when switching
+            document.getElementById('authEmailLogin').value = '';
+            document.getElementById('authPasswordLogin').value = '';
+            document.getElementById('authEmailRegister').value = '';
+            document.getElementById('authPasswordRegister').value = '';
+            document.getElementById('registerName').value = '';
+        }
+
         function switchScreen(targetId) {
             const screens = document.querySelectorAll('.game-screen');
             screens.forEach(screen => {
                 screen.classList.add('hidden');
             });
-            document.getElementById(targetId).classList.remove('hidden');
+
+            // Logic to switch between the full login overlay and the game container
+            if (targetId !== 'loginScreen') {
+                document.getElementById('gameScreens').classList.remove('hidden');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById(targetId).classList.remove('hidden');
+            } else {
+                document.getElementById('gameScreens').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                // Ensure default view is Login when returning to login screen
+                toggleAuthView('login');
+            }
+
 
             // Control Quick Access Nav visibility
             if (targetId === 'titlePage' || targetId === 'loginScreen') {
@@ -927,57 +985,55 @@
         }
 
         function renderAuthUI(user) {
-            const authSection = document.getElementById('authSection');
-            const authMessage = document.getElementById('authMessage');
+            // Logic for the profile screen
+            const profileAuthMessage = document.getElementById('profileAuthMessage');
+            const authProfileSection = document.getElementById('authProfileSection');
             const logoutButton = document.getElementById('logoutButton');
-            // const registerButton = document.getElementById('registerButton'); // Kept in HTML for login screen
-            // const loginButton = document.getElementById('loginButton'); // Kept in HTML for login screen
-            const anonymousText = document.getElementById('anonymousLoginText');
-            
-            // REMOVING LOGIC: Since we are not allowing Anonymous/Guest login anymore
-            if (document.getElementById('loginScreen').classList.contains('hidden') === false) {
-                if (anonymousText) anonymousText.classList.add('hidden');
-            }
 
             if (user && user.email) {
-                // User is authenticated (Email/Password)
-                authMessage.textContent = `Welcome back, ${user.email}!`;
-                authSection.classList.remove('login-alert', 'border-red-500');
-                authSection.classList.add('border-green-500');
+                // Logged in with email/password
+                const userEmail = user.email;
                 
-                // Login Screen buttons (hide on successful login)
-                if (document.getElementById('loginScreen').classList.contains('hidden') === false) {
-                     // Since user is already logged in, the authSection remains hidden
+                // Update profile screen
+                if (profileAuthMessage) profileAuthMessage.textContent = `Logged in as ${userEmail}`;
+                if (authProfileSection) {
+                    authProfileSection.classList.remove('login-alert', 'border-red-500');
+                    authProfileSection.classList.add('border-green-500');
                 }
+                if (logoutButton) logoutButton.classList.remove('hidden');
 
             } else {
-                // User is logged out (Forcing them to use Login/Register)
-                authMessage.textContent = "Sign in or register to begin your journey!";
-                authSection.classList.add('login-alert', 'border-red-500');
-                authSection.classList.remove('border-green-500');
-            }
-            
-            // Logic specific to the Profile Screen
-            if (document.getElementById('profileScreen').classList.contains('hidden') === false) {
-                 if (user && user.email) {
-                    // Profile screen for logged-in user
-                    document.getElementById('profileUserId').textContent = user.uid;
-                    logoutButton.classList.remove('hidden');
-                 } else {
-                    // User shouldn't be on this screen if not logged in, but just in case
-                    logoutButton.classList.add('hidden');
-                 }
+                // Logged out
+                
+                // Update profile screen
+                if (profileAuthMessage) profileAuthMessage.textContent = "You are currently logged out.";
+                if (authProfileSection) {
+                    authProfileSection.classList.add('login-alert', 'border-red-500');
+                    authProfileSection.classList.remove('border-green-500');
+                }
+                if (logoutButton) logoutButton.classList.add('hidden');
             }
         }
 
         // --- AUTHENTICATION ACTIONS ---
 
         async function handleRegister() {
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('authEmailRegister').value.trim();
+            const password = document.getElementById('authPasswordRegister').value;
             
+            if (!name) {
+                showAuthFeedback("Traveler Name is required.");
+                return;
+            }
             if (!email || !password) {
-                showFeedback("Email and password required.", 'incorrect');
+                showAuthFeedback("Email and password fields cannot be empty.");
+                return;
+            }
+            
+            // Firebase requires a minimum 6-character password
+            if (password.length < 6) {
+                showAuthFeedback("Password must be at least 6 characters long.");
                 return;
             }
             
@@ -985,24 +1041,46 @@
                 previousUserId = userId; 
                 document.getElementById('loadingIndicator').classList.remove('hidden');
                 
-                await createUserWithEmailAndPassword(auth, email, password);
-                showFeedback("Registration successful! Welcome!", 'correct');
-                // Success: Redirect to title page
-                switchScreen('titlePage'); 
+                // 1. Create the user
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // 2. Set initial progress data including the name
+                const newUserProgress = {
+                    badges: [],
+                    profile: { name: name, email: email }, 
+                    settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
+                };
+                userProgress = newUserProgress; // Update local state immediately
+                await saveUserProgress(); // Save the new profile/progress data
+
+                // onAuthStateChanged handles the redirect
+                showAuthFeedback("Registration successful! Logging in...", 'success');
+
             } catch (error) {
-                showFeedback(`Registration Failed: ${error.message}`, 'incorrect');
                 console.error("Registration Error:", error);
+                
+                let errorMessage = error.message.replace('Firebase:', '').trim().split('(')[0] || "An unknown registration error occurred.";
+
+                // Check for the specific error code for email already in use
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = "This email is already registered. Please log in.";
+                    showAuthFeedback(errorMessage, 'error');
+                    // CRITICAL FIX: Switch to login view automatically
+                    toggleAuthView('login');
+                } else {
+                    showAuthFeedback(`Registration Failed: ${errorMessage}`);
+                }
             } finally {
                 document.getElementById('loadingIndicator').classList.add('hidden');
             }
         }
 
         async function handleLogin() {
-             const email = document.getElementById('authEmail').value;
-             const password = document.getElementById('authPassword').value;
+             const email = document.getElementById('authEmailLogin').value.trim();
+             const password = document.getElementById('authPasswordLogin').value;
             
              if (!email || !password) {
-                 showFeedback("Email and password required.", 'incorrect');
+                 showAuthFeedback("Email and password required.", 'error');
                  return;
              }
 
@@ -1011,12 +1089,13 @@
                  document.getElementById('loadingIndicator').classList.remove('hidden');
 
                  await signInWithEmailAndPassword(auth, email, password);
-                 showFeedback("Login successful! Progress loaded.", 'correct');
-                 // Success: Redirect to title page
-                 switchScreen('titlePage'); 
+                 
+                 // onAuthStateChanged handles the redirect
+                 showAuthFeedback("Login successful! Progress loaded.", 'success');
              } catch (error) {
-                 showFeedback(`Login Failed: ${error.message}`, 'incorrect');
                  console.error("Login Error:", error);
+                 const errorMessage = error.message.replace('Firebase:', '').trim().split('(')[0] || "Invalid email or password.";
+                 showAuthFeedback(`Login Failed: ${errorMessage}`);
              } finally {
                  document.getElementById('loadingIndicator').classList.add('hidden');
              }
@@ -1025,18 +1104,15 @@
         async function handleLogout() {
              try {
                  await signOut(auth);
-                 // No anonymous sign-in anymore, so redirect directly to login
+                 // onAuthStateChanged handles the redirect to 'loginScreen'
                  showFeedback("Logged out successfully.", 'correct');
-                 switchScreen('loginScreen'); 
              } catch (error) {
                  showFeedback(`Logout Failed: ${error.message}`, 'incorrect');
                  console.error("Logout Error:", error);
              }
         }
         
-        // Removed handleAnonymousLogin since we are enforcing login.
-        
-        // --- REST OF THE GAME LOGIC (Unchanged) ---
+        // --- REST OF THE GAME LOGIC (Unchanged functions) ---
 
         function renderDestinationScreen() {
             const listEl = document.getElementById('destinationList');
@@ -1044,13 +1120,12 @@
             
             Object.entries(GAME_DATA).forEach(([id, dest]) => {
                 const isCompleted = dest.adventures.length > 0 && dest.adventures.every(a => userProgress.badges.includes(`${id}-${a.id}`));
-                const isLocked = dest.locked && id !== 'japan'; // Japan is always unlocked for now
+                const isLocked = dest.locked && id !== 'japan'; 
 
                 const button = document.createElement('button');
                 button.dataset.dest = id;
                 button.classList = `dest-card text-white ${dest.color}`;
 
-                // Structure for the destination card (image_4b4fac.png)
                 const code = `<div class="dest-card-code ${dest.color}">${dest.code}</div>`;
                 const name = `<div class="text-xl font-bold">${dest.name}</div>`;
                 let status = '';
@@ -1062,7 +1137,7 @@
                 } else {
                     button.classList.add('active-dest');
                     button.onclick = () => renderAdventureScreen(id);
-                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">Traveler</div>`; // Placeholder rank
+                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">Traveler</div>`; 
                 }
 
                 button.innerHTML = `${code}${name}${status}`;
@@ -1073,7 +1148,7 @@
         function renderAdventureScreen(destId) {
             currentDestinationId = destId;
             const destData = GAME_DATA[destId];
-            const currentRank = destData.adventures[0] ? destData.adventures[0].rank : "Traveler"; // Use first adventure's rank
+            const currentRank = destData.adventures[0] ? destData.adventures[0].rank : "Traveler"; 
 
             document.getElementById('adventureTitle').innerHTML = 
                 `<span class="text-yellow-400">Destination: ${destData.name}</span> (${currentRank} Rank)`;
@@ -1081,7 +1156,7 @@
             const listEl = document.getElementById('adventureList');
             listEl.innerHTML = '';
             
-            let previousAdventureCompleted = true; // Tracks sequential completion for locking
+            let previousAdventureCompleted = true;
 
             destData.adventures.forEach((adventure, index) => {
                 const adventureId = `${destId}-${adventure.id}`;
@@ -1094,7 +1169,6 @@
                 if (isCompleted) {
                     listItem.classList.add('bg-green-800', 'text-white', 'border', 'border-green-600');
                     listItem.innerHTML = `
-                        <!-- SIMPLIFIED TEXT: Only show Adventure Name -->
                         <div class="font-bold">${adventure.name}</div>
                         <div class="text-sm font-semibold text-green-300">
                             <i class="fas fa-check-circle mr-1"></i> Completed
@@ -1103,18 +1177,15 @@
                 } else if (isLocked) {
                     listItem.classList.add('bg-gray-700', 'text-gray-400');
                     listItem.innerHTML = `
-                        <!-- SIMPLIFIED TEXT: Only show Adventure Name -->
                         <div class="font-bold">${adventure.name}</div>
                         <div class="text-sm">Locked: Complete previous adventure first</div>
                     `;
                 } else {
-                    // This adventure is unlocked/available
                     const hasContent = adventure.scenes && adventure.scenes.length > 0;
                     
                     listItem.classList.add('bg-gray-800', 'text-white', 'border', 'border-gray-700');
                     
                     if (hasContent) {
-                        // Adventure has content and is ready to start
                         listItem.innerHTML = `
                             <div class="font-bold">${adventure.name}</div>
                             <button class="btn-primary py-2 px-4 text-base shadow-none" onclick="startAdventure(${index})">
@@ -1122,7 +1193,6 @@
                             </button>
                         `;
                     } else {
-                        // Adventure is unlocked but has no content (Under Construction)
                         listItem.innerHTML = `
                             <div class="font-bold">${adventure.name}</div>
                             <button class="btn-secondary py-2 px-4 text-base shadow-none bg-yellow-600 hover:bg-yellow-700 text-white" onclick="startAdventure(${index})">
@@ -1133,7 +1203,7 @@
                 }
                 
                 if (!isCompleted) {
-                    previousAdventureCompleted = false; // Next adventure is locked if this one isn't done
+                    previousAdventureCompleted = false; 
                 }
 
                 listEl.appendChild(listItem);
@@ -1145,13 +1215,10 @@
             currentAdventureIndex = adventureIndex;
             const adventure = GAME_DATA[currentDestinationId].adventures[currentAdventureIndex];
             
-            // CHECK 1: If the adventure has no content (empty scenes array), show the message.
             if (!adventure.scenes || adventure.scenes.length === 0) {
-                 // Use the modal (which is better than alert()) to show the "Under Construction" message
                  document.getElementById('modalBadgeName').textContent = adventure.name;
                  document.getElementById('modalLevelMessage').textContent = "This adventure is currently under construction. Please check back soon!";
                  
-                 // Change the modal button to a simpler "Close" and reset its style
                  const modalButton = document.getElementById('closeBadgeModal');
                  modalButton.textContent = "Close";
                  modalButton.classList.remove('bg-red-500', 'shadow-red-700');
@@ -1161,7 +1228,6 @@
                  return;
             }
 
-            // CHECK 2: If the adventure has content, start the game.
             currentSceneIndex = 0;
             switchScreen('gameScene');
             renderScene();
@@ -1172,14 +1238,12 @@
             const adventure = dest.adventures[currentAdventureIndex];
             const scene = adventure.scenes[currentSceneIndex];
             
-            // Update Headers (image_4b52b2.jpg style)
             document.getElementById('sceneAdventureName').textContent = `${adventure.name} Scenario`;
             document.getElementById('sceneHeader').textContent = `Country: ${dest.name} | Adventure ${currentAdventureIndex + 1}`;
             document.getElementById('sceneImage').src = scene.image;
             document.getElementById('sceneImage').onerror = () => document.getElementById('sceneImage').src = 'https://placehold.co/600x400/222222/F9FAFB?text=Image+Not+Found';
             document.getElementById('scenePrompt').textContent = scene.prompt;
             
-            // Hide all buttons initially
             document.getElementById('continueButton').classList.add('hidden');
             document.getElementById('completeAdventureButton').classList.add('hidden');
             
@@ -1187,34 +1251,29 @@
             optionsEl.innerHTML = '';
 
             const translationDisplayEl = document.getElementById('translationDisplayContainer');
-            translationDisplayEl.innerHTML = ''; // CLEAR PREVIOUS TRANSLATIONS
+            translationDisplayEl.innerHTML = ''; 
             
             scene.options.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.classList = 'option-btn';
                 
-                // --- PHRASE CARD CONTENT: PHRASE AND ROMANIZATION ONLY ---
                 button.innerHTML = `
                     <div class="phrase-main">${option.phrase}</div>
                     <div class="phrase-sub">${option.romanization}</div>
                 `;
-                // Store data needed for checkAnswer in the button's dataset
                 button.dataset.index = index;
-                button.dataset.isCorrect = option.isCorrect; // Store correctness
-                button.dataset.translation = option.translation; // Store translation to reveal later
+                button.dataset.isCorrect = option.isCorrect; 
+                button.dataset.translation = option.translation; 
                 
-                // Hover for Audio Pronunciation
                 button.addEventListener('mouseenter', () => playAudio(audioPath(option.audio)));
 
-                // Click to Check Answer
                 button.addEventListener('click', (e) => checkAnswer(e.currentTarget, option.isCorrect));
 
                 optionsEl.appendChild(button);
 
-                // --- CREATE SEPARATE TRANSLATION DISPLAY ELEMENT BELOW ---
                 const translationEl = document.createElement('div');
                 translationEl.classList.add('text-center', 'text-lg', 'font-bold', 'opacity-0', 'transition-opacity', 'duration-500');
-                translationEl.dataset.index = index; // Link to the button by index
+                translationEl.dataset.index = index; 
                 translationEl.id = `translation-${index}`;
                 translationDisplayEl.appendChild(translationEl);
             });
@@ -1229,13 +1288,11 @@
 
              currentSceneIndex++;
              if (currentSceneIndex < adventure.scenes.length) {
-                // Move to next scene
-                document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
-                renderScene();
+                 document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
+                 renderScene();
              } else {
-                // Last scene, show complete button
-                document.getElementById('continueButton').classList.add('hidden');
-                document.getElementById('completeAdventureButton').classList.remove('hidden');
+                 document.getElementById('continueButton').classList.add('hidden');
+                 document.getElementById('completeAdventureButton').classList.remove('hidden');
              }
         }
 
@@ -1243,7 +1300,6 @@
             const audioSettings = userProgress.settings || { audioVolume: 1.0, audioMuted: false };
             if (audioSettings.audioMuted) return;
 
-            // FIX 1: Stop previous audio if it's playing
             if (currentAudioPlayer && !currentAudioPlayer.paused) {
                 currentAudioPlayer.pause();
                 currentAudioPlayer.currentTime = 0;
@@ -1251,12 +1307,11 @@
 
             const audio = new Audio(path);
             audio.volume = audioSettings.audioVolume;
-            currentAudioPlayer = audio; // Set global tracker
+            currentAudioPlayer = audio; 
 
             audio.play().catch(e => console.warn("Audio playback failed (file not found or user gesture required):", e));
         }
         
-        // --- BACKGROUND MUSIC CONTROL (Unchanged) ---
         function setBackgroundMusicState(volume, isMuted) {
             backgroundMusic.volume = isMuted ? 0 : volume;
             if (backgroundMusic.paused) {
@@ -1392,7 +1447,6 @@
             document.getElementById('completeAdventureButton').classList.add('hidden');
         }
 
-        // --- PROGRESS TRACKER LOGIC / PROFILE RENDER (Unchanged) ---
         function renderProgressTracker() {
             const totalBadges = 30;
             const currentBadges = userProgress.badges.length;
@@ -1446,11 +1500,9 @@
             document.getElementById('travelerNameInput').value = profile.name || "";
             document.getElementById('emailInput').value = profile.email || "";
 
-            // Update Auth Section based on current user
             const user = auth.currentUser;
             renderAuthUI(user);
             
-            // Display Firebase Config Details
             if (Object.keys(firebaseConfig).length > 0) {
                 document.getElementById('statusMessageDisplay').textContent = 'Live Configuration Loaded';
                 document.getElementById('statusMessageDisplay').classList.remove('text-gray-500');
@@ -1495,9 +1547,6 @@
             }
         });
 
-
-        // --- SETTINGS LOGIC (Unchanged) ---
-
         function applySettings() {
             const settings = userProgress.settings || {};
             
@@ -1516,7 +1565,7 @@
             audioMuteToggle.checked = settings.audioMuted || false;
         }
         
-        // --- EVENT HANDLERS FOR SETTINGS (Unchanged) ---
+        // --- EVENT HANDLERS FOR SETTINGS ---
 
         document.getElementById('themeToggle').addEventListener('change', (e) => {
             const theme = e.target.checked ? 'light-mode' : 'dark-mode';
@@ -1574,12 +1623,13 @@
         // --- INITIALIZATION AND EVENT LISTENERS ---
 
         function setupEventListeners() {
-            // New Login Screen Buttons
+            // Updated event listeners for new Login/Register inputs
             document.getElementById('registerButton').addEventListener('click', handleRegister);
             document.getElementById('loginButton').addEventListener('click', handleLogin);
-            // document.getElementById('anonymousLoginText').addEventListener('click', handleAnonymousLogin); // Removed
             
-            // Title Page Buttons (Redirects after successful login)
+            // Expose public function for HTML onclick
+            window.toggleAuthView = toggleAuthView;
+
             document.getElementById('startButton').addEventListener('click', () => {
                 attemptMusicPlay(); 
                 switchScreen('destinationScreen');
@@ -1591,13 +1641,16 @@
             
             document.getElementById('closeBadgeModal').addEventListener('click', () => {
                 document.getElementById('badgeModal').classList.add('hidden');
+                document.getElementById('closeBadgeModal').textContent = "Continue"; 
+                document.getElementById('closeBadgeModal').classList.remove('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
+                document.getElementById('closeBadgeModal').classList.add('bg-red-500', 'hover:bg-red-400', 'shadow-red-700');
+
                 renderAdventureScreen(currentDestinationId);
             });
             
-            // Logout Button (Moved to Profile screen for display consistency)
             document.getElementById('logoutButton').addEventListener('click', handleLogout);
             
-            // Expose game functions to global scope for HTML onclicks in dynamically created elements.
+            // Expose game functions to global scope
             window.startAdventure = startAdventure;
             window.nextScene = nextScene;
             window.completeAdventure = completeAdventure;
@@ -1620,23 +1673,23 @@
         }
 
         window.onload = () => {
+            // Initialize dummy progress state before Firebase loads
             userProgress = { 
                 badges: [], 
                 profile: { name: "Traveler", email: "" },
                 settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
             };
             
-            const musicVolumeSlider = document.getElementById('musicVolume');
-            if (musicVolumeSlider) {
-                musicVolumeSlider.value = userProgress.settings.musicVolume;
-            }
+            // 1. Show the login screen immediately
+            document.getElementById('loginScreen').classList.remove('hidden');
             
-            // CRITICAL CHANGE: Start by rendering the login screen, then check auth status
-            switchScreen('loginScreen'); 
+            // 2. Setup event handlers
+            setupEventListeners();
+            
+            // 3. Initialize Firebase (this starts the onAuthStateChanged listener)
+            initFirebase();
             
             renderUI(); 
-            setupEventListeners();
-            initFirebase();
         };
 
     </script>
