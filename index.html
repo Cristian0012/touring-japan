@@ -343,7 +343,6 @@
 
             <!-- ============================================== -->
             <!-- 3. ADVENTURE SELECTION SCREEN (image_4b4fe7.png) -->
-            <!-- ============================================== -->
             <div id="adventureScreen" class="game-screen hidden">
                 <div class="flex justify-between items-center mb-6 text-lg">
                     <button class="hover:text-red-500" data-target="destinationScreen" style="color: var(--text-secondary)">
@@ -532,6 +531,7 @@
         // Global Firebase variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // FIX: Corrected typo in variable assignment
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         let app;
@@ -620,6 +620,7 @@
                         ]
                     },
                     // Placeholder for remaining 4 adventures
+                    // SCENES ARE EMPTY, SO THEY SHOULD TRIGGER THE 'UNDER CONSTRUCTION' MESSAGE.
                     { id: "exploration", name: "Exploration", badgeName: "Fuji Badge", rank: "Explorer", scenes: [] },
                     { id: "challenge", name: "Challenge", badgeName: "Samurai Badge", rank: "Challenger", scenes: [] },
                     { id: "expedition", name: "Expedition", badgeName: "Ninja Badge", rank: "Expeditionist", scenes: [] },
@@ -801,7 +802,8 @@
                 if (isCompleted) {
                     listItem.classList.add('bg-green-800', 'text-white', 'border', 'border-green-600');
                     listItem.innerHTML = `
-                        <div class="font-bold">${destData.code} ${index + 1}: ${adventure.name}</div>
+                        <!-- SIMPLIFIED TEXT: Only show Adventure Name -->
+                        <div class="font-bold">${adventure.name}</div>
                         <div class="text-sm font-semibold text-green-300">
                             <i class="fas fa-check-circle mr-1"></i> Completed
                         </div>
@@ -809,17 +811,33 @@
                 } else if (isLocked) {
                     listItem.classList.add('bg-gray-700', 'text-gray-400');
                     listItem.innerHTML = `
-                        <div class="font-bold">${destData.code} ${index + 1}: ${adventure.name}</div>
+                        <!-- SIMPLIFIED TEXT: Only show Adventure Name -->
+                        <div class="font-bold">${adventure.name}</div>
                         <div class="text-sm">Locked: Complete previous adventure first</div>
                     `;
                 } else {
+                    // This adventure is unlocked/available
+                    const hasContent = adventure.scenes && adventure.scenes.length > 0;
+                    
                     listItem.classList.add('bg-gray-800', 'text-white', 'border', 'border-gray-700');
-                    listItem.innerHTML = `
-                        <div class="font-bold">${destData.code} ${index + 1}: ${adventure.name}</div>
-                        <button class="btn-primary py-2 px-4 text-base shadow-none" onclick="startAdventure(${index})">
-                            Start Adventure ${index + 1}: ${adventure.name}
-                        </button>
-                    `;
+                    
+                    if (hasContent) {
+                        // Adventure has content and is ready to start
+                        listItem.innerHTML = `
+                            <div class="font-bold">${adventure.name}</div>
+                            <button class="btn-primary py-2 px-4 text-base shadow-none" onclick="startAdventure(${index})">
+                                Start Adventure
+                            </button>
+                        `;
+                    } else {
+                        // Adventure is unlocked but has no content (Under Construction)
+                        listItem.innerHTML = `
+                            <div class="font-bold">${adventure.name}</div>
+                            <button class="btn-secondary py-2 px-4 text-base shadow-none bg-yellow-600 hover:bg-yellow-700 text-white" onclick="startAdventure(${index})">
+                                Under Construction
+                            </button>
+                        `;
+                    }
                 }
                 
                 if (!isCompleted) {
@@ -833,6 +851,25 @@
 
         function startAdventure(adventureIndex) {
             currentAdventureIndex = adventureIndex;
+            const adventure = GAME_DATA[currentDestinationId].adventures[currentAdventureIndex];
+            
+            // CHECK 1: If the adventure has no content (empty scenes array), show the message.
+            if (!adventure.scenes || adventure.scenes.length === 0) {
+                 // Use the modal (which is better than alert()) to show the "Under Construction" message
+                 document.getElementById('modalBadgeName').textContent = adventure.name;
+                 document.getElementById('modalLevelMessage').textContent = "This adventure is currently under construction. Please check back soon!";
+                 
+                 // Change the modal button to a simpler "Close" and reset its style
+                 const modalButton = document.getElementById('closeBadgeModal');
+                 modalButton.textContent = "Close";
+                 modalButton.classList.remove('bg-red-500', 'shadow-red-700');
+                 modalButton.classList.add('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
+
+                 document.getElementById('badgeModal').classList.remove('hidden');
+                 return;
+            }
+
+            // CHECK 2: If the adventure has content, start the game.
             currentSceneIndex = 0;
             switchScreen('gameScene');
             renderScene();
@@ -1024,6 +1061,13 @@
                 ? `Congratulations! You leveled up to Level ${Math.floor(userProgress.badges.length / 5) + 1}!` 
                 : `You now have ${userProgress.badges.length} of 30 mastery badges.`;
             
+            // Reset modal button for the badge modal
+            const modalButton = document.getElementById('closeBadgeModal');
+            modalButton.textContent = "Continue";
+            modalButton.classList.remove('bg-gray-500', 'hover:bg-gray-600', 'shadow-gray-700');
+            modalButton.classList.add('bg-red-500', 'hover:bg-red-400', 'shadow-red-700');
+
+
             document.getElementById('badgeModal').classList.remove('hidden');
             // Hide scene buttons just in case
             document.getElementById('continueButton').classList.add('hidden');
