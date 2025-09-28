@@ -89,7 +89,7 @@
                         <span>Sign in with Google</span>
                     </button>
 
-                    <button class="text-sm w-full text-slate-400 hover:text-indigo-400 pt-6" onclick="toggleAuthView('register')">
+                    <button class="text-sm w-full text-slate-400 hover:text-indigo-400 pt-6" onclick="window.toggleAuthView('register')">
                         Don't have an account? Register Now
                     </button>
                 </div>
@@ -106,7 +106,7 @@
                         <i class="fas fa-user-plus mr-2"></i> Create Account
                     </button>
 
-                    <button class="text-sm w-full text-slate-400 hover:text-indigo-400 pt-6" onclick="toggleAuthView('login')">
+                    <button class="text-sm w-full text-slate-400 hover:text-indigo-400 pt-6" onclick="window.toggleAuthView('login')">
                         Already registered? Go to Sign In
                     </button>
                 </div>
@@ -178,6 +178,32 @@
             }, 5000);
         }
 
+        // --- FIX 1: FORM TOGGLING LOGIC ---
+        function toggleAuthView(viewName) {
+            const loginView = document.getElementById('loginView');
+            const registerView = document.getElementById('registerView');
+            const authMessageEl = document.getElementById('authMessage');
+
+            if (viewName === 'register') {
+                loginView.classList.add('hidden');
+                registerView.classList.remove('hidden');
+                authMessageEl.textContent = "Create your secure account below.";
+            } else { // 'login'
+                registerView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+                authMessageEl.textContent = "Sign in to view your private dashboard.";
+            }
+            // Clear inputs when switching
+            document.getElementById('authEmailLogin').value = '';
+            document.getElementById('authPasswordLogin').value = '';
+            document.getElementById('authEmailRegister').value = '';
+            document.getElementById('authPasswordRegister').value = '';
+            document.getElementById('registerName').value = '';
+        }
+        // FIX 2: Expose toggleAuthView globally for HTML onClick calls
+        window.toggleAuthView = toggleAuthView;
+
+
         // --- Firestore Setup and Data Gate ---
         const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'user_data');
         
@@ -188,7 +214,7 @@
             const user = auth.currentUser;
             const progressRef = getProgressDocRef(user.uid);
             
-            // 1. Fetch data (simplified for this demo: profile info)
+            // 1. Fetch data 
             const docSnap = await getDoc(progressRef);
             
             if (!docSnap.exists()) {
@@ -231,13 +257,14 @@
             }
             
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // This automatically triggers onAuthStateChanged which calls checkAndLoadUser
+                await createUserWithEmailAndPassword(auth, email, password);
                 
                 // Immediately update the profile to set the display name
-                await userCredential.user.updateProfile({ displayName: name });
+                // Note: User must be signed in for this to work, which they are after create.
+                await auth.currentUser.updateProfile({ displayName: name });
 
-                // We rely on the onAuthStateChanged listener and checkAndLoadUser to handle the UI transition
-                // checkAndLoadUser will ensure the data is saved and the dashboard is displayed.
+                showAuthFeedback("Registration successful. Entering dashboard...", 'success');
 
             } catch (error) {
                 const msg = error.code === 'auth/email-already-in-use' ? "Email already exists. Please sign in." : error.message.split('(')[0];
@@ -258,8 +285,10 @@
             const password = document.getElementById('authPasswordLogin').value;
 
             try {
+                // This automatically triggers onAuthStateChanged which calls checkAndLoadUser
                 await signInWithEmailAndPassword(auth, email, password);
-                // We rely on the onAuthStateChanged listener and checkAndLoadUser to handle the UI transition
+                
+                showAuthFeedback("Login successful! Entering dashboard...", 'success');
 
             } catch (error) {
                 showAuthFeedback("Login Failed: Invalid email or password.");
@@ -278,7 +307,7 @@
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
                 
-                // We rely on the onAuthStateChanged listener and checkAndLoadUser to handle the UI transition
+                // The onAuthStateChanged listener handles the screen transition
 
             } catch (error) {
                 // Suppress the "popup closed by user" error on cancelation
@@ -328,7 +357,7 @@
                 }
             });
 
-            // 3. Set up button listeners
+            // 3. Set up button listeners 
             document.getElementById('loginButton').addEventListener('click', handleEmailLogin);
             document.getElementById('registerButton').addEventListener('click', handleEmailRegister);
             document.getElementById('googleLoginButton').addEventListener('click', handleGoogleLogin);
