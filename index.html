@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GTA: Global Translation Adventures</title>
-    <!-- Load Tailwind CSS for modern, responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* --- Root Variables for Both Modes --- */
@@ -49,14 +47,13 @@
             padding: 2rem;
             background: var(--card-dark);
             border-radius: 1rem;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Lighter shadow for light mode */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             transition: background 0.3s, box-shadow 0.3s;
         }
         body.light-mode .game-screen {
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            border: 1px solid #E5E7EB; /* Light border in light mode */
+            border: 1px solid #E5E7EB;
         }
-
 
         /* Custom Button Styling (Primary Action - Red/Green) */
         .btn-primary {
@@ -79,7 +76,7 @@
             transform: translateY(3px);
         }
 
-        /* Secondary/Navigation Button Styling (Dark Gray in dark mode, light gray in light mode) */
+        /* Secondary/Navigation Button Styling */
         .btn-secondary {
             background-color: #3C3C3C; 
             color: var(--text-light);
@@ -140,6 +137,11 @@
         }
         body.light-mode .option-btn:hover {
             border-color: #A0AEC0;
+        }
+        /* ADDED FOCUS STATE FOR ACCESSIBILITY */
+        .option-btn:focus, .btn-primary:focus, .btn-secondary:focus {
+            outline: 3px solid var(--primary-red);
+            outline-offset: 2px;
         }
         .option-btn .phrase-main {
             font-size: 1.5rem;
@@ -202,6 +204,51 @@
         .dest-card.active-dest {
             border: 3px solid var(--primary-red);
         }
+
+        /* --- NEW CSS for 1:1 Aspect Ratio on Badges --- */
+        .badge-square-wrapper {
+            /* This div enforces the square aspect ratio based on width */
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* Makes height equal to width */
+        }
+        .badge-grid-content {
+            /* This div contains the actual badge visuals and sits perfectly inside the wrapper */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Inherit base dest-card styles, but remove conflicting height/padding */
+            background-color: #222222;
+            border-radius: 0.75rem;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem; /* Reduced padding for smaller content */
+            border: 2px solid; /* Added for visual separation */
+        }
+        body.light-mode .badge-grid-content {
+            background-color: #F3F4F6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* NEW: Badge Row Header */
+        .badge-row-header {
+            grid-column: span 5; /* Span across all 5 columns */
+            text-align: left;
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border-bottom: 2px solid var(--text-secondary);
+            color: var(--text-light);
+        }
         
         /* Modal Animation */
         @keyframes pulse-green {
@@ -214,8 +261,8 @@
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px; /* Standard width */
-            height: 34px; /* Standard height */
+            width: 60px;
+            height: 34px;
         }
 
         .switch input { 
@@ -296,7 +343,7 @@
             background-color: #D1D5DB;
         }
 
-        /* --- FIREBASE SECRETS BLUR/VISIBILITY STYLES --- */
+        /* --- FIREBASE SECRETS BLUR/VISIBILITY STYLES (Kept for Profile ID) --- */
         .blurred {
             filter: blur(4px);
             transition: filter 0.3s;
@@ -306,39 +353,29 @@
         }
     </style>
 </head>
-<body class="dark-mode"> <!-- Changed default to dark-mode based on images -->
-    <div id="app" class="text-center p-4">
-        <!-- HIDDEN by default to clean up the main page -->
+<body class="dark-mode"> <div id="app" class="text-center p-4">
         <p id="authStatus" class="text-sm text-gray-400 mb-2 hidden"></p> 
         <div id="gameScreens">
             
-            <!-- ============================================== -->
-            <!-- 1. TITLE PAGE (Initial View) -->
-            <!-- ============================================== -->
             <div id="titlePage" class="game-screen">
                 <h1 class="text-7xl font-black mb-2 text-red-500 tracking-wide">GTA</h1>
                 <h2 class="text-3xl font-light mb-4" style="color: var(--text-secondary)">Global Translation Adventures</h2>
                 
-                <!-- This is the 'Welcome, Traveler!' section -->
-                <h3 class="text-4xl font-bold mb-8" style="color: var(--text-light)">Welcome, Traveler!</h3>
+                <h3 id="travelerGreeting" class="text-4xl font-bold mb-8" style="color: var(--text-light)">Welcome, Traveler!</h3>
+                
                 <p class="mb-12 max-w-lg mx-auto" style="color: var(--text-secondary)">Your language journey awaits across 6 countries and 30 thrilling adventures.</p>
                 
                 <div class="space-y-4 max-w-sm mx-auto">
-                    <!-- Main Start Button is Red -->
                     <button id="startButton" class="btn-primary w-full"><i class="fas fa-play mr-2"></i> Start Your Journey</button>
-                    <!-- Other buttons are Secondary/Dark -->
                     <button id="profileButton" class="btn-secondary w-full"><i class="fas fa-user-circle mr-2"></i> Profile</button>
                     <button id="progressButton" class="btn-secondary w-full"><i class="fas fa-chart-line mr-2"></i> Progress Tracker</button>
                     <button id="settingsButton" class="btn-secondary w-full"><i class="fas fa-cog mr-2"></i> Settings</button>
                 </div>
             </div>
 
-            <!-- ============================================== -->
-            <!-- 2. DESTINATION SELECTION SCREEN -->
-            <!-- ============================================== -->
             <div id="destinationScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
-                    <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
+                    <button class="text-lg hover:text-red-500" data-target="titlePage" style="color: var(--text-secondary)">
                         <i class="fas fa-arrow-left mr-2"></i> Back to Title Screen
                     </button>
                 </div>
@@ -347,16 +384,13 @@
                 <p class="mb-8 text-left" style="color: var(--text-secondary)">Master a country's adventures to unlock the next destination and earn a rank up!</p>
                 
                 <div id="destinationList" class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    <!-- Destination cards will be rendered here by JavaScript -->
-                </div>
+                    </div>
             </div>
 
-            <!-- ============================================== -->
-            <!-- 3. ADVENTURE SELECTION SCREEN (image_4b4fe7.png) -->
             <div id="adventureScreen" class="game-screen hidden">
                 <div class="flex justify-between items-center mb-6 text-lg">
                     <button class="hover:text-red-500" data-target="destinationScreen" style="color: var(--text-secondary)">
-                         <i class="fas fa-arrow-left mr-2"></i> Back to Country Selection
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Country Selection
                     </button>
                     <button id="viewProgressButton" class="text-green-500 hover:text-green-400" data-target="progressScreen">
                         View Progress Tracker <i class="fas fa-angle-right ml-1"></i>
@@ -366,16 +400,12 @@
                 <h2 id="adventureTitle" class="text-4xl font-bold mb-8 text-yellow-400 text-left">Destination: Japan (Traveler Rank)</h2>
                 
                 <div id="adventureList" class="space-y-4 max-w-4xl mx-auto text-left">
-                    <!-- Adventure list items will be rendered here by JavaScript -->
-                </div>
+                    </div>
             </div>
 
-            <!-- ============================================== -->
-            <!-- 4. CORE GAMEPLAY SCREEN (image_4ba523.jpg) -->
-            <!-- ============================================== -->
             <div id="gameScene" class="game-screen hidden">
                 <div class="text-left mb-6">
-                    <button class="text-lg" data-target="adventureScreen" style="color: var(--text-secondary)">
+                    <button class="text-lg hover:text-red-500" data-target="adventureScreen" style="color: var(--text-secondary)">
                         <i class="fas fa-arrow-left mr-2"></i> Exit Scenario
                     </button>
                 </div>
@@ -389,34 +419,26 @@
                     <img id="sceneImage" src="" alt="Current Scene" class="w-full h-auto rounded-lg mb-6 border-2" style="border-color: var(--text-secondary)">
                     
                     <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Phrase cards will be injected here -->
-                    </div>
+                        </div>
                 </div>
                 
-                <!-- NEW CONTAINER FOR TRANSLATIONS BELOW THE CARDS -->
                 <div id="translationDisplayContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-2 min-h-[50px]">
-                    <!-- Translation text fields will be injected here by renderScene() -->
-                </div>
+                    </div>
 
                 <div id="feedbackMessage" class="mt-6 text-2xl font-bold transition-opacity duration-300 opacity-0 min-h-[40px]"></div>
                 
-                <!-- Continue Button shown after correct answer -->
                 <button id="continueButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="nextScene()" style="background-color: var(--primary-red); box-shadow: 0 4px var(--danger-red);">
                     Continue Touring (1/5 Scenes)
                 </button>
 
-                <!-- This button matches the 'COMPLETE ADVENTURE AND EARN BADGE' style (image_4ba5a0.png) -->
                 <button id="completeAdventureButton" class="btn-primary w-full max-w-lg mt-6 hidden" onclick="completeAdventure()" style="background-color: var(--success-green); box-shadow: 0 4px #276749;">
                     COMPLETE ADVENTURE AND EARN BADGE
                 </button>
             </div>
             
-            <!-- ============================================== -->
-            <!-- 5. PROGRESS TRACKER SCREEN (image_4b5326.png) -->
-            <!-- ============================================== -->
             <div id="progressScreen" class="game-screen hidden">
                 <div class="text-left mb-6">
-                    <button class="text-lg" data-target="titlePage" style="color: var(--text-secondary)">
+                    <button class="text-lg hover:text-red-500" data-target="titlePage" style="color: var(--text-secondary)">
                         <i class="fas fa-arrow-left mr-2"></i> Back to Title Screen
                     </button>
                 </div>
@@ -437,19 +459,14 @@
                 
                 <h3 class="text-2xl font-bold mb-6 text-left" style="color: var(--text-light)">All 30 Badges Earned</h3>
                 
-                <div id="badgeContainer" class="flex flex-wrap justify-start p-4 rounded-lg max-w-4xl mx-auto border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
-                    <!-- 30 Badge boxes will be injected here (image_4b5326.png style) -->
-                </div>
+                <div id="badgeContainer" class="grid grid-cols-5 gap-3 p-4 rounded-lg max-w-4xl mx-auto border h-96 overflow-y-auto" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
+                    </div>
             </div>
 
-            <!-- ============================================== -->
-            <!-- 6. SETTINGS SCREEN -->
-            <!-- ============================================== -->
             <div id="settingsScreen" class="game-screen hidden">
                 <h2 class="text-4xl font-bold mb-8">Settings</h2>
                 <div class="max-w-xl mx-auto space-y-6">
 
-                    <!-- Theme Toggle -->
                     <div class="flex justify-between items-center p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <span class="text-xl font-medium" style="color: var(--text-light)">Light / Dark Mode</span>
                         <label class="switch">
@@ -458,11 +475,9 @@
                         </label>
                     </div>
 
-                    <!-- Background Music Slider -->
                     <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xl font-medium" style="color: var(--text-light)">Background Music</span>
-                            <!-- Music Mute Toggle -->
                             <label class="switch">
                                 <input type="checkbox" id="musicMuteToggle">
                                 <span class="slider round"></span>
@@ -471,12 +486,10 @@
                         <input type="range" id="musicVolume" min="0" max="1" value="0.5" step="0.1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
                     </div>
 
-                    <!-- Audio Volume Slider -->
                     <div class="p-4 rounded-lg border" style="background-color: var(--background-deep); border-color: var(--text-secondary)">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xl font-medium" style="color: var(--text-light)">Audio Pronunciation Volume</span>
-                             <!-- Audio Mute Toggle -->
-                            <label class="switch">
+                             <label class="switch">
                                 <input type="checkbox" id="audioMuteToggle">
                             <span class="slider round"></span>
                             </label>
@@ -488,10 +501,7 @@
                 <button class="btn-secondary mt-12" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
             </div>
 
-             <!-- ============================================== -->
-            <!-- 7. PROFILE SCREEN -->
-            <!-- ============================================== -->
-            <div id="profileScreen" class="game-screen hidden">
+             <div id="profileScreen" class="game-screen hidden">
                  <h2 class="text-4xl font-bold mb-8">Traveler Profile</h2>
                 <div class="max-w-sm mx-auto space-y-4">
                     <div class="text-lg font-light mb-4">
@@ -502,29 +512,10 @@
                     <button id="saveProfileButton" class="btn-primary w-full bg-green-600 hover:bg-green-500 shadow-green-700">Save Profile</button>
                 </div>
                 
-                <!-- NEW: FIREBASE CONFIG DISPLAY SECTION -->
-                <div class="mt-12 pt-6 border-t border-gray-700 max-w-md mx-auto text-left">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-red-500">Deployment & Config Keys</h3>
-                        <button id="toggleConfigView" class="text-gray-400 hover:text-red-400 transition">
-                            <i id="configEyeIcon" class="fas fa-eye-slash text-xl"></i>
-                        </button>
-                    </div>
-                    <div id="firebaseInfo" class="space-y-1 text-sm font-mono p-3 rounded border border-gray-600 blurred">
-                        <!-- Keys will be injected here by JavaScript -->
-                        <p>apiKey: <span id="apiKeyDisplay"></span></p>
-                        <p>authDomain: <span id="authDomainDisplay"></span></p>
-                        <p>projectId: <span id="projectIdDisplay"></span></p>
-                        <p>appId: <span id="appIdDisplay"></span></p>
-                    </div>
-                    <p class="text-xs mt-2 text-gray-500">Deployment Status: <span id="statusMessageDisplay">Loading...</span></p>
-                </div>
-
-                <button class="btn-secondary mt-8" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
+                <button class="btn-secondary mt-12" data-target="titlePage"><i class="fas fa-arrow-left mr-2"></i> Back to Title</button>
             </div>
 
 
-            <!-- Modal (Matches the dark theme) -->
             <div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
                 <div class="p-10 rounded-xl shadow-2xl text-center max-w-md w-11/12 transform transition-transform duration-300 scale-100 border-t-8 border-yellow-500" style="background-color: var(--card-dark); color: var(--text-light)">
                     <i class="fas fa-trophy text-7xl text-yellow-500 mb-6 animate-bounce"></i>
@@ -538,26 +529,20 @@
         </div>
     </div>
     
-    <!-- ============================================== -->
-    <!-- QUICK ACCESS FLOATING NAV -->
-    <!-- ============================================== -->
     <div id="quickAccessNav" class="fixed bottom-4 right-4 space-y-3 flex flex-col hidden z-40">
-        <!-- Settings Toggle -->
         <button id="quickSettingsButton" class="quick-access-btn" data-target="settingsScreen">
             <i class="fas fa-cog"></i>
         </button>
-        <!-- Home Button -->
         <button id="quickHomeButton" class="quick-access-btn" data-target="titlePage">
             <i class="fas fa-home"></i>
         </button>
     </div>
 
     
-    <!-- Firebase SDK Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Set Firebase Log Level to Debug
@@ -566,7 +551,6 @@
         // Global Firebase variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         // --- START USER MODIFICATION ZONE ---
-        // Your Firebase configuration should be pasted here before deployment.
         const userFirebaseConfig = {
             "apiKey": "AIzaSyBiHrqtWWI7VhfJhWWy8DonXSUWLXOiJCA",
             "authDomain": "gta-web-app-5abcd.firebaseapp.com",
@@ -585,30 +569,28 @@
         let db;
         let auth;
         let userId = null;
-        let userName = "Traveler";
         let userProgress = {}; // Stores all game state: { badges: [], profile: {}, settings: {} }
         
         // --- AUDIO PLAYERS ---
         const BACKGROUND_MUSIC_URL = './audio/petals-on-the-water-full-version-japanese-fusion-lofi-392739.mp3';
         const backgroundMusic = new Audio(BACKGROUND_MUSIC_URL);
         backgroundMusic.loop = true;
-        backgroundMusic.volume = 0; // Start muted, volume controlled by settings
+        backgroundMusic.volume = 0; 
         
-        // FIX 1: Global variable to track the currently playing phrase audio
         let currentAudioPlayer = null; 
 
         // --- GAME DATA STRUCTURE (The Core Content) ---
-        // Refactored Japanese data to separate Romanization and Translation for UX goal.
+        // UPDATED: All countries now have 5 placeholder adventures for the 6x5 grid
         const GAME_DATA = {
             japan: {
                 name: "Japan",
                 code: "JP",
                 language: "Japanese",
-                locked: false,
+                requiredBadges: 0, // Starts unlocked
                 color: "text-red-500", // Tailwind class for text color
                 adventures: [
                     {
-                        id: "discovery", // Updated ID to match image_4b4fe7.png
+                        id: "discovery",
                         name: "Discovery",
                         badgeName: "Sakura Badge",
                         rank: "Traveler",
@@ -619,7 +601,7 @@
                                 prompt: "You've just landed in Tokyo and need to find your luggage. What do you say to the airport staff?",
                                 options: [
                                     { phrase: "これはいくらですか？", romanization: "Kore wa ikura desu ka?", translation: "How much is this?", audio: "ikura.mp3", isCorrect: false },
-                                    { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mp3", isCorrect: true },
+                                    { phrase: "荷物はどこですか？", romanization: "Nimotsu wa doko desu ka?", translation: "Where is the baggage?", audio: "nimotsu.mpp3", isCorrect: true },
                                     { phrase: "トイレはどこですか？", romanization: "Toire wa doko desu ka?", translation: "Where is the toilet?", audio: "taxistand.mp3", isCorrect: false }
                                 ]
                             },
@@ -665,19 +647,84 @@
                             },
                         ]
                     },
-                    // Placeholder for remaining 4 adventures
+                    // Remaining Japan adventures
                     { id: "exploration", name: "Exploration", badgeName: "Fuji Badge", rank: "Explorer", scenes: [] },
                     { id: "challenge", name: "Challenge", badgeName: "Samurai Badge", rank: "Challenger", scenes: [] },
                     { id: "expedition", name: "Expedition", badgeName: "Ninja Badge", rank: "Expeditionist", scenes: [] },
                     { id: "summit", name: "Summit", badgeName: "Mastery Badge", rank: "Master", scenes: [] },
                 ]
             },
-            // Start of user's requested countries
-            italy: { name: "Italy", code: "IT", language: "Italian", locked: true, color: "text-green-500", adventures: [] },
-            france: { name: "France", code: "FR", language: "French", locked: true, color: "text-blue-500", adventures: [] },
-            mexico: { name: "Mexico", code: "MX", language: "Spanish", locked: true, color: "text-yellow-500", adventures: [] },
-            germany: { name: "Germany", code: "DE", language: "German", locked: true, color: "text-indigo-500", adventures: [] },
-            korean: { name: "Korean", code: "KR", language: "Korean", locked: true, color: "text-pink-500", adventures: [] },
+            italy: { 
+                name: "Italy", 
+                code: "IT", 
+                language: "Italian", 
+                requiredBadges: 5, // Requires all 5 Japan badges
+                color: "text-green-500", 
+                adventures: [
+                    // Added 5 placeholder adventures for Italy to support sequential badge tracking
+                    { id: "pasta", name: "Pasta Discovery", badgeName: "Roman Badge", rank: "Globetrotter", scenes: [] },
+                    { id: "coffee", name: "Morning Coffee", badgeName: "Espresso Badge", rank: "Globetrotter", scenes: [] },
+                    { id: "art", name: "Art Tour", badgeName: "Renaissance Badge", rank: "Globetrotter", scenes: [] },
+                    { id: "venice", name: "Venice Waters", badgeName: "Gondola Badge", rank: "Globetrotter", scenes: [] },
+                    { id: "etna", name: "Volcano Climb", badgeName: "Lava Badge", rank: "Globetrotter", scenes: [] },
+                ]
+            },
+            france: { 
+                name: "France", 
+                code: "FR", 
+                language: "French", 
+                requiredBadges: 10, // Requires 10 badges
+                color: "text-blue-500", 
+                adventures: [
+                    { id: "paris", name: "Paris Arrival", badgeName: "Eiffel Badge", rank: "Connoisseur", scenes: [] },
+                    { id: "wine", name: "Vineyard Visit", badgeName: "Bordeaux Badge", rank: "Connoisseur", scenes: [] },
+                    { id: "art", name: "Louvre", badgeName: "Monet Badge", rank: "Connoisseur", scenes: [] },
+                    { id: "food", name: "Fine Dining", badgeName: "Baguette Badge", rank: "Connoisseur", scenes: [] },
+                    { id: "cannes", name: "Film Festival", badgeName: "Cannes Badge", rank: "Connoisseur", scenes: [] },
+                ] 
+            },
+            mexico: { 
+                name: "Mexico", 
+                code: "MX", 
+                language: "Spanish", 
+                requiredBadges: 15, // Requires 15 badges
+                color: "text-yellow-500", 
+                adventures: [
+                    { id: "cdmx", name: "City Arrival", badgeName: "Aztec Badge", rank: "Advocate", scenes: [] },
+                    { id: "tacos", name: "Street Food", badgeName: "Taco Badge", rank: "Advocate", scenes: [] },
+                    { id: "pyramid", name: "Ancient Ruins", badgeName: "Teotihuacan Badge", rank: "Advocate", scenes: [] },
+                    { id: "beach", name: "Coastal Trip", badgeName: "Cozumel Badge", rank: "Advocate", scenes: [] },
+                    { id: "market", name: "Local Market", badgeName: "Chili Badge", rank: "Advocate", scenes: [] },
+                ] 
+            },
+            germany: { 
+                name: "Germany", 
+                code: "DE", 
+                language: "German", 
+                requiredBadges: 20, // Requires 20 badges
+                color: "text-indigo-500", 
+                adventures: [
+                    { id: "berlin", name: "Capital City", badgeName: "Wall Badge", rank: "Patriot", scenes: [] },
+                    { id: "beer", name: "Brewery Tour", badgeName: "Oktoberfest Badge", rank: "Patriot", scenes: [] },
+                    { id: "car", name: "Autobahn Drive", badgeName: "Turbo Badge", rank: "Patriot", scenes: [] },
+                    { id: "castle", name: "Bavarian Castle", badgeName: "Neuschwanstein Badge", rank: "Patriot", scenes: [] },
+                    { id: "river", name: "Rhine Cruise", badgeName: "Rhine Badge", rank: "Patriot", scenes: [] },
+                ] 
+            },
+            korean: { 
+                name: "Korean", 
+                code: "KR", 
+                language: "Korean", 
+                requiredBadges: 25, // Requires 25 badges
+                color: "text-pink-500", 
+                adventures: [
+                    { id: "seoul", name: "Seoul City", badgeName: "Hallyu Badge", rank: "Master", scenes: [] },
+                    { id: "kfood", name: "Street Food", badgeName: "Kimchi Badge", rank: "Master", scenes: [] },
+                    { id: "tech", name: "Tech District", badgeName: "Samsung Badge", rank: "Master", scenes: [] },
+                    { id: "temple", name: "Mountain Temple", badgeName: "Dharma Badge", rank: "Master", scenes: [] },
+                    { id: "kpop", name: "Music Show", badgeName: "Idol Badge", rank: "Master", scenes: [] },
+                ] 
+            },
         };
         
         const audioPath = (filename) => `./audio/${filename}`; 
@@ -687,19 +734,19 @@
         let currentSceneIndex = 0;
         let correctOption = null;
         let isProcessing = false;
+        let isReviewMode = false; // Tracks if the current session is a review
         
         // --- UI Elements ---
         const quickAccessNav = document.getElementById('quickAccessNav');
 
-        // --- FIREBASE AND AUTHENTICATION SETUP (No changes needed here) ---
+        // --- FIREBASE AND AUTHENTICATION SETUP (Using existing boilerplate) ---
 
         async function initFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
-                    // FIX: Changed this to a standard log and default status text
                     console.warn("Firebase config is missing. Running in local mode without persistent progress saving.");
                     document.getElementById('authStatus').textContent = `Data Persistence: Disabled (Local Mode)`;
-                    return; // Exit here if config is missing but allow the rest of the game to run
+                    return;
                 }
 
                 app = initializeApp(firebaseConfig);
@@ -715,8 +762,7 @@
                         await loadUserProgress();
                     } else {
                         // If we have custom config (meaning it's the live app), sign in anonymously.
-                        // This prevents the custom-token-mismatch error when in the editor.
-                        if (Object.keys(userFirebaseConfig).length > 0) { // <-- NEW CHECK
+                        if (Object.keys(userFirebaseConfig).length > 0) {
                             await signInAnonymously(auth);
                         } else if (!initialAuthToken) {
                             // If running in environment but without initial token, fallback to anonymous
@@ -725,13 +771,10 @@
                     }
                 });
 
-                // FIX: Only attempt signInWithCustomToken if we are running in the Canvas environment
-                // AND we are NOT using the user's custom config.
                 if (initialAuthToken && Object.keys(userFirebaseConfig).length === 0) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
             } catch (error) {
-                // Only catch real runtime errors after Firebase initialization attempt
                 console.error("Firebase initialization failed:", error);
                 document.getElementById('authStatus').textContent = `Authentication Error: ${error.message}`;
             }
@@ -740,7 +783,6 @@
         const getProgressDocRef = (uid) => doc(db, `artifacts/${appId}/users/${uid}/progress`, 'gta_progress');
 
         async function loadUserProgress() {
-            // Only attempt to load/save if Firebase is initialized (i.e., if 'db' is defined)
             if (!db) return; 
 
             const progressRef = getProgressDocRef(userId);
@@ -752,7 +794,6 @@
                     userProgress = {
                         badges: [], // e.g., ["japan-discovery"]
                         profile: { name: "Traveler", email: "" },
-                        // FIX: Initial music volume set to 0.2 (20%) from old code 
                         settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
                     };
                     saveUserProgress(); 
@@ -764,7 +805,7 @@
         }
 
         async function saveUserProgress() {
-            if (!userId || !db) { // Check for 'db' to ensure Firebase is running
+            if (!userId || !db) {
                 console.warn("Cannot save progress: User not authenticated or Firebase disabled.");
                 return;
             }
@@ -803,21 +844,26 @@
             }
         }
 
-        // --- GAME LOGIC ---
+        // --- GAME LOGIC (Using existing boilerplate) ---
 
         function renderDestinationScreen() {
             const listEl = document.getElementById('destinationList');
             listEl.innerHTML = '';
             
+            // Calculate current total badges for unlocking logic
+            const totalBadgesEarned = userProgress.badges.length;
+
             Object.entries(GAME_DATA).forEach(([id, dest]) => {
-                const isCompleted = dest.adventures.length > 0 && dest.adventures.every(a => userProgress.badges.includes(`${id}-${a.id}`));
-                const isLocked = dest.locked && id !== 'japan'; // Japan is always unlocked for now
+                // Determine if this country is locked
+                const isLocked = totalBadgesEarned < dest.requiredBadges; 
+
+                // Placeholder rank for UI display
+                const currentRank = dest.adventures[0] ? dest.adventures[0].rank : "Traveler";
 
                 const button = document.createElement('button');
                 button.dataset.dest = id;
                 button.classList = `dest-card text-white ${dest.color}`;
 
-                // Structure for the destination card (image_4b4fac.png)
                 const code = `<div class="dest-card-code ${dest.color}">${dest.code}</div>`;
                 const name = `<div class="text-xl font-bold">${dest.name}</div>`;
                 let status = '';
@@ -825,11 +871,15 @@
                 if (isLocked) {
                     button.classList.add('locked');
                     button.disabled = true;
-                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">LOCKED</div>`;
+                    // Display unlock requirement
+                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">LOCKED (${dest.requiredBadges} Badges)</div>`;
                 } else {
+                    // Unlocked country styling
+                    button.classList.remove('locked');
+                    button.disabled = false;
                     button.classList.add('active-dest');
                     button.onclick = () => renderAdventureScreen(id);
-                    status = `<div class="text-xs font-semibold text-gray-500 mt-1">Traveler</div>`; // Placeholder rank
+                    status = `<div class="text-xs font-semibold text-green-400 mt-1">${currentRank} Rank</div>`; 
                 }
 
                 button.innerHTML = `${code}${name}${status}`;
@@ -837,10 +887,11 @@
             });
         }
 
+        // Updated: Renders Review button if completed
         function renderAdventureScreen(destId) {
             currentDestinationId = destId;
             const destData = GAME_DATA[destId];
-            const currentRank = destData.adventures[0] ? destData.adventures[0].rank : "Traveler"; // Use first adventure's rank
+            const currentRank = destData.adventures[0] ? destData.adventures[0].rank : "Traveler";
 
             document.getElementById('adventureTitle').innerHTML = 
                 `<span class="text-yellow-400">Destination: ${destData.name}</span> (${currentRank} Rank)`;
@@ -859,18 +910,27 @@
                 listItem.classList = 'p-4 flex justify-between items-center rounded-lg';
                 
                 if (isCompleted) {
+                    // *** REVIEW MODE LOGIC (Allows Revisit) ***
                     listItem.classList.add('bg-green-800', 'text-white', 'border', 'border-green-600');
+                    
+                    const hasContent = adventure.scenes && adventure.scenes.length > 0;
+
                     listItem.innerHTML = `
-                        <!-- SIMPLIFIED TEXT: Only show Adventure Name -->
                         <div class="font-bold">${adventure.name}</div>
-                        <div class="text-sm font-semibold text-green-300">
-                            <i class="fas fa-check-circle mr-1"></i> Completed
+                        <div>
+                            <span class="text-sm font-semibold text-green-300 mr-4">
+                                <i class="fas fa-check-circle mr-1"></i> Completed
+                            </span>
+                            <button class="btn-secondary py-2 px-4 text-base shadow-none ${hasContent ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-white" 
+                                    onclick="startAdventure(${index})">
+                                ${hasContent ? 'Review' : 'Under Construction'}
+                            </button>
                         </div>
                     `;
+
                 } else if (isLocked) {
                     listItem.classList.add('bg-gray-700', 'text-gray-400');
                     listItem.innerHTML = `
-                        <!-- SIMPLIFIED TEXT: Only show Adventure Name -->
                         <div class="font-bold">${adventure.name}</div>
                         <div class="text-sm">Locked: Complete previous adventure first</div>
                     `;
@@ -908,17 +968,21 @@
             switchScreen('adventureScreen');
         }
 
+        // Updated: Sets isReviewMode state
         function startAdventure(adventureIndex) {
             currentAdventureIndex = adventureIndex;
-            const adventure = GAME_DATA[currentDestinationId].adventures[currentAdventureIndex];
+            const dest = GAME_DATA[currentDestinationId];
+            const adventure = dest.adventures[currentAdventureIndex];
+            const adventureId = `${currentDestinationId}-${adventure.id}`; 
             
-            // CHECK 1: If the adventure has no content (empty scenes array), show the message.
+            // Set the review mode based on current progress
+            isReviewMode = userProgress.badges.includes(adventureId);
+
+            // CHECK 1: If the adventure has no content, show the message.
             if (!adventure.scenes || adventure.scenes.length === 0) {
-                 // Use the modal (which is better than alert()) to show the "Under Construction" message
                  document.getElementById('modalBadgeName').textContent = adventure.name;
                  document.getElementById('modalLevelMessage').textContent = "This adventure is currently under construction. Please check back soon!";
                  
-                 // Change the modal button to a simpler "Close" and reset its style
                  const modalButton = document.getElementById('closeBadgeModal');
                  modalButton.textContent = "Close";
                  modalButton.classList.remove('bg-red-500', 'shadow-red-700');
@@ -939,7 +1003,7 @@
             const adventure = dest.adventures[currentAdventureIndex];
             const scene = adventure.scenes[currentSceneIndex];
             
-            // Update Headers (image_4b52b2.jpg style)
+            // Update Headers 
             document.getElementById('sceneAdventureName').textContent = `${adventure.name} Scenario`;
             document.getElementById('sceneHeader').textContent = `Country: ${dest.name} | Adventure ${currentAdventureIndex + 1}`;
             document.getElementById('sceneImage').src = scene.image;
@@ -954,7 +1018,7 @@
             optionsEl.innerHTML = '';
 
             const translationDisplayEl = document.getElementById('translationDisplayContainer');
-            translationDisplayEl.innerHTML = ''; // CLEAR PREVIOUS TRANSLATIONS
+            translationDisplayEl.innerHTML = ''; 
             
             scene.options.forEach((option, index) => {
                 const button = document.createElement('button');
@@ -967,8 +1031,8 @@
                 `;
                 // Store data needed for checkAnswer in the button's dataset
                 button.dataset.index = index;
-                button.dataset.isCorrect = option.isCorrect; // Store correctness
-                button.dataset.translation = option.translation; // Store translation to reveal later
+                button.dataset.isCorrect = option.isCorrect;
+                button.dataset.translation = option.translation; 
                 
                 // Hover for Audio Pronunciation
                 button.addEventListener('mouseenter', () => playAudio(audioPath(option.audio)));
@@ -981,7 +1045,7 @@
                 // --- CREATE SEPARATE TRANSLATION DISPLAY ELEMENT BELOW ---
                 const translationEl = document.createElement('div');
                 translationEl.classList.add('text-center', 'text-lg', 'font-bold', 'opacity-0', 'transition-opacity', 'duration-500');
-                translationEl.dataset.index = index; // Link to the button by index
+                translationEl.dataset.index = index;
                 translationEl.id = `translation-${index}`;
                 translationDisplayEl.appendChild(translationEl);
             });
@@ -993,16 +1057,19 @@
         function nextScene() {
              const dest = GAME_DATA[currentDestinationId];
              const adventure = dest.adventures[currentAdventureIndex];
+             
+             // Defensive check against rapid clicking
+             if (isProcessing) return; 
 
              currentSceneIndex++;
              if (currentSceneIndex < adventure.scenes.length) {
-                // Move to next scene
-                document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
-                renderScene();
+                 // Move to next scene
+                 document.getElementById('continueButton').textContent = `Continue Touring (${currentSceneIndex + 1}/${adventure.scenes.length} Scenes)`;
+                 renderScene();
              } else {
-                // Last scene, show complete button
-                document.getElementById('continueButton').classList.add('hidden');
-                document.getElementById('completeAdventureButton').classList.remove('hidden');
+                 // Last scene, show complete button
+                 document.getElementById('continueButton').classList.add('hidden');
+                 document.getElementById('completeAdventureButton').classList.remove('hidden');
              }
         }
 
@@ -1010,7 +1077,6 @@
             const audioSettings = userProgress.settings || { audioVolume: 1.0, audioMuted: false };
             if (audioSettings.audioMuted) return;
 
-            // FIX 1: Stop previous audio if it's playing
             if (currentAudioPlayer && !currentAudioPlayer.paused) {
                 currentAudioPlayer.pause();
                 currentAudioPlayer.currentTime = 0;
@@ -1018,7 +1084,7 @@
 
             const audio = new Audio(path);
             audio.volume = audioSettings.audioVolume;
-            currentAudioPlayer = audio; // Set global tracker
+            currentAudioPlayer = audio;
 
             audio.play().catch(e => console.warn("Audio playback failed (file not found or user gesture required):", e));
         }
@@ -1027,13 +1093,11 @@
         function setBackgroundMusicState(volume, isMuted) {
             backgroundMusic.volume = isMuted ? 0 : volume;
             if (backgroundMusic.paused) {
-                // Attempt to play only if unmuted, handling the browser's required user gesture
                 if (!isMuted) {
                     backgroundMusic.play().catch(e => console.log("Music auto-play prevented by browser. User must interact first.", e));
                 }
             } else {
                 if (isMuted) {
-                    // Mute immediately if already playing
                     backgroundMusic.volume = 0;
                 } else {
                      backgroundMusic.volume = volume;
@@ -1041,11 +1105,9 @@
             }
         }
 
-        // FIX 2: Function to attempt playing music after a user interaction, with a retry mechanism
         function attemptMusicPlay() {
             const settings = userProgress.settings || { musicVolume: 0.0, musicMuted: true };
-            // ******* USING DEFAULT MUSIC VOLUME 0.2 HERE *******
-            if (settings.musicMuted || !backgroundMusic.paused) return; // Don't play if muted or already playing
+            if (settings.musicMuted || !backgroundMusic.paused) return;
 
             backgroundMusic.volume = settings.musicVolume;
             backgroundMusic.play()
@@ -1054,7 +1116,6 @@
                 })
                 .catch(e => {
                     console.warn("Music play blocked, retrying in 500ms. Error:", e);
-                    // Retry once after a short delay, which often works after a page change
                     setTimeout(() => {
                          backgroundMusic.play().catch(e => console.warn("Music play failed after retry.", e));
                     }, 500);
@@ -1071,7 +1132,6 @@
             setTimeout(() => feedbackEl.classList.add('opacity-0'), 1500);
         }
         
-        // NEW helper function to reveal the English translation on a specific button
         function revealTranslation(button) {
             const index = button.dataset.index;
             const translation = button.dataset.translation;
@@ -1084,27 +1144,27 @@
             }
         }
 
-        // NEW helper function to reveal translations on all cards
         function revealAllTranslations() {
             document.querySelectorAll('.option-btn').forEach(button => {
                 revealTranslation(button);
             });
         }
 
+        // Corrected Quiz Logic
         function checkAnswer(button, isCorrect) {
             if (isProcessing) return;
             isProcessing = true;
             
+            // Temporarily disable ALL buttons during processing/feedback period
             document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
             
             if (isCorrect) {
                 // Correct Answer Logic
                 button.classList.add('correct');
-                revealAllTranslations(); // REVEAL ALL TRANSLATIONS ON CORRECT GUESS
+                revealAllTranslations(); 
 
                 showFeedback("Correct! You successfully communicated the phrase.", 'correct');
                 
-                // Show continue button
                 const dest = GAME_DATA[currentDestinationId];
                 const adventure = dest.adventures[currentAdventureIndex];
                 
@@ -1113,31 +1173,44 @@
                     document.getElementById('continueButton').classList.remove('hidden');
                 } else {
                     // It's the last scene
-                    document.getElementById('completeAdventureButton').classList.remove('hidden');
+                    const completeButton = document.getElementById('completeAdventureButton');
+                    
+                    if (isReviewMode) {
+                        // Display review text
+                        completeButton.textContent = "REVIEW COMPLETE: RETURN TO ADVENTURES";
+                    } else {
+                        // Display standard text for new badge
+                        completeButton.textContent = "COMPLETE ADVENTURE AND EARN BADGE";
+                    }
+                    
+                    completeButton.style.backgroundColor = 'var(--success-green)';
+                    completeButton.style.boxShadow = '0 4px #276749';
+                    completeButton.classList.remove('hidden');
                 }
                 
                 isProcessing = false;
+                // Buttons remain disabled here until the scene changes or the Continue button is clicked
 
             } else {
                 // Incorrect Answer Logic
                 button.classList.add('incorrect');
-                revealTranslation(button); // ONLY REVEAL THE TRANSLATION OF THE INCORRECT CARD
+                revealTranslation(button); // Only reveal the translation of the incorrect card
 
                 showFeedback("Incorrect. Try again!", 'incorrect');
                 
                 setTimeout(() => {
                     button.classList.remove('incorrect');
                     
-                    // HIDE THE INCORRECT TRANSLATION HINT AFTER THE PAUSE
+                    // HIDE the incorrect translation hint after the pause
                     document.getElementById(`translation-${button.dataset.index}`).classList.add('opacity-0');
                     
-                    // Re-enable other buttons, leaving the incorrect one disabled for the scene
+                    // Re-enable ALL buttons (including the one just clicked)
                     document.querySelectorAll('.option-btn').forEach(btn => {
-                        if (btn !== button) btn.disabled = false;
+                        btn.disabled = false;
                     });
                     
                     isProcessing = false;
-                }, 1500); // Wait 1.5 seconds before allowing re-attempt
+                }, 1500); // Wait 1.5 seconds for feedback and hint display
             }
         }
 
@@ -1146,24 +1219,30 @@
             const adventure = dest.adventures[currentAdventureIndex];
             const badgeId = `${currentDestinationId}-${adventure.id}`;
             let levelUp = false;
+            let isNewBadge = false;
 
             if (!userProgress.badges.includes(badgeId)) {
                 userProgress.badges.push(badgeId);
-                const currentBadgeCount = userProgress.badges.length;
+                isNewBadge = true;
                 
+                const currentBadgeCount = userProgress.badges.length;
                 if (currentBadgeCount % 5 === 0) {
                     levelUp = true;
-                    // Logic to unlock the next country would go here based on badge count
                 }
                 saveUserProgress();
             }
             
             // Show Badge Modal
             document.getElementById('modalBadgeName').textContent = adventure.badgeName;
-            document.getElementById('modalLevelMessage').textContent = levelUp 
-                ? `Congratulations! You leveled up to Level ${Math.floor(userProgress.badges.length / 5) + 1}!` 
-                : `You now have ${userProgress.badges.length} of 30 mastery badges.`;
-            
+
+            if (isNewBadge) {
+                 document.getElementById('modalLevelMessage').textContent = levelUp 
+                     ? `Congratulations! You leveled up to Level ${Math.floor(userProgress.badges.length / 5) + 1} and unlocked a new travel rank!` 
+                     : `You earned a new badge! You now have ${userProgress.badges.length} of 30 mastery badges.`;
+            } else {
+                 document.getElementById('modalLevelMessage').textContent = `Great review! Progress saved, but no new badge was awarded. You currently hold ${userProgress.badges.length} mastery badges.`;
+            }
+
             // Reset modal button for the badge modal
             const modalButton = document.getElementById('closeBadgeModal');
             modalButton.textContent = "Continue";
@@ -1175,114 +1254,114 @@
             // Hide scene buttons just in case
             document.getElementById('continueButton').classList.add('hidden');
             document.getElementById('completeAdventureButton').classList.add('hidden');
+            
+            isReviewMode = false; // Reset review mode after completion
         }
 
-        // --- PROGRESS TRACKER LOGIC ---
+        // --- PROGRESS TRACKER LOGIC (UPDATED FOR 6x5 GRID WITH HEADERS) ---
 
         function renderProgressTracker() {
-            const totalBadges = 30;
             const currentBadges = userProgress.badges.length;
-            const currentLevel = Math.floor(currentBadges / 5) + 1;
             
             document.getElementById('progressUserId').textContent = userId;
-            // Rank Display
-            document.getElementById('rankCountryName').textContent = `${GAME_DATA[currentDestinationId].name} (Traveler)`; // Placeholder rank
-            document.getElementById('rankCountryCode').textContent = GAME_DATA[currentDestinationId].code;
-            document.getElementById('adventuresCompleted').textContent = userProgress.badges.filter(b => b.startsWith(currentDestinationId)).length;
+            
+            // Logic to determine the current/next country for the main panel
+            const countries = Object.keys(GAME_DATA);
+            let currentCountryKey = 'japan';
+            for (const [key, data] of Object.entries(GAME_DATA)) {
+                if (currentBadges < data.requiredBadges) break;
+                currentCountryKey = key;
+            }
+            const currentCountry = GAME_DATA[currentCountryKey];
+            const nextCountryIndex = countries.indexOf(currentCountryKey) + 1;
+            const nextCountry = nextCountryIndex < countries.length ? GAME_DATA[countries[nextCountryIndex]] : { name: "Global Master", rank: "Legend" };
+
+            const completedInCurrent = userProgress.badges.filter(b => b.startsWith(currentCountryKey)).length;
+
+
+            document.getElementById('rankCountryName').textContent = `${currentCountry.name} (${currentCountry.adventures[0]?.rank || 'Traveler'})`;
+            document.getElementById('rankCountryCode').textContent = currentCountry.code;
+            document.getElementById('adventuresCompleted').textContent = completedInCurrent;
+            document.querySelector('#progressScreen .text-sm.mt-2').textContent = `Next Rank: ${nextCountry.name} (${nextCountry.adventures[0]?.rank || nextCountry.rank})`;
 
 
             const badgeContainer = document.getElementById('badgeContainer');
             badgeContainer.innerHTML = '';
             
-            let badgeIndex = 0;
-            // Iterate through all countries to build the badge grid (image_4b5326.png)
+            // NEW LOGIC: Iterate through countries, adding a header for each row of 5 badges
             Object.entries(GAME_DATA).forEach(([countryId, country]) => {
+                
+                // 1. Add the Country Header for the row
+                const header = document.createElement('div');
+                header.classList.add('badge-row-header');
+                const isCountryUnlocked = currentBadges >= country.requiredBadges;
+                header.innerHTML = `${isCountryUnlocked ? '✅' : '🔒'} ${country.name} (${country.adventures[0]?.rank || 'Rank'})`;
+                badgeContainer.appendChild(header);
+
+                // 2. Add the 5 Badges for this country
                 country.adventures.forEach((adventure, advIndex) => {
+                    
+                    // --- Create the square aspect ratio wrapper ---
+                    const badgeWrapper = document.createElement('div');
+                    badgeWrapper.classList.add('badge-square-wrapper');
+                    
+                    // --- Create the content container (the actual visual badge) ---
                     const badgeBox = document.createElement('div');
-                    badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2'; // Smaller card for badges
+                    // Use the custom style to hold the content
+                    badgeBox.classList.add('badge-grid-content'); 
                     
                     const badgeId = `${countryId}-${adventure.id}`;
                     const isEarned = userProgress.badges.includes(badgeId);
                     
                     if (isEarned) {
+                         // Apply earned classes
                          badgeBox.classList.add('bg-green-600', 'border-green-400', 'text-white', 'cursor-pointer');
+                    } else if (isCountryUnlocked) {
+                         // Apply unlocked but not earned classes
+                         badgeBox.classList.add('bg-gray-800', 'border-yellow-400', 'text-yellow-400');
                     } else {
+                         // Apply locked classes
                          badgeBox.classList.remove('active-dest');
-                         badgeBox.classList.add('bg-gray-700', 'border-gray-500', 'text-gray-400');
+                         badgeBox.classList.add('bg-gray-700', 'border-gray-500', 'text-gray-400', 'opacity-50');
                     }
 
                     badgeBox.innerHTML = `
-                        <div class="text-2xl font-black ${isEarned ? 'text-white' : 'text-gray-500'}">${country.code}</div>
-                        <div class="text-xs mt-1 ${isEarned ? 'text-white' : 'text-gray-400'}">${country.name} ${advIndex + 1}</div>
+                        <div class="text-2xl font-black ${isEarned ? 'text-white' : country.color}">${country.code}</div>
+                        <div class="text-xs font-semibold mt-1">${adventure.badgeName}</div>
+                        <div class="text-xs mt-1 ${isEarned ? 'text-white' : 'text-gray-400'}">${advIndex + 1}/5</div>
                     `;
-                    badgeContainer.appendChild(badgeBox);
-                    badgeIndex++;
+                    
+                    // Assemble the wrapper and content
+                    badgeWrapper.appendChild(badgeBox);
+                    badgeContainer.appendChild(badgeWrapper);
                 });
             });
-            // Fill remaining slots if necessary (only Japan has 5 adventures currently)
-            while (badgeIndex < totalBadges) {
-                const badgeBox = document.createElement('div');
-                badgeBox.classList = 'dest-card w-[90px] h-[90px] p-2 bg-gray-900 border-gray-800 opacity-30';
-                badgeContainer.appendChild(badgeBox);
-                badgeIndex++;
-            }
         }
         
         // --- PROFILE LOGIC ---
         
+        // Simplified: removed all config key display logic
         function renderProfileScreen() {
             document.getElementById('profileUserId').textContent = userId;
             const profile = userProgress.profile || { name: "", email: "" };
             document.getElementById('travelerNameInput').value = profile.name || "";
             document.getElementById('emailInput').value = profile.email || "";
-
-            // Display Firebase Config Details
-            if (Object.keys(firebaseConfig).length > 0) {
-                document.getElementById('statusMessageDisplay').textContent = 'Live Configuration Loaded';
-                document.getElementById('statusMessageDisplay').classList.remove('text-gray-500');
-                document.getElementById('statusMessageDisplay').classList.add('text-green-400');
-                
-                document.getElementById('apiKeyDisplay').textContent = firebaseConfig.apiKey || 'N/A';
-                document.getElementById('authDomainDisplay').textContent = firebaseConfig.authDomain || 'N/A';
-                document.getElementById('projectIdDisplay').textContent = firebaseConfig.projectId || 'N/A';
-                document.getElementById('appIdDisplay').textContent = firebaseConfig.appId || 'N/A';
-            } else {
-                document.getElementById('statusMessageDisplay').textContent = 'Disabled (Local Mode)';
-                document.getElementById('statusMessageDisplay').classList.remove('text-green-400');
-                document.getElementById('statusMessageDisplay').classList.add('text-gray-500');
-            }
         }
 
+        // FIX: Added explicit renderUI() call to ensure greeting updates immediately
         document.getElementById('saveProfileButton').addEventListener('click', () => {
-             const name = document.getElementById('travelerNameInput').value.trim();
-             const email = document.getElementById('emailInput').value.trim();
+            const name = document.getElementById('travelerNameInput').value.trim();
+            const email = document.getElementById('emailInput').value.trim();
 
-             userProgress.profile = { name, email };
-             saveUserProgress();
-             showFeedback("Profile Saved!", 'correct');
+            userProgress.profile = { name, email };
+            saveUserProgress();
+            
+            // Update the greeting immediately
+            renderUI();
+
+            showFeedback("Profile Saved!", 'correct');
         });
         
-        // NEW: Toggle Config Visibility
-        document.getElementById('toggleConfigView').addEventListener('click', () => {
-            const infoEl = document.getElementById('firebaseInfo');
-            const iconEl = document.getElementById('configEyeIcon');
-            
-            const isBlurred = infoEl.classList.contains('blurred');
-            
-            if (isBlurred) {
-                infoEl.classList.remove('blurred');
-                infoEl.classList.add('visible');
-                iconEl.classList.remove('fa-eye-slash');
-                iconEl.classList.add('fa-eye');
-            } else {
-                infoEl.classList.add('blurred');
-                infoEl.classList.remove('visible');
-                iconEl.classList.add('fa-eye-slash');
-                iconEl.classList.remove('fa-eye');
-            }
-        });
-
-
         // --- SETTINGS LOGIC ---
 
         function applySettings() {
@@ -1293,18 +1372,14 @@
             document.body.className = theme;
             document.getElementById('themeToggle').checked = theme === 'light-mode';
             
-            // Get Toggles
-            const musicMuteToggle = document.getElementById('musicMuteToggle');
-            const audioMuteToggle = document.getElementById('audioMuteToggle');
-
             // Music Volume/Mute
             document.getElementById('musicVolume').value = settings.musicVolume || 0.2;
-            musicMuteToggle.checked = settings.musicMuted || false;
+            document.getElementById('musicMuteToggle').checked = settings.musicMuted || false;
             setBackgroundMusicState(settings.musicVolume || 0.2, settings.musicMuted || false);
 
             // Audio Volume/Mute
             document.getElementById('audioVolume').value = settings.audioVolume || 1.0;
-            audioMuteToggle.checked = settings.audioMuted || false;
+            document.getElementById('audioMuteToggle').checked = settings.audioMuted || false;
         }
         
         // --- EVENT HANDLERS FOR SETTINGS ---
@@ -1321,11 +1396,9 @@
             const isMuted = e.target.checked;
             userProgress.settings.musicMuted = isMuted;
             
-            // If muting via toggle, set volume slider to 0 without saving it as the preferred volume
             if (isMuted) {
                 setBackgroundMusicState(userProgress.settings.musicVolume, true);
             } else {
-                // If unmuting, restore volume from settings
                 setBackgroundMusicState(userProgress.settings.musicVolume, false);
             }
             saveUserProgress();
@@ -1336,7 +1409,6 @@
             userProgress.settings.musicVolume = newVolume;
             userProgress.settings.musicMuted = (newVolume === 0);
             
-            // Update toggle state if volume hits 0 or leaves 0
             document.getElementById('musicMuteToggle').checked = (newVolume === 0);
 
             setBackgroundMusicState(newVolume, (newVolume === 0));
@@ -1348,11 +1420,9 @@
             const isMuted = e.target.checked;
             userProgress.settings.audioMuted = isMuted;
 
-            // If muting via toggle, set volume slider to 0 without saving it as the preferred volume
             if (isMuted) {
                 document.getElementById('audioVolume').value = 0;
             } else {
-                // If unmuting, reset slider to last saved volume (or default 1.0)
                 document.getElementById('audioVolume').value = userProgress.settings.audioVolume || 1.0;
             }
             saveUserProgress();
@@ -1363,7 +1433,6 @@
             userProgress.settings.audioVolume = newVolume;
             userProgress.settings.audioMuted = (newVolume === 0);
             
-            // Update toggle state if volume hits 0 or leaves 0
             document.getElementById('audioMuteToggle').checked = (newVolume === 0);
 
             saveUserProgress();
@@ -1374,29 +1443,23 @@
 
         function setupEventListeners() {
             // General button listeners for screen switching
-            
-            // ************ MODIFIED LISTENER ************
             document.getElementById('startButton').addEventListener('click', () => {
-                // Now calls attemptMusicPlay() which handles retry logic for deployment
                 attemptMusicPlay(); 
                 switchScreen('destinationScreen');
             });
-            // *******************************************
 
             document.getElementById('profileButton').addEventListener('click', () => switchScreen('profileScreen'));
             document.getElementById('progressButton').addEventListener('click', () => switchScreen('progressScreen'));
             document.getElementById('settingsButton').addEventListener('click', () => switchScreen('settingsScreen'));
             
-            // ************ CRITICAL FIX HERE ************
+            // CRITICAL FIX: When closing the modal, re-render the adventure screen
             document.getElementById('closeBadgeModal').addEventListener('click', () => {
                 document.getElementById('badgeModal').classList.add('hidden');
-                // IMPORTANT: When closing the modal, we must explicitly re-render the adventure screen
-                // to force the UI to check the updated userProgress.badges and unlock the next level.
+                // Force a re-render of the adventure screen to show unlocked state
                 renderAdventureScreen(currentDestinationId);
             });
-            // *******************************************
             
-            // Expose game functions to global scope for HTML onclicks in dynamically created elements.
+            // Expose game functions to global scope for HTML onclicks
             window.startAdventure = startAdventure;
             window.nextScene = nextScene;
             window.completeAdventure = completeAdventure;
@@ -1414,7 +1477,14 @@
             document.getElementById('quickHomeButton').addEventListener('click', () => switchScreen('titlePage'));
         }
 
+        // Updated: Added Traveler Name to UI
         function renderUI() {
+            const travelerName = userProgress.profile?.name || "Traveler";
+            const greetingEl = document.getElementById('travelerGreeting');
+            if (greetingEl) {
+                greetingEl.textContent = `Welcome, ${travelerName}!`;
+            }
+            
             renderDestinationScreen();
             renderProgressTracker();
             applySettings();
@@ -1422,14 +1492,12 @@
 
         // Initialize on load
         window.onload = () => {
-            // FIX 1: Initial music volume set to 0.2 (20%) and not muted
             userProgress = { 
                 badges: [], 
                 profile: { name: "Traveler", email: "" },
                 settings: { theme: 'dark-mode', musicVolume: 0.2, audioVolume: 1.0, musicMuted: false, audioMuted: false }, 
             };
             
-            // FIX 2: Ensure the music volume slider is initially set to 0.2 for the UI
             const musicVolumeSlider = document.getElementById('musicVolume');
             if (musicVolumeSlider) {
                 musicVolumeSlider.value = userProgress.settings.musicVolume;
@@ -1438,7 +1506,6 @@
             renderUI(); 
             setupEventListeners();
             initFirebase();
-            // The Firebase loadUserProgress/onSnapshot will re-render the UI later with saved data.
         };
 
     </script>
